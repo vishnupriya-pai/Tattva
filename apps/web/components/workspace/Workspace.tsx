@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { createQuestionNode, getInquiry, getStamina, submitTrapAttempt as sendTrapAttempt } from '../../lib/api-client';
 import type { LearningSource, QuestionNode, StaminaState, TrapSubmissionState } from '../../lib/workspace-types';
+import { computeNodeMetrics } from '../../lib/graph-metrics';
 import { SourceViewer } from '../source-viewer/SourceViewer';
 import { KnowledgeGraphCanvas, type GraphStatus } from '../knowledge-graph/KnowledgeGraphCanvas';
 import { ResearchModeToggle } from '../research-mode/ResearchModeToggle';
@@ -10,6 +11,7 @@ import { StaminaDisplay } from '../stamina/StaminaDisplay';
 import { InquiryComposer } from '../inquiry/InquiryComposer';
 import { Panel } from '../shared/Panel';
 import { NodeDetailPanel } from './NodeDetailPanel';
+import { NodeDetailModal } from './NodeDetailModal';
 
 export function Workspace({
   source,
@@ -26,6 +28,7 @@ export function Workspace({
 }) {
   const [nodes, setNodes] = useState<QuestionNode[]>(initialNodes);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(initialNodes[0]?.id ?? null);
+  const [modalNodeId, setModalNodeId] = useState<string | null>(null);
   const [researchMode, setResearchMode] = useState(false);
   const [stamina, setStamina] = useState<StaminaState>(initialStamina);
   const [graphStatus, setGraphStatus] = useState<GraphStatus>('ready');
@@ -35,6 +38,8 @@ export function Workspace({
   const [retryPayload, setRetryPayload] = useState<{ question: string; parentNodeId: string | null; selectedFollowUpId: string | null } | null>(null);
 
   const selectedNode = useMemo(() => nodes.find((node) => node.id === selectedNodeId) ?? null, [nodes, selectedNodeId]);
+  const modalNode = useMemo(() => nodes.find((node) => node.id === modalNodeId) ?? null, [nodes, modalNodeId]);
+  const metricsMap = useMemo(() => computeNodeMetrics(nodes), [nodes]);
 
   async function refreshWorkspace() {
     const [detail, wallet] = await Promise.all([getInquiry(inquiryId), getStamina()]);
@@ -52,7 +57,10 @@ export function Workspace({
       const result = await createQuestionNode(inquiryId, { question, parentNodeId, selectedFollowUpId, researchMode });
       setRetryPayload(null);
       const freshNodes = await refreshWorkspace();
-      setSelectedNodeId(freshNodes.find((node) => node.id === result.data.node.id)?.id ?? result.data.node.id);
+      const createdId = result.data.node.id;
+      setSelectedNodeId(createdId);
+      // Automatically focus on the newly created node
+      setModalNodeId(createdId);
       setGraphStatus('ready');
     } catch (error) {
       setGraphStatus('error');
@@ -60,17 +68,19 @@ export function Workspace({
     }
   }
 
-  function handleSelectFollowUp(followUpId: string) {
-    if (!selectedNode) return;
-    const followUp = selectedNode.followUps.find((candidate) => candidate.id === followUpId);
+  function handleSelectFollowUp(followUpId: string, customParentNodeId?: string) {
+    const activeParent = customParentNodeId ? nodes.find(n => n.id === customParentNodeId) : selectedNode;
+    if (!activeParent) return;
+    const followUp = activeParent.followUps.find((candidate) => candidate.id === followUpId);
     if (!followUp) return;
     if (followUp.childNodeId) {
       setSelectedNodeId(followUp.childNodeId);
+      setModalNodeId(followUp.childNodeId);
       setGraphStatus('ready');
       setPendingMessage(null);
       return;
     }
-    void createNode(followUp.questionText, selectedNode.id, followUp.id);
+    void createNode(followUp.questionText, activeParent.id, followUp.id);
   }
 
   async function handleSubmitTrap(nodeId: string, response: string) {
@@ -105,7 +115,12 @@ export function Workspace({
             <KnowledgeGraphCanvas
               nodes={nodes}
               selectedNodeId={selectedNodeId}
-              onSelectNode={(nodeId) => { setSelectedNodeId(nodeId); setGraphStatus('ready'); setPendingMessage(null); }}
+              onSelectNode={(nodeId) => {
+                setSelectedNodeId(nodeId);
+                setModalNodeId(nodeId);
+                setGraphStatus('ready');
+                setPendingMessage(null);
+              }}
               status={graphStatus}
               errorMessage={pendingMessage ?? undefined}
               onRetry={() => {
@@ -117,7 +132,7 @@ export function Workspace({
           </div>
         </Panel>
 
-        <div className="max-h-[42%] shrink-0 space-y-4 overflow-y-auto border-t border-white/10 px-5 py-4">
+        <div className="max-h-[38%] shrink-0 space-y-4 overflow-y-auto border-t border-white/10 px-5 py-4">
           {pendingMessage && <div className="flex items-center justify-between gap-3 rounded-sm border border-amber-400/25 bg-amber-400/5 px-3 py-2 text-xs text-amber-200">
             <p>{pendingMessage}</p>
             {retryPayload && <button type="button" onClick={() => void createNode(retryPayload.question, retryPayload.parentNodeId, retryPayload.selectedFollowUpId)} className="shrink-0 underline underline-offset-2">Retry</button>}
@@ -154,6 +169,23 @@ export function Workspace({
           </div>
         </div>
       </div>
+
+      {/* Pop-up Detail Modal Card on Node Tap */}
+      {modalNode && (
+        <NodeDetailModal
+          node={modalNode}
+          metrics={metricsMap.get(modalNode.id)}
+          onClose={() => setModalNodeId(null)}
+          onSelectFollowUp={(followUpId) => {
+            handleSelectFollowUp(followUpId, modalNode.id);
+          }}
+          trapSubmissionState={trapSubmissions[modalNode.id] ?? 'idle'}
+          trapFeedback={trapFeedback[modalNode.id]}
+          onSubmitTrap={(response) => void handleSubmitTrap(modalNode.id, response)}
+          onAskCustomQuestion={(question) => void createNode(question, modalNode.id, null)}
+          isAskingCustom={graphStatus === 'loading'}
+        />
+      )}
     </div>
   );
 }
