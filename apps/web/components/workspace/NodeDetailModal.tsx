@@ -10,7 +10,6 @@ import {
   CheckCircle2,
   BookOpen,
   ArrowRight,
-  MessageSquarePlus,
   Send,
 } from 'lucide-react';
 import type { QuestionNode, TrapSubmissionState } from '../../lib/workspace-types';

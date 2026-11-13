@@ -56,7 +56,7 @@ export function Workspace({
     try {
       const result = await createQuestionNode(inquiryId, { question, parentNodeId, selectedFollowUpId, researchMode });
       setRetryPayload(null);
-      const freshNodes = await refreshWorkspace();
+      await refreshWorkspace();
       const createdId = result.data.node.id;
       setSelectedNodeId(createdId);
       // Automatically focus on the newly created node
