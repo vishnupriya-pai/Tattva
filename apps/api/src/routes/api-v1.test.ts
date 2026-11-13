@@ -13,12 +13,17 @@ const { createInquiryForUser, listInquiries, getInquiryDetail, deleteInquiryForU
   deleteInquiryForUser: vi.fn(),
 }));
 
+const { processVoiceQueryForUser } = vi.hoisted(() => ({
+  processVoiceQueryForUser: vi.fn(),
+}));
+
 vi.mock('../integrations/supabase/client', () => ({
   isSupabaseConfigured,
   createAnonVerificationClient,
   createRequestScopedClient: vi.fn(),
 }));
 vi.mock('../services/inquiryService', () => ({ createInquiryForUser, listInquiries, getInquiryDetail, deleteInquiryForUser }));
+vi.mock('../services/voiceService', () => ({ processVoiceQueryForUser }));
 
 import { createApp } from '../app';
 
@@ -151,5 +156,52 @@ describe('DELETE /api/v1/inquiries/:inquiryId', () => {
   it('rejects a missing token with 401', async () => {
     const res = await request(app).delete('/api/v1/inquiries/c0c0c0c0-0000-4000-8000-000000000003');
     expect(res.status).toBe(401);
+  });
+});
+
+describe('POST /api/v1/voice/ask', () => {
+  const app = createApp();
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    isSupabaseConfigured.mockReturnValue(true);
+    authorizedGetUser();
+  });
+
+  it('rejects unauthenticated requests with 401', async () => {
+    const res = await request(app)
+      .post('/api/v1/voice/ask')
+      .send({ audioBase64: 'fake-audio' });
+    expect(res.status).toBe(401);
+  });
+
+  it('processes voice query and returns transcript, answer, and synthesized audio', async () => {
+    processVoiceQueryForUser.mockResolvedValue({
+      transcript: 'What is attention mechanism?',
+      responseText: 'Attention allows neural models to focus on relevant tokens.',
+      audioBase64: 'audio-bytes-base64',
+      languageCode: 'en-IN',
+    });
+
+    const res = await request(app)
+      .post('/api/v1/voice/ask')
+      .set('Authorization', 'Bearer good-token')
+      .send({
+        audioBase64: 'fake-base64-audio',
+        mimeType: 'audio/webm',
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.transcript).toBe('What is attention mechanism?');
+    expect(res.body.data.audioBase64).toBe('audio-bytes-base64');
+    expect(res.body.data.languageCode).toBe('en-IN');
+    expect(processVoiceQueryForUser).toHaveBeenCalledWith(
+      'good-token',
+      VERIFIED_USER.id,
+      'fake-base64-audio',
+      'audio/webm',
+      undefined,
+      undefined,
+    );
   });
 });

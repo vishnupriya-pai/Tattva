@@ -14,9 +14,12 @@ import {
   createQuestionNodeResponseSchema,
   trapAttemptResponseSchema,
   staminaResponseSchema,
+  voiceQueryResponseSchema,
   type CreateQuestionNodeResponse,
   type TrapAttemptResponse,
   type StaminaResponse,
+  type VoiceQueryRequest,
+  type VoiceQueryResponse,
 } from '@tattva/contracts';
 import { getAccessToken } from './auth';
 
@@ -148,4 +151,11 @@ export function submitTrapAttempt(nodeId: string, response: string): Promise<Tra
 
 export function getStamina(): Promise<StaminaResponse> {
   return authedRequest('/api/v1/stamina/me', staminaResponseSchema);
+}
+
+export function sendVoiceQuery(payload: VoiceQueryRequest): Promise<VoiceQueryResponse> {
+  return authedRequest('/api/v1/voice/ask', voiceQueryResponseSchema, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
 }

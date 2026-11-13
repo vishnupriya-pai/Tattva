@@ -15,7 +15,7 @@ export function createApp(): Express {
       origin: env.CORS_ORIGIN,
     }),
   );
-  app.use(express.json());
+  app.use(express.json({ limit: '15mb' }));
 
   app.use(rootRouter);
 

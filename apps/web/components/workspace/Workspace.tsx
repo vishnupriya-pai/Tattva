@@ -201,6 +201,7 @@ export function Workspace({
             <InquiryComposer
               disabled={(Boolean(selectedNode?.isTrap && !selectedNode?.trapResolvedAt)) || graphStatus === 'loading'}
               loading={graphStatus === 'loading'}
+              inquiryId={inquiryId}
               placeholder={
                 selectedNode
                   ? (researchMode
