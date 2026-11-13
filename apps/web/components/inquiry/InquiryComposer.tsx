@@ -1,9 +1,12 @@
 'use client';
 
-import { useId, useState } from 'react';
+import { useId, useState, useEffect, useRef } from 'react';
 import {
+  Plus,
+  Brain,
   Mic,
   MicOff,
+  ArrowUp,
   AlertCircle,
   Loader2,
 } from 'lucide-react';
@@ -27,7 +30,8 @@ export function InquiryComposer({
   onSubmit: (question: string) => void;
 }) {
   const [value, setValue] = useState('');
-  const [touched, setTouched] = useState(false);
+  const [thinkMode, setThinkMode] = useState(false);
+  const [recordingTarget, setRecordingTarget] = useState<'dictation' | 'voiceAssistant'>('dictation');
   const [isProcessingVoice, setIsProcessingVoice] = useState(false);
   const [voiceError, setVoiceError] = useState<string | null>(null);
   const [activeExchange, setActiveExchange] = useState<VoiceExchange | null>(null);
@@ -45,18 +49,17 @@ export function InquiryComposer({
   const trimmed = value.trim();
   const isEmpty = trimmed.length === 0;
   const tooLong = value.length > MAX_LENGTH;
-  const showError = touched && (isEmpty || tooLong);
 
   function submit() {
-    setTouched(true);
     if (isEmpty || tooLong || disabled || loading) return;
-    onSubmit(trimmed);
+    const finalQuery = thinkMode ? `[Socratic Think Mode] ${trimmed}` : trimmed;
+    onSubmit(finalQuery);
     setValue('');
-    setTouched(false);
   }
 
-  const handleStartVoice = async () => {
+  const handleStartVoice = async (target: 'dictation' | 'voiceAssistant') => {
     setVoiceError(null);
+    setRecordingTarget(target);
     try {
       await startRecording();
     } catch (err) {
@@ -75,10 +78,13 @@ export function InquiryComposer({
         inquiryId,
       });
 
-      setActiveExchange(res.data);
-      // Also prefill the text field with the spoken transcript so learner can see it
       if (res.data.transcript) {
         setValue(res.data.transcript);
+      }
+
+      // If triggered from the golden voice assistant button, also open the full interactive audio modal
+      if (recordingTarget === 'voiceAssistant') {
+        setActiveExchange(res.data);
       }
     } catch (err) {
       setVoiceError(err instanceof Error ? err.message : 'Voice processing failed. Please retry.');
@@ -87,6 +93,18 @@ export function InquiryComposer({
     }
   };
 
+  const isStoppingRef = useRef(false);
+
+  // Auto-cap recording at 60s, smoothly transitioning to synthesis
+  useEffect(() => {
+    if (isRecording && recordingDuration >= 60 && !isStoppingRef.current) {
+      isStoppingRef.current = true;
+      void handleStopVoice().finally(() => {
+        isStoppingRef.current = false;
+      });
+    }
+  }, [isRecording, recordingDuration]);
+
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60);
     const s = secs % 60;
@@ -94,43 +112,40 @@ export function InquiryComposer({
   };
 
   return (
-    <div className="space-y-2">
+    <div className="w-full space-y-2">
       {voiceError && (
-        <div className="flex items-center gap-2 rounded-lg border border-rose-500/30 bg-rose-950/60 px-3 py-1.5 text-xs text-rose-200">
+        <div className="flex items-center gap-2 rounded-full border border-rose-500/30 bg-rose-950/80 px-4 py-1.5 text-xs text-rose-200 shadow-md">
           <AlertCircle className="w-3.5 h-3.5 shrink-0 text-rose-400" />
-          <span>{voiceError}</span>
+          <span className="truncate">{voiceError}</span>
         </div>
       )}
 
       {isRecording ? (
-        /* Active Recording Banner matching the reference image's golden circular wave button */
-        <div className="flex items-center justify-between rounded-2xl border border-amber-400/40 bg-[#16140e] p-3 shadow-lg shadow-black/40 animate-in fade-in">
-          <div className="flex items-center gap-3">
-            <span className="relative flex h-3 w-3">
+        /* Active Recording Pill Bar */
+        <div className="relative flex items-center justify-between w-full min-h-[52px] rounded-full bg-[#181512] border border-amber-400/50 px-3.5 py-1.5 shadow-xl shadow-black/50 animate-in fade-in duration-200">
+          <div className="flex items-center gap-3 pl-1 min-w-0">
+            <span className="relative flex h-3 w-3 shrink-0">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
             </span>
 
-            <div className="space-y-0.5">
-              <div className="flex items-center gap-2">
-                <span className="font-mono text-xs font-semibold text-amber-200">
-                  Listening in any Indian language or English…
-                </span>
-                <span className="font-mono text-[11px] text-amber-400/80 bg-amber-400/10 px-1.5 py-0.5 rounded">
-                  {formatTime(recordingDuration)}
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-400">
-                Speak now. Tap the golden button to stop & synthesize.
-              </p>
+            <div className="flex items-center gap-2 truncate">
+              <span className="font-mono text-xs font-semibold text-amber-200 truncate">
+                {recordingTarget === 'dictation'
+                  ? 'Transcribing speech (up to 60s)…'
+                  : 'Listening for Voice Assistant (up to 60s)…'}
+              </span>
+              <span className="font-mono text-[11px] text-amber-400/90 bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/20 shrink-0">
+                {formatTime(recordingDuration)} / 1:00
+              </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
               onClick={cancelRecording}
-              className="rounded-lg p-2 text-slate-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
+              className="p-2 rounded-full text-zinc-400 hover:text-white hover:bg-white/10 transition cursor-pointer"
               title="Cancel recording"
             >
               <MicOff className="w-4 h-4" />
@@ -140,13 +155,13 @@ export function InquiryComposer({
             <button
               type="button"
               onClick={handleStopVoice}
-              className="relative flex items-center justify-center h-10 w-10 rounded-full bg-[#c59a67] hover:bg-[#d4a373] text-black shadow-lg shadow-black/50 transition cursor-pointer"
-              title="Stop and process voice"
+              className="relative flex items-center justify-center w-9 h-9 rounded-full bg-[#c59a67] hover:bg-[#d4a373] text-black shadow-lg shadow-black/50 transition cursor-pointer hover:scale-105 active:scale-95"
+              title="Stop and process speech"
             >
               <div className="flex items-center gap-0.5">
                 <span
                   className="w-0.5 bg-black rounded-full transition-all duration-75"
-                  style={{ height: `${Math.max(6, Math.min(22, 6 + (audioLevel * 16) / 100))}px` }}
+                  style={{ height: `${Math.max(6, Math.min(20, 6 + (audioLevel * 14) / 100))}px` }}
                 />
                 <span
                   className="w-0.5 bg-black rounded-full transition-all duration-75"
@@ -154,15 +169,11 @@ export function InquiryComposer({
                 />
                 <span
                   className="w-0.5 bg-black rounded-full transition-all duration-75"
-                  style={{ height: `${Math.max(8, Math.min(24, 8 + (audioLevel * 18) / 100))}px` }}
+                  style={{ height: `${Math.max(8, Math.min(22, 8 + (audioLevel * 16) / 100))}px` }}
                 />
                 <span
                   className="w-0.5 bg-black rounded-full transition-all duration-75"
                   style={{ height: `${Math.max(12, Math.min(28, 12 + (audioLevel * 22) / 100))}px` }}
-                />
-                <span
-                  className="w-0.5 bg-black rounded-full transition-all duration-75"
-                  style={{ height: `${Math.max(6, Math.min(20, 6 + (audioLevel * 14) / 100))}px` }}
                 />
               </div>
             </button>
@@ -170,103 +181,103 @@ export function InquiryComposer({
         </div>
       ) : isProcessingVoice ? (
         /* Processing voice with Sarvam AI */
-        <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-[#13161b] p-3 text-slate-300">
-          <div className="flex items-center gap-2.5">
-            <Loader2 className="w-4 h-4 animate-spin text-[#c59a67]" />
-            <div className="space-y-0.5">
-              <span className="font-mono text-xs text-white">Synthesizing Voice Inquiry…</span>
-              <p className="text-[11px] text-slate-400">
-                Running Sarvam saaras:v4 (STT) &rarr; 105b &rarr; bulbul:v4-flash (TTS)
-              </p>
-            </div>
+        <div className="flex items-center justify-between w-full min-h-[52px] rounded-full border border-white/10 bg-[#18181b] px-4 py-2 text-slate-300 shadow-xl">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <Loader2 className="w-4 h-4 animate-spin text-[#c59a67] shrink-0" />
+            <span className="text-xs text-white truncate">
+              {recordingTarget === 'dictation'
+                ? 'Transcribing speech with Sarvam saaras:v4…'
+                : 'Synthesizing voice (saaras:v4 → 105b → bulbul:v4-flash)…'}
+            </span>
           </div>
-          <span className="font-mono text-[10px] text-[#c59a67] bg-[#c59a67]/10 px-2 py-0.5 rounded border border-[#c59a67]/30">
-            Multilingual Voice
+          <span className="font-mono text-[10px] text-[#c59a67] bg-[#c59a67]/10 px-2.5 py-0.5 rounded-full border border-[#c59a67]/30 shrink-0">
+            Sarvam AI
           </span>
         </div>
       ) : (
-        /* Standard Composer with Voice Assistant Trigger (Reference Design) */
+        /* ChatGPT-style Sleek Pill Bar (Matches Reference Design) */
         <form
-          className="flex flex-col gap-1.5"
-          onSubmit={(event) => {
-            event.preventDefault();
+          className="relative flex items-center w-full min-h-[52px] rounded-full bg-[#18181b] border border-white/10 hover:border-white/20 focus-within:border-white/30 px-3 py-1.5 shadow-xl shadow-black/40 transition-all"
+          onSubmit={(e) => {
+            e.preventDefault();
             submit();
           }}
         >
-          <label htmlFor={fieldId} className="sr-only">
-            Ask a question
-          </label>
-          <div className="flex items-end gap-2">
-            <div className="relative flex-1">
-              <textarea
-                id={fieldId}
-                value={value}
-                onChange={(event) => setValue(event.target.value)}
-                onBlur={() => setTouched(true)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' && !event.shiftKey) {
-                    event.preventDefault();
-                    submit();
-                  }
-                }}
-                disabled={disabled || loading}
-                rows={2}
-                placeholder={placeholder ?? 'Ask a technical question in any language (or tap mic)…'}
-                aria-invalid={showError}
-                className={[
-                  'w-full min-h-[2.75rem] resize-none rounded-xl border bg-white/5 pl-3 pr-10 py-2.5 text-sm text-white/90',
-                  'placeholder:text-white/30 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50',
-                  showError ? 'border-red-400/50 focus:border-red-400/60' : 'border-white/15 focus:border-[#c59a67]/60',
-                ].join(' ')}
-              />
+          {/* Left Action / Plus Button */}
+          <button
+            type="button"
+            className="flex items-center justify-center w-8 h-8 rounded-full text-zinc-400 hover:text-white hover:bg-white/10 transition cursor-pointer shrink-0"
+            title="Attach concept or context"
+          >
+            <Plus className="w-4 h-4" />
+          </button>
 
-              {/* Mic shortcut icon inside input */}
-              <button
-                type="button"
-                onClick={handleStartVoice}
-                disabled={disabled || loading}
-                title="Speak question (Multilingual Sarvam Voice)"
-                className="absolute right-2.5 bottom-3 text-slate-400 hover:text-[#c59a67] transition cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                <Mic className="w-4 h-4" />
-              </button>
-            </div>
+          {/* Text Input */}
+          <input
+            id={fieldId}
+            type="text"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            disabled={disabled || loading}
+            placeholder={placeholder ?? 'Ask ChatGPT or speak in any language…'}
+            className="flex-1 bg-transparent px-3 py-1 text-sm text-white placeholder:text-zinc-500 outline-none min-w-0"
+          />
 
-            {/* Golden Voice Waveform Action Button (Reference from Screenshot) */}
+          {/* Right Action Cluster */}
+          <div className="flex items-center gap-1.5 shrink-0 pl-1">
+            {/* Think Toggle Pill */}
             <button
               type="button"
-              onClick={handleStartVoice}
-              disabled={disabled || loading}
-              title="Start Sarvam Voice Assistant (Speaks Hindi, English, Tamil, Telugu, etc.)"
-              className="flex items-center justify-center h-10 w-10 shrink-0 rounded-full bg-[#c59a67] hover:bg-[#d4a373] text-black shadow-md shadow-black/40 transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed group"
+              onClick={() => setThinkMode(!thinkMode)}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border transition cursor-pointer select-none ${
+                thinkMode
+                  ? 'bg-amber-400/15 border-amber-400/40 text-amber-200 shadow-sm shadow-amber-500/20'
+                  : 'bg-white/5 border-white/10 text-zinc-400 hover:text-white hover:bg-white/10'
+              }`}
+              title={thinkMode ? 'Socratic Reasoning Mode (Active)' : 'Enable Socratic Deep Think Mode'}
             >
-              <div className="flex items-center gap-0.5 group-hover:scale-110 transition-transform">
-                <span className="w-0.5 h-3 bg-black rounded-full" />
-                <span className="w-0.5 h-4.5 bg-black rounded-full" />
-                <span className="w-0.5 h-2.5 bg-black rounded-full" />
-                <span className="w-0.5 h-4 bg-black rounded-full" />
+              <Brain className="w-3.5 h-3.5" />
+              <span>Think</span>
+            </button>
+
+            {/* Dictation / Microphone Button */}
+            <button
+              type="button"
+              onClick={() => handleStartVoice('dictation')}
+              disabled={disabled || loading}
+              className="flex items-center justify-center w-8 h-8 rounded-full text-zinc-400 hover:text-white hover:bg-white/10 transition cursor-pointer disabled:opacity-40"
+              title="Dictate in any Indian language or English (Sarvam STT)"
+            >
+              <Mic className="w-4 h-4" />
+            </button>
+
+            {/* If text is typed, show the Send arrow button */}
+            {trimmed.length > 0 && (
+              <button
+                type="submit"
+                disabled={disabled || loading}
+                className="flex items-center justify-center w-9 h-9 rounded-full bg-white hover:bg-zinc-200 text-black shadow-md transition cursor-pointer shrink-0 hover:scale-105 active:scale-95 disabled:opacity-40"
+                title="Send query"
+              >
+                <ArrowUp className="w-4 h-4 stroke-[2.5]" />
+              </button>
+            )}
+
+            {/* Golden Circular Waveform Voice Assistant Button */}
+            <button
+              type="button"
+              onClick={() => handleStartVoice('voiceAssistant')}
+              disabled={disabled || loading}
+              className="relative flex items-center justify-center w-9 h-9 rounded-full bg-[#c59a67] hover:bg-[#d4a373] text-black shadow-md shadow-black/40 transition cursor-pointer shrink-0 group hover:scale-105 active:scale-95 disabled:opacity-40"
+              title="Start Sarvam Voice Assistant (Multilingual Speech-to-Speech)"
+            >
+              <div className="flex items-center gap-[2.5px] group-hover:scale-110 transition-transform">
+                <span className="w-[2px] h-2.5 bg-black rounded-full" />
+                <span className="w-[2px] h-4 bg-black rounded-full" />
+                <span className="w-[2px] h-2 bg-black rounded-full" />
+                <span className="w-[2px] h-3.5 bg-black rounded-full" />
               </div>
             </button>
-
-            {/* Standard Text Submit Button */}
-            <button
-              type="submit"
-              disabled={disabled || loading}
-              className="h-10 shrink-0 rounded-xl border border-white/20 bg-white/10 px-4 text-xs font-semibold uppercase tracking-wide text-white/90 hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-40 transition"
-            >
-              {loading ? 'Thinking…' : 'Ask'}
-            </button>
-          </div>
-
-          <div className="flex items-center justify-between text-[11px] px-1">
-            <span className={showError ? 'text-red-300' : 'text-white/35 font-mono text-[10px]'}>
-              {showError && isEmpty && 'Enter or speak a question before submitting.'}
-              {showError && tooLong && `Question exceeds ${MAX_LENGTH} characters.`}
-              {!showError && 'Type or tap the golden voice button to speak in your language.'}
-            </span>
-            <span className={tooLong ? 'text-red-300' : 'text-white/30 font-mono text-[10px]'}>
-              {value.length}/{MAX_LENGTH}
-            </span>
           </div>
         </form>
       )}

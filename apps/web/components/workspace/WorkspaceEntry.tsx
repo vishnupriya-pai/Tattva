@@ -16,8 +16,14 @@ import type { LearningSource, QuestionNode, StaminaState } from '../../lib/works
 import type { Inquiry } from '@tattva/contracts';
 import { TopNavBar, type TopNavView } from '../navigation/TopNavBar';
 import { HomeDashboardView } from '../dashboard/HomeDashboardView';
-import { CreateInquiryView } from '../inquiry/CreateInquiryView';
+import { CreateInquiryView, ATTENTION_LEARNING_SOURCE_ID } from '../inquiry/CreateInquiryView';
 import { Workspace } from './Workspace';
+import { CommunityView } from '../community/CommunityView';
+import { SourceWorkspaceView } from '../workspaces/SourceWorkspaceView';
+import { EngineeringVideosView } from '../masterclass/EngineeringVideosView';
+import { VideoPlayerModal } from '../masterclass/VideoPlayerModal';
+import { INITIAL_STUDY_SOURCES } from '../../data/sourceWorkspaces';
+import type { StudySource, EngineeringVideo, CommunityArticle } from '../../types/thinkforge';
 
 type ViewMode = TopNavView;
 
@@ -43,6 +49,188 @@ export function WorkspaceEntry() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSubmittingNew, setIsSubmittingNew] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Curated Workspaces & Masterclass state
+  const [studySources, setStudySources] = useState<StudySource[]>(() => INITIAL_STUDY_SOURCES);
+  const [activeStudioSourceId, setActiveStudioSourceId] = useState<string | null>(null);
+  const [activeVideo, setActiveVideo] = useState<EngineeringVideo | null>(null);
+  const [createPrefill, setCreatePrefill] = useState<{ question?: string; sourceId?: string }>({});
+
+  const handleOpenSourceInStudio = (sourceId: string) => {
+    setActiveStudioSourceId(sourceId);
+    setActiveView('workspaces');
+  };
+
+  const handleConvertVideoToInquiry = (video: EngineeringVideo) => {
+    setActiveVideo(null);
+    setCreatePrefill({
+      question: video.suggestedInquiryQuestion,
+      sourceId: ATTENTION_LEARNING_SOURCE_ID,
+    });
+    setActiveView('create');
+  };
+
+  const handleForkArticleToStudio = (article: CommunityArticle) => {
+    const forkedId = `source-fork-${article.id}`;
+    const existing = studySources.find((s) => s.id === forkedId);
+    if (!existing) {
+      const forkedSource: StudySource = {
+        id: forkedId,
+        title: `[Forked] ${article.title}`,
+        category: article.category,
+        sourceType: 'paper',
+        sourceTypeLabel: 'Community Monograph · Forked',
+        thumbnail:
+          article.category === 'Cybersecurity'
+            ? '/thumbnails/thumb_cyber_01.jpg'
+            : article.category === 'AIML'
+            ? '/thumbnails/thumb_aiml_02.jpg'
+            : article.category === 'AIDS'
+            ? '/thumbnails/thumb_aids_01.jpg'
+            : '/thumbnails/thumb_cs_03.jpg',
+        duration: article.readTime,
+        views: `${article.sparks * 25} views`,
+        channelName: `${article.authorName} (${article.authorRole})`,
+        masteryScore: 65,
+        masteryLevel: 'Intermediate',
+        lastStudied: 'Just now',
+        summary: `${article.subtitle}\n\nKey Highlights:\n${article.highlights.map((h) => '• ' + h).join('\n')}`,
+        transcript: article.content,
+        quizzes: [
+          {
+            id: `quiz-fork-${article.id}-1`,
+            question: `According to "${article.title}", what is the primary architectural takeaway?`,
+            options: [
+              article.highlights[0] || 'Core theoretical invariant',
+              'Unbounded quadratic memory footprint',
+              'Complete removal of network encryption',
+              'Legacy sequential processing'
+            ],
+            correctOptionIndex: 0,
+            userSelectedIndex: null,
+            isAnsweredCorrectly: false,
+            explanation: article.highlights[0] || 'Verified from article content.',
+            relatedConceptNodeId: `node-fork-${article.id}-1`
+          },
+          {
+            id: `quiz-fork-${article.id}-2`,
+            question: `What failure mode or vulnerability does this monograph address?`,
+            options: [
+              'Hardware clock drift',
+              article.highlights[1] || 'Invariant degradation or security exposure',
+              'Operating system reboot loops',
+              'GPU power exhaustion'
+            ],
+            correctOptionIndex: 1,
+            userSelectedIndex: null,
+            isAnsweredCorrectly: false,
+            explanation: article.highlights[1] || 'Verified from article discoveries.',
+            relatedConceptNodeId: `node-fork-${article.id}-2`
+          },
+          {
+            id: `quiz-fork-${article.id}-3`,
+            question: `Which methodology is proposed to verify or resolve this challenge?`,
+            options: [
+              'Randomized trials with 0 iterations',
+              article.highlights[2] || 'Rigorous mathematical or protocol specification',
+              'Ignoring edge cases in production',
+              'Reverting to unencrypted sockets'
+            ],
+            correctOptionIndex: 1,
+            userSelectedIndex: null,
+            isAnsweredCorrectly: false,
+            explanation: article.highlights[2] || 'Verified from article methodology.',
+            relatedConceptNodeId: `node-fork-${article.id}-3`
+          },
+          {
+            id: `quiz-fork-${article.id}-4`,
+            question: `What is the significance of the tags [${article.tags.slice(0, 3).join(', ')}] in this research?`,
+            options: [
+              'They define the domain and key mechanics analyzed in the monograph',
+              'They are arbitrary cosmetic tags',
+              'They restrict reader access',
+              'They trigger automatic thread preemption'
+            ],
+            correctOptionIndex: 0,
+            userSelectedIndex: null,
+            isAnsweredCorrectly: false,
+            explanation: 'The tags represent the foundational components and protocols explored in the paper.',
+            relatedConceptNodeId: `node-fork-${article.id}-1`
+          }
+        ],
+        notes: article.highlights.map((h, i) => ({
+          id: `note-fork-${article.id}-${i}`,
+          title: `Highlight #${i + 1}`,
+          category: 'Core Mechanics',
+          content: h,
+          updatedAt: 'Just now'
+        })),
+        researchPaper: {
+          title: article.title,
+          authors: article.authorName,
+          conference: 'Tattva Community Research Monograph',
+          year: 2026,
+          arxivUrl: 'https://tattva.community/articles/' + article.id,
+          abstract: article.subtitle,
+          keyContributions: article.highlights,
+          methodologicalBreakdown: article.content.slice(0, 400) + '...'
+        },
+        knowledgeGraph: {
+          rootNodeId: `node-fork-${article.id}-1`,
+          nodes: [
+            {
+              id: `node-fork-${article.id}-1`,
+              label: article.tags[0] || 'Core Hypothesis',
+              category: article.category,
+              depth: 1,
+              status: 'mastered',
+              importance: 'critical',
+              summary: article.highlights[0] || article.subtitle,
+              shortLine: article.highlights[0]?.slice(0, 60) || 'Core Invariant',
+              tier: 'macro',
+              x: 280,
+              y: 40
+            },
+            {
+              id: `node-fork-${article.id}-2`,
+              label: article.tags[1] || 'Mechanics & Invariants',
+              category: 'Mechanics',
+              depth: 2,
+              status: 'in_progress',
+              importance: 'foundational',
+              summary: article.highlights[1] || 'Detailed invariant analysis',
+              shortLine: article.highlights[1]?.slice(0, 60) || 'Invariant proof',
+              tier: 'standard',
+              x: 120,
+              y: 180
+            },
+            {
+              id: `node-fork-${article.id}-3`,
+              label: article.tags[2] || 'Failure Modes',
+              category: 'Analysis',
+              depth: 2,
+              status: 'in_progress',
+              importance: 'critical',
+              summary: article.highlights[2] || 'Pathological edge cases',
+              shortLine: article.highlights[2]?.slice(0, 60) || 'Vulnerability check',
+              tier: 'standard',
+              x: 440,
+              y: 180
+            }
+          ],
+          edges: [
+            { id: `e-fork-1`, source: `node-fork-${article.id}-1`, target: `node-fork-${article.id}-2`, label: 'Analyzes' },
+            { id: `e-fork-2`, source: `node-fork-${article.id}-1`, target: `node-fork-${article.id}-3`, label: 'Mitigates' }
+          ]
+        }
+      };
+
+      setStudySources((prev) => [forkedSource, ...prev]);
+    }
+
+    setActiveStudioSourceId(forkedId);
+    setActiveView('workspaces');
+  };
 
   // Load inquiries, current identity, and active inquiry
   const loadInquiryWorkspace = async (inquiryId: string) => {
@@ -258,16 +446,50 @@ export function WorkspaceEntry() {
             <HomeDashboardView
               inquiries={inquiries}
               onSelectInquiry={handleSelectInquiry}
-              onStartNewInquiry={() => setActiveView('create')}
+              onStartNewInquiry={() => {
+                setCreatePrefill({});
+                setActiveView('create');
+              }}
               onDeleteInquiry={handleDeleteInquiry}
             />
           </div>
         ) : activeView === 'create' ? (
           <div className="h-full overflow-y-auto">
             <CreateInquiryView
+              initialQuestion={createPrefill.question}
+              initialSourceId={createPrefill.sourceId}
               onCreateInquiry={handleCreateInquiry}
               onCancel={() => setActiveView('workspace')}
               isSubmitting={isSubmittingNew}
+            />
+          </div>
+        ) : activeView === 'workspaces' ? (
+          <div className="h-full overflow-y-auto">
+            <SourceWorkspaceView
+              sources={studySources}
+              activeSourceId={activeStudioSourceId}
+              inquiryId={activeInquiryId ?? undefined}
+              onNavigateToHome={() => setActiveView('home')}
+              onUpdateSource={(updated) => {
+                setStudySources((prev) =>
+                  prev.map((s) => (s.id === updated.id ? updated : s)),
+                );
+              }}
+            />
+          </div>
+        ) : activeView === 'masterclass' ? (
+          <div className="h-full overflow-y-auto">
+            <EngineeringVideosView
+              onSelectVideo={(video) => setActiveVideo(video)}
+              onConvertVideoToInquiry={handleConvertVideoToInquiry}
+              onOpenSourceInStudio={handleOpenSourceInStudio}
+            />
+          </div>
+        ) : activeView === 'community' ? (
+          <div className="h-full overflow-y-auto">
+            <CommunityView
+              onForkArticleToStudio={handleForkArticleToStudio}
+              onOpenSourceInStudio={handleOpenSourceInStudio}
             />
           </div>
         ) : workspaceData && activeInquiryId ? (
@@ -286,6 +508,13 @@ export function WorkspaceEntry() {
           </div>
         )}
       </main>
+
+      {/* Video Player Modal for Masterclass */}
+      <VideoPlayerModal
+        video={activeVideo}
+        onClose={() => setActiveVideo(null)}
+        onConvertVideoToInquiry={handleConvertVideoToInquiry}
+      />
     </div>
   );
 }

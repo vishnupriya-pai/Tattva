@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 
-export type TopNavView = 'home' | 'workspace' | 'create';
+export type TopNavView = 'home' | 'workspace' | 'workspaces' | 'masterclass' | 'community' | 'create';
 
 export interface TopNavBarProps {
   activeView?: TopNavView;
@@ -108,7 +108,7 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
         </div>
 
         {/* Center: Navigation Tabs */}
-        <nav className="flex items-center gap-6 text-xs font-medium">
+        <nav className="flex items-center gap-5 sm:gap-6 text-xs font-medium">
           <button
             type="button"
             onClick={() => onChangeView('home')}
@@ -130,7 +130,43 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            Knowledge Workspace
+            Knowledge Graph
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onChangeView('workspaces')}
+            className={`py-1 transition relative cursor-pointer ${
+              activeView === 'workspaces'
+                ? 'text-white font-semibold after:absolute after:bottom-[-20px] after:left-0 after:right-0 after:h-[2px] after:bg-[#c59a67]'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            Workspaces
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onChangeView('masterclass')}
+            className={`py-1 transition relative cursor-pointer ${
+              activeView === 'masterclass'
+                ? 'text-white font-semibold after:absolute after:bottom-[-20px] after:left-0 after:right-0 after:h-[2px] after:bg-[#c59a67]'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            Masterclass
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onChangeView('community')}
+            className={`py-1 transition relative cursor-pointer ${
+              activeView === 'community'
+                ? 'text-white font-semibold after:absolute after:bottom-[-20px] after:left-0 after:right-0 after:h-[2px] after:bg-[#c59a67]'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            Community
           </button>
         </nav>
 

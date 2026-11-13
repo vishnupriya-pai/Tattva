@@ -107,19 +107,87 @@ function selectSpeaker(languageCode?: string): string {
 }
 
 /**
- * Transcribe learner speech with Sarvam STT (saaras:v4) and detect language.
+ * Splits a standard PCM WAV buffer into chunks of at most `maxChunkSeconds` (default 25s)
+ * so that long audio (up to 60s or beyond) is accepted by Sarvam's 30-second synchronous limit.
  */
-export async function transcribeAudio(
-  audioBase64: string,
-  mimeType: string = 'audio/webm',
-): Promise<{ transcript: string; languageCode: string }> {
-  if (!env.SARVAM_API_KEY) {
-    throw new ApiError(503, 'sarvam_not_configured', 'Set SARVAM_API_KEY in apps/api/.env.local');
+export function splitWavBuffer(wavBuffer: Buffer, maxChunkSeconds: number = 25): Buffer[] {
+  if (
+    wavBuffer.length < 44 ||
+    wavBuffer.toString('ascii', 0, 4) !== 'RIFF' ||
+    wavBuffer.toString('ascii', 8, 12) !== 'WAVE'
+  ) {
+    return [wavBuffer];
   }
 
-  const audioBuffer = Buffer.from(audioBase64, 'base64');
+  let offset = 12;
+  let numChannels = 1;
+  let sampleRate = 16000;
+  let byteRate = 32000;
+  let blockAlign = 2;
+  let bitsPerSample = 16;
+  let dataOffset = -1;
+  let dataLength = 0;
+
+  while (offset + 8 <= wavBuffer.length) {
+    const chunkId = wavBuffer.toString('ascii', offset, offset + 4);
+    const chunkSize = wavBuffer.readUInt32LE(offset + 4);
+    if (chunkId === 'fmt ') {
+      numChannels = wavBuffer.readUInt16LE(offset + 10);
+      sampleRate = wavBuffer.readUInt32LE(offset + 12);
+      byteRate = wavBuffer.readUInt32LE(offset + 16);
+      blockAlign = wavBuffer.readUInt16LE(offset + 20);
+      bitsPerSample = wavBuffer.readUInt16LE(offset + 22);
+    } else if (chunkId === 'data') {
+      dataOffset = offset + 8;
+      dataLength = Math.min(chunkSize, wavBuffer.length - dataOffset);
+      break;
+    }
+    offset += 8 + chunkSize;
+  }
+
+  if (dataOffset === -1 || byteRate === 0) return [wavBuffer];
+  const durationSeconds = dataLength / byteRate;
+  if (durationSeconds <= 28) return [wavBuffer];
+
+  const chunkBytes = Math.floor((byteRate * maxChunkSeconds) / blockAlign) * blockAlign;
+  const chunks: Buffer[] = [];
+  let currentPos = dataOffset;
+  const endPos = dataOffset + dataLength;
+
+  function buildHeader(len: number): Buffer {
+    const header = Buffer.alloc(44);
+    header.write('RIFF', 0);
+    header.writeUInt32LE(36 + len, 4);
+    header.write('WAVE', 8);
+    header.write('fmt ', 12);
+    header.writeUInt32LE(16, 16);
+    header.writeUInt16LE(1, 20);
+    header.writeUInt16LE(numChannels, 22);
+    header.writeUInt32LE(sampleRate, 24);
+    header.writeUInt32LE(byteRate, 28);
+    header.writeUInt16LE(blockAlign, 32);
+    header.writeUInt16LE(bitsPerSample, 34);
+    header.write('data', 36);
+    header.writeUInt32LE(len, 40);
+    return header;
+  }
+
+  while (currentPos < endPos) {
+    const nextPos = Math.min(currentPos + chunkBytes, endPos);
+    const sliceData = wavBuffer.subarray(currentPos, nextPos);
+    chunks.push(Buffer.concat([buildHeader(sliceData.length), sliceData]));
+    currentPos = nextPos;
+  }
+
+  return chunks;
+}
+
+async function transcribeSingleChunk(
+  chunkBuffer: Buffer,
+  mimeType: string,
+): Promise<{ transcript: string; languageCode: string }> {
   const filename = mimeType.includes('wav') ? 'audio.wav' : mimeType.includes('mp3') ? 'audio.mp3' : 'audio.wav';
-  const blob = new Blob([audioBuffer], { type: mimeType });
+  const blob = new Blob([new Uint8Array(chunkBuffer)], { type: mimeType });
   const formData = new FormData();
   formData.append('file', blob, filename);
   formData.append('model', 'saaras:v4');
@@ -129,9 +197,9 @@ export async function transcribeAudio(
   try {
     response = await fetch('https://api.sarvam.ai/speech-to-text', {
       method: 'POST',
-      headers: { 'api-subscription-key': env.SARVAM_API_KEY },
+      headers: { 'api-subscription-key': env.SARVAM_API_KEY! },
       body: formData,
-      signal: AbortSignal.timeout(30_000),
+      signal: AbortSignal.timeout(45_000),
     });
   } catch {
     throw new ApiError(502, 'sarvam_unavailable', 'Sarvam STT could not be reached. Please retry.');
@@ -148,9 +216,52 @@ export async function transcribeAudio(
   }
 
   const data = (await response.json().catch(() => null)) as { transcript?: string; language_code?: string } | null;
-  const transcript = data?.transcript?.trim() ?? '';
+  return {
+    transcript: data?.transcript?.trim() ?? '',
+    languageCode: data?.language_code ?? 'en-IN',
+  };
+}
 
-  if (!transcript) {
+/**
+ * Transcribe learner speech with Sarvam STT (saaras:v4) and detect language.
+ * Automatically slices audio longer than 28s (up to 60s and beyond) to bypass
+ * Sarvam's 30-second single-request cap with parallel chunk processing.
+ */
+export async function transcribeAudio(
+  audioBase64: string,
+  mimeType: string = 'audio/webm',
+): Promise<{ transcript: string; languageCode: string }> {
+  if (!env.SARVAM_API_KEY) {
+    throw new ApiError(503, 'sarvam_not_configured', 'Set SARVAM_API_KEY in apps/api/.env.local');
+  }
+
+  const audioBuffer = Buffer.from(audioBase64, 'base64');
+  const chunks = splitWavBuffer(audioBuffer, 25);
+
+  if (chunks.length === 1) {
+    const single = await transcribeSingleChunk(chunks[0]!, mimeType);
+    if (!single.transcript) {
+      throw new ApiError(
+        400,
+        'no_speech_detected',
+        'No clear speech was detected. Please hold the button, speak into your microphone, and tap again to stop.',
+      );
+    }
+    return single;
+  }
+
+  // Multi-chunk (audio > 28s up to 60s): transcribe chunks concurrently
+  const results = await Promise.all(
+    chunks.map((chunk) => transcribeSingleChunk(chunk, 'audio/wav')),
+  );
+
+  const fullTranscript = results
+    .map((r) => r.transcript)
+    .filter(Boolean)
+    .join(' ')
+    .trim();
+
+  if (!fullTranscript) {
     throw new ApiError(
       400,
       'no_speech_detected',
@@ -158,9 +269,14 @@ export async function transcribeAudio(
     );
   }
 
+  const dominantLanguage =
+    results.find((r) => r.languageCode && r.languageCode !== 'en-IN')?.languageCode ??
+    results[0]?.languageCode ??
+    'en-IN';
+
   return {
-    transcript,
-    languageCode: data?.language_code ?? 'en-IN',
+    transcript: fullTranscript,
+    languageCode: dominantLanguage,
   };
 }
 
