@@ -108,12 +108,12 @@ export function Workspace({
   }
 
   return (
-    <div data-research-mode={researchMode} className={`grid h-screen grid-cols-1 grid-rows-2 text-white transition-colors lg:grid-cols-2 lg:grid-rows-1 ${researchMode ? 'bg-[#11100b]' : 'bg-[#0b0b0d]'}`}>
+    <div data-research-mode={researchMode} className={`grid h-full w-full min-h-0 grid-cols-1 grid-rows-2 text-white transition-colors lg:grid-cols-2 lg:grid-rows-1 ${researchMode ? 'bg-[#11100b]' : 'bg-[#0b0b0d]'}`}>
       <div className="min-h-0 border-b border-white/10 lg:border-b-0">
         <SourceViewer source={source} body={sourceBody} activeNode={selectedNode} />
       </div>
 
-      <div className="flex h-full min-h-0 flex-col">
+      <div className="flex h-full min-h-0 flex-col overflow-hidden">
         <Panel
           title="Knowledge graph"
           actions={
@@ -178,42 +178,57 @@ export function Workspace({
           </div>
         </Panel>
 
-        <div className="max-h-[38%] shrink-0 space-y-4 overflow-y-auto border-t border-white/10 px-5 py-4">
-          {pendingMessage && <div className="flex items-center justify-between gap-3 rounded-sm border border-amber-400/25 bg-amber-400/5 px-3 py-2 text-xs text-amber-200">
-            <p>{pendingMessage}</p>
-            {retryPayload && <button type="button" onClick={() => void createNode(retryPayload.question, retryPayload.parentNodeId, retryPayload.selectedFollowUpId)} className="shrink-0 underline underline-offset-2">Retry</button>}
-          </div>}
-          {selectedNode && <NodeDetailPanel
-            node={selectedNode}
-            onSelectFollowUp={handleSelectFollowUp}
-            trapSubmissionState={trapSubmissions[selectedNode.id] ?? 'idle'}
-            trapFeedback={trapFeedback[selectedNode.id]}
-            onSubmitTrap={(response) => void handleSubmitTrap(selectedNode.id, response)}
-          />}
-          <div className={selectedNode ? 'border-t border-white/10 pt-3' : ''}>
-            {selectedNode && (
-              <p className="mb-2 text-[11px] uppercase tracking-wide text-white/40">
-                {selectedNode.isTrap && !selectedNode.trapResolvedAt
-                  ? 'Custom questions (blocked by trap)'
-                  : 'Or ask your own question from this node'}
-              </p>
+        {/* Selected Node Details & Follow-ups (Scrollable Area) */}
+        {selectedNode && (
+          <div className="max-h-[28vh] shrink-0 space-y-3 overflow-y-auto border-t border-white/10 bg-[#0e1014]/60 px-5 py-3">
+            {pendingMessage && (
+              <div className="flex items-center justify-between gap-3 rounded-sm border border-amber-400/25 bg-amber-400/5 px-3 py-2 text-xs text-amber-200">
+                <p>{pendingMessage}</p>
+                {retryPayload && (
+                  <button
+                    type="button"
+                    onClick={() => void createNode(retryPayload.question, retryPayload.parentNodeId, retryPayload.selectedFollowUpId)}
+                    className="shrink-0 underline underline-offset-2"
+                  >
+                    Retry
+                  </button>
+                )}
+              </div>
             )}
-            <InquiryComposer
-              disabled={(Boolean(selectedNode?.isTrap && !selectedNode?.trapResolvedAt)) || graphStatus === 'loading'}
-              loading={graphStatus === 'loading'}
-              inquiryId={inquiryId}
-              placeholder={
-                selectedNode
-                  ? (researchMode
-                      ? 'Ask your own question to branch from this node (Research mode: citations & Socratic analysis)...'
-                      : 'Ask your own follow-up question to branch from this node...')
-                  : (researchMode
-                      ? 'Research mode is on — expect citations and Socratic questions, not direct answers.'
-                      : 'Ask a technical question about the source material...')
-              }
-              onSubmit={(question) => void createNode(question, selectedNode?.id ?? null, null)}
+            <NodeDetailPanel
+              node={selectedNode}
+              onSelectFollowUp={handleSelectFollowUp}
+              trapSubmissionState={trapSubmissions[selectedNode.id] ?? 'idle'}
+              trapFeedback={trapFeedback[selectedNode.id]}
+              onSubmitTrap={(response) => void handleSubmitTrap(selectedNode.id, response)}
             />
           </div>
+        )}
+
+        {/* Dedicated Elevated Composer & Voice Assistant Bar (Always Visible at Bottom) */}
+        <div className="shrink-0 border-t border-white/10 bg-[#101216] px-5 py-3.5 shadow-2xl z-20">
+          {selectedNode && (
+            <p className="mb-1.5 text-[10px] uppercase tracking-wider font-mono text-slate-400">
+              {selectedNode.isTrap && !selectedNode.trapResolvedAt
+                ? 'Custom questions (blocked by trap)'
+                : 'Ask your own question or use voice assistant'}
+            </p>
+          )}
+          <InquiryComposer
+            disabled={(Boolean(selectedNode?.isTrap && !selectedNode?.trapResolvedAt)) || graphStatus === 'loading'}
+            loading={graphStatus === 'loading'}
+            inquiryId={inquiryId}
+            placeholder={
+              selectedNode
+                ? (researchMode
+                    ? 'Branch from this node (or speak in any language)…'
+                    : 'Ask your own question or tap the mic/golden button to speak…')
+                : (researchMode
+                    ? 'Research mode is on — expect citations and Socratic questions…'
+                    : 'Ask a technical question or speak in any language…')
+            }
+            onSubmit={(question) => void createNode(question, selectedNode?.id ?? null, null)}
+          />
         </div>
       </div>
 
