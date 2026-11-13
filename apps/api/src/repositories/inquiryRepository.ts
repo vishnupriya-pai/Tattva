@@ -32,10 +32,11 @@ export async function createInquiry(
   client: SupabaseClient,
   userId: string,
   learningSourceId: string,
+  title?: string | null,
 ): Promise<Inquiry> {
   const { data, error } = await client
     .from('inquiries')
-    .insert({ user_id: userId, learning_source_id: learningSourceId })
+    .insert({ user_id: userId, learning_source_id: learningSourceId, title: title ?? null })
     .select('id, user_id, learning_source_id, title, created_at, updated_at')
     .single();
 

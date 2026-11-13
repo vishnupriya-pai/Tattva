@@ -2,7 +2,7 @@
 
 import { useId, useState } from 'react';
 
-const MAX_LENGTH = 2000;
+const MAX_LENGTH = 6000;
 
 export function InquiryComposer({
   disabled,

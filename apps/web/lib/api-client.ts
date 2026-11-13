@@ -109,10 +109,10 @@ export function getMe(): Promise<MeResponse> {
   return authedRequest('/api/v1/me', meResponseSchema);
 }
 
-export function createInquiry(learningSourceId: string): Promise<CreateInquiryResponse> {
+export function createInquiry(learningSourceId: string, title?: string): Promise<CreateInquiryResponse> {
   return authedRequest('/api/v1/inquiries', createInquiryResponseSchema, {
     method: 'POST',
-    body: JSON.stringify({ learningSourceId }),
+    body: JSON.stringify({ learningSourceId, ...(title ? { title } : {}) }),
   });
 }
 

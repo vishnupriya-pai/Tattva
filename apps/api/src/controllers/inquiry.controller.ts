@@ -23,7 +23,9 @@ export async function postInquiry(req: Request, res: Response<CreateInquiryRespo
   if (!req.auth) throw new ApiError(401, 'missing_token', 'Authentication required');
 
   const body = createInquiryRequestSchema.parse(req.body);
-  const inquiry = await createInquiryForUser(req.auth.accessToken, req.auth.userId, body.learningSourceId);
+  const inquiry = body.title !== undefined
+    ? await createInquiryForUser(req.auth.accessToken, req.auth.userId, body.learningSourceId, body.title)
+    : await createInquiryForUser(req.auth.accessToken, req.auth.userId, body.learningSourceId);
 
   res.status(201).json({ data: inquiry });
 }

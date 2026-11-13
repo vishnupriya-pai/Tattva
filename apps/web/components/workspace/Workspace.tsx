@@ -106,7 +106,7 @@ export function Workspace({
   return (
     <div data-research-mode={researchMode} className={`grid h-screen grid-cols-1 grid-rows-2 text-white transition-colors lg:grid-cols-2 lg:grid-rows-1 ${researchMode ? 'bg-[#11100b]' : 'bg-[#0b0b0d]'}`}>
       <div className="min-h-0 border-b border-white/10 lg:border-b-0">
-        <SourceViewer source={source} body={sourceBody} />
+        <SourceViewer source={source} body={sourceBody} activeNode={selectedNode} />
       </div>
 
       <div className="flex h-full min-h-0 flex-col">

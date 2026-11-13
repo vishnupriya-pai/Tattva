@@ -107,7 +107,7 @@ export const HomeDashboardView: React.FC<HomeDashboardViewProps> = ({
                     </div>
 
                     <h3 className="text-base font-semibold text-white group-hover:text-[#c59a67] transition truncate">
-                      {inquiry.title || 'Memory Arena Allocators: Design and Trade-offs'}
+                      {inquiry.title || 'Technical Inquiry Workspace'}
                     </h3>
 
                     <p className="text-xs text-slate-400 font-mono truncate">

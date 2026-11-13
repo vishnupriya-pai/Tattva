@@ -18,6 +18,7 @@ export async function createInquiryForUser(
   accessToken: string,
   userId: string,
   learningSourceId: string,
+  title?: string,
 ): Promise<Inquiry> {
   const client = createRequestScopedClient(accessToken);
 
@@ -26,7 +27,9 @@ export async function createInquiryForUser(
     throw new ApiError(404, 'learning_source_not_found', 'The referenced learning source does not exist');
   }
 
-  return createInquiryRow(client, userId, learningSourceId);
+  return title !== undefined
+    ? createInquiryRow(client, userId, learningSourceId, title)
+    : createInquiryRow(client, userId, learningSourceId);
 }
 
 export async function createQuestionNodeForUser(

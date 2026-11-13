@@ -53,17 +53,55 @@ export function WorkspaceEntry() {
         getStamina(),
       ]);
 
+      const nodes = detail.data.nodes.map((n) => ({ ...n, status: 'ready' as const }));
+      const rootNode = nodes.find((n) => !n.parentNodeId) ?? nodes[0];
+
+      // Dynamic source title, description, and material corresponding to the active inquiry
+      let sourceTitle = detail.data.learningSource.title;
+      let sourceDescription = detail.data.learningSource.description;
+      let sourceBody = detail.data.learningSource.content;
+      let sourceType = detail.data.learningSource.sourceType;
+      let sourceReference = detail.data.learningSource.sourceReference;
+
+      if (rootNode) {
+        const qLower = rootNode.userQuestion.toLowerCase();
+        const isDefaultMemoryArena =
+          qLower.includes('bump pointer') ||
+          (qLower.includes('arena') && qLower.includes('malloc') && !qLower.includes('attention') && !qLower.includes('transformer'));
+
+        if (!isDefaultMemoryArena) {
+          if (
+            qLower.includes('attention') ||
+            qLower.includes('transformer') ||
+            qLower.includes('recurrent neural network') ||
+            qLower.includes('transduction')
+          ) {
+            sourceTitle = 'Attention Is All You Need: Transformers & Multi-Head Attention';
+            sourceDescription =
+              'The foundational 2017 paper by Vaswani et al. analyzing sequence modeling, recurrence elimination, and self-attention mechanisms.';
+            sourceBody = rootNode.userQuestion;
+            sourceType = 'document';
+            sourceReference = 'arXiv:1706.03762';
+          } else if (rootNode.userQuestion.length > 50) {
+            const firstLine = (rootNode.userQuestion.split('\n')[0] ?? '').trim().slice(0, 90);
+            sourceTitle = firstLine.endsWith('?') ? firstLine : `${firstLine}…`;
+            sourceDescription = 'Source material and foundational context analyzed in this Knowledge Graph.';
+            sourceBody = rootNode.userQuestion;
+          }
+        }
+      }
+
       setWorkspaceData({
         source: {
           id: detail.data.learningSource.id,
-          title: detail.data.learningSource.title,
-          description: detail.data.learningSource.description,
-          sourceType: detail.data.learningSource.sourceType,
-          sourceReference: detail.data.learningSource.sourceReference,
+          title: sourceTitle,
+          description: sourceDescription,
+          sourceType,
+          sourceReference,
           durationMinutes: detail.data.learningSource.durationMinutes,
         },
-        content: detail.data.learningSource.content,
-        nodes: detail.data.nodes.map((n) => ({ ...n, status: 'ready' as const })),
+        content: sourceBody,
+        nodes,
       });
       setStamina(wallet.data);
       setActiveInquiryId(inquiryId);
@@ -133,17 +171,19 @@ export function WorkspaceEntry() {
   const handleCreateInquiry = async ({
     question,
     learningSourceId,
+    title,
     researchMode,
   }: {
     question: string;
     learningSourceId: string;
+    title?: string;
     researchMode: boolean;
   }) => {
     setIsSubmittingNew(true);
     setErrorMessage(null);
     try {
       // 1. Create inquiry row
-      const inqRes = await createInquiry(learningSourceId);
+      const inqRes = await createInquiry(learningSourceId, title);
       const newInquiryId = inqRes.data.id;
 
       // 2. Create root question node via Sarvam

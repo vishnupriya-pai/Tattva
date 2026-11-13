@@ -9,6 +9,7 @@ import { questionNodeSchema } from './question-node';
  */
 export const createInquiryRequestSchema = z.object({
   learningSourceId: z.string().uuid(),
+  title: z.string().trim().max(200).optional(),
 });
 
 export type CreateInquiryRequest = z.infer<typeof createInquiryRequestSchema>;

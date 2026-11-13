@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const createQuestionNodeRequestSchema = z.object({
-  question: z.string().trim().min(1).max(2000),
+  question: z.string().trim().min(1).max(6000),
   parentNodeId: z.string().uuid().nullable().optional(),
   selectedFollowUpId: z.string().uuid().nullable().optional(),
   researchMode: z.boolean().default(false),

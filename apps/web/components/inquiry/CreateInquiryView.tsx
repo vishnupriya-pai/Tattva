@@ -9,12 +9,15 @@ import {
 } from 'lucide-react';
 import { DEMO_LEARNING_SOURCE_ID } from '../../lib/workspace-bootstrap';
 
+export const ATTENTION_LEARNING_SOURCE_ID = '22222222-2222-4222-8222-222222222222';
+
 export interface CreateInquiryViewProps {
   initialQuestion?: string;
   initialSourceId?: string;
   onCreateInquiry: (payload: {
     question: string;
     learningSourceId: string;
+    title: string;
     researchMode: boolean;
   }) => void;
   onCancel: () => void;
@@ -22,6 +25,15 @@ export interface CreateInquiryViewProps {
 }
 
 const CURATED_SOURCES = [
+  {
+    id: ATTENTION_LEARNING_SOURCE_ID,
+    title: 'Attention Is All You Need: Transformers & Multi-Head Attention',
+    duration: '45 min',
+    sourceType: 'document',
+    topic: 'Deep Learning & Neural Architectures',
+    description: 'The foundational 2017 paper by Vaswani et al. introducing the Transformer architecture, self-attention mechanisms, and parallelized sequence transduction.',
+    sampleQuestion: 'How does multi-head self-attention allow the model to jointly attend to information from different representation subspaces, and why does this outperform recurrence?',
+  },
   {
     id: DEMO_LEARNING_SOURCE_ID,
     title: 'Memory Arena Allocators: Design and Trade-offs',
@@ -35,7 +47,7 @@ const CURATED_SOURCES = [
 
 export const CreateInquiryView: React.FC<CreateInquiryViewProps> = ({
   initialQuestion = '',
-  initialSourceId = DEMO_LEARNING_SOURCE_ID,
+  initialSourceId = ATTENTION_LEARNING_SOURCE_ID,
   onCreateInquiry,
   onCancel,
   isSubmitting = false,
@@ -53,6 +65,7 @@ export const CreateInquiryView: React.FC<CreateInquiryViewProps> = ({
     onCreateInquiry({
       question: question.trim(),
       learningSourceId: selectedSourceId,
+      title: selectedSource?.title ?? 'Technical Inquiry',
       researchMode,
     });
   };
@@ -139,26 +152,32 @@ export const CreateInquiryView: React.FC<CreateInquiryViewProps> = ({
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <label className="block font-mono text-xs font-bold text-slate-300 uppercase tracking-wider">
-              2. Formulate Your Root Question
+              2. Formulate Your Root Question / Technical Excerpt
             </label>
-            {selectedSource?.sampleQuestion && (
-              <button
-                type="button"
-                onClick={() => setQuestion(selectedSource.sampleQuestion)}
-                className="text-[11px] font-mono text-[#c59a67] hover:underline cursor-pointer"
-              >
-                Use sample prompt
-              </button>
-            )}
+            <div className="flex items-center gap-3">
+              <span className={`font-mono text-[11px] ${question.length > 5500 ? 'text-amber-400 font-bold' : 'text-slate-500'}`}>
+                {question.length.toLocaleString()} / 6,000
+              </span>
+              {selectedSource?.sampleQuestion && (
+                <button
+                  type="button"
+                  onClick={() => setQuestion(selectedSource.sampleQuestion)}
+                  className="text-[11px] font-mono text-[#c59a67] hover:underline cursor-pointer"
+                >
+                  Use sample prompt
+                </button>
+              )}
+            </div>
           </div>
 
           <textarea
-            rows={4}
+            rows={5}
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             disabled={isSubmitting}
-            placeholder="What foundational mechanism or trade-off in the material do you want to break down?"
-            className="w-full rounded-xl border border-white/15 bg-[#13161b] px-4 py-3 text-sm text-white placeholder-slate-500 focus:border-[#c59a67] focus:outline-none focus:ring-1 focus:ring-[#c59a67] disabled:opacity-50"
+            maxLength={6000}
+            placeholder="Paste your technical passage or formulate the foundational mechanism / trade-off you want to explore..."
+            className="w-full rounded-xl border border-white/15 bg-[#13161b] px-4 py-3 text-sm text-white placeholder-slate-500 focus:border-[#c59a67] focus:outline-none focus:ring-1 focus:ring-[#c59a67] disabled:opacity-50 font-sans leading-relaxed"
           />
         </div>
 
