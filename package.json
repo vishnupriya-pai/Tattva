@@ -6,15 +6,18 @@
   "engines": {
     "node": ">=20.0.0"
   },
-  "packageManager": "pnpm@12.18.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "pnpm run --recursive --parallel --filter=\"./apps/*\" dev",
-    "dev:web": "pnpm --filter @tattva/web dev",
-    "dev:api": "pnpm --filter @tattva/api dev",
-    "build": "pnpm run --recursive --filter=\"./apps/*\" build",
-    "lint": "pnpm run --recursive lint",
-    "typecheck": "pnpm run --recursive typecheck",
-    "test": "pnpm run --recursive test",
+    "dev": "node scripts/dev.mjs",
+    "dev:web": "npm run dev --workspace=@tattva/web",
+    "dev:api": "npm run dev --workspace=@tattva/api",
+    "build": "npm run build --workspace=@tattva/api && npm run build --workspace=@tattva/web",
+    "lint": "npm run --workspaces --if-present lint",
+    "typecheck": "npm run --workspaces --if-present typecheck",
+    "test": "npm run --workspaces --if-present test",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },

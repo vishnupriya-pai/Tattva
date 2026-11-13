@@ -57,8 +57,8 @@ Use this baseline unless the repository already has a sound working choice or a 
 
 | Area | Default |
 |---|---|
-| Language / package manager | TypeScript / pnpm |
-| Repository | pnpm-workspace monorepo |
+| Language / package manager | TypeScript / npm |
+| Repository | npm-workspace monorepo |
 | Web | Next.js App Router, React, Tailwind CSS |
 | Knowledge Graph | `@xyflow/react` |
 | API | Node.js + Express |
@@ -132,7 +132,7 @@ Use `/api/v1` for product API routes. A basic health check may be `/health`.
 - Keep React components focused on UI; keep business logic in feature/service modules.
 - Use `camelCase` for variables/functions and `PascalCase` for components/types. Choose descriptive filenames.
 - Avoid circular dependencies, oversized files, duplicate configuration, and unrelated refactors.
-- Add dependencies only when they provide clear value; use pnpm and the committed lockfile consistently.
+- Add dependencies only when they provide clear value; use npm workspaces and the committed `package-lock.json` consistently. The retained pnpm workspace config is for contributors whose environments approve pnpm.
 - Never delete existing work, migrations, or user data without explicit authorization.
 - Use focused feature branches, e.g. `feat/workspace-ui`, `feat/sarvam-integration`, `feat/database-ledger`, `feat/demo-content`, `fix/<description>`.
 

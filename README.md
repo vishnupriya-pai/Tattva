@@ -26,8 +26,8 @@ supabase/            Supabase CLI config, migrations, seed data
 ## Quick start
 
 ```bash
-pnpm install
-pnpm dev
+npm install
+npm run dev
 ```
 
 See [`docs/development-setup.md`](docs/development-setup.md) for prerequisites, environment setup, and troubleshooting (Windows and POSIX shells both covered).

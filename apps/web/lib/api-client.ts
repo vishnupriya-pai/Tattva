@@ -9,6 +9,12 @@ import {
   type HealthResponse,
   type ListInquiriesResponse,
   type MeResponse,
+  createQuestionNodeResponseSchema,
+  trapAttemptResponseSchema,
+  staminaResponseSchema,
+  type CreateQuestionNodeResponse,
+  type TrapAttemptResponse,
+  type StaminaResponse,
 } from '@tattva/contracts';
 import { getAccessToken } from './auth';
 
@@ -83,7 +89,12 @@ async function authedRequest<T>(
   const json: unknown = await response.json().catch(() => null);
 
   if (!response.ok) {
-    throw new ApiClientError(`Request to ${path} failed with status ${response.status}`, json);
+    const errorMessage = json && typeof json === 'object' && 'error' in json &&
+      (json as { error?: { message?: unknown } }).error?.message;
+    throw new ApiClientError(
+      typeof errorMessage === 'string' ? errorMessage : `Request to ${path} failed with status ${response.status}`,
+      json,
+    );
   }
 
   const parsed = schema.safeParse(json);
@@ -111,4 +122,22 @@ export function listInquiries(): Promise<ListInquiriesResponse> {
 
 export function getInquiry(inquiryId: string): Promise<GetInquiryResponse> {
   return authedRequest(`/api/v1/inquiries/${inquiryId}`, getInquiryResponseSchema);
+}
+
+export function createQuestionNode(inquiryId: string, input: {
+  question: string; parentNodeId: string | null; selectedFollowUpId: string | null; researchMode: boolean;
+}): Promise<CreateQuestionNodeResponse> {
+  return authedRequest(`/api/v1/inquiries/${inquiryId}/nodes`, createQuestionNodeResponseSchema, {
+    method: 'POST', body: JSON.stringify(input),
+  });
+}
+
+export function submitTrapAttempt(nodeId: string, response: string): Promise<TrapAttemptResponse> {
+  return authedRequest(`/api/v1/question-nodes/${nodeId}/trap-attempts`, trapAttemptResponseSchema, {
+    method: 'POST', body: JSON.stringify({ response }),
+  });
+}
+
+export function getStamina(): Promise<StaminaResponse> {
+  return authedRequest('/api/v1/stamina/me', staminaResponseSchema);
 }

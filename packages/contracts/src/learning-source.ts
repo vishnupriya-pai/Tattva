@@ -11,6 +11,8 @@ export const sourceTypeSchema = z.enum(['video', 'document', 'transcript']);
 export const learningSourceSummarySchema = z.object({
   id: z.string().uuid(),
   title: z.string(),
+  description: z.string(),
+  content: z.string(),
   sourceType: sourceTypeSchema,
   sourceReference: z.string(),
   durationMinutes: z.number().int().min(25),

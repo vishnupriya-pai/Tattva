@@ -7,31 +7,18 @@ This covers getting the Tattva monorepo running locally. Commands are given for 
 | Tool | Required version | Check |
 |---|---|---|
 | Node.js | >= 20 | `node -v` |
-| pnpm | 12.x (pinned via `packageManager` in `package.json`) | `pnpm -v` |
+| npm | 10 or newer (included with Node.js) | `npm -v` |
 | Supabase CLI | latest | `npx supabase --version` (no global install required) |
 | Git | any recent version | `git --version` |
 
-### Installing pnpm
-
-If `pnpm -v` fails:
-
-**POSIX:**
-```bash
-corepack enable
-corepack prepare pnpm@12.18.0 --activate
-```
-
-**Windows PowerShell** (if `corepack enable` errors with a permissions issue writing into the Node install directory — this can happen on some local Node installs):
-```powershell
-npm install -g pnpm
-```
+The repository uses npm workspaces. On Windows, if Application Control blocks another package manager, use the npm commands below; do not disable the device policy.
 
 ## 1. Install dependencies
 
 From the repository root (installs all three workspace packages in one pass):
 
 ```bash
-pnpm install
+npm install
 ```
 
 ## 2. Configure environment variables
@@ -55,16 +42,16 @@ The defaults in `.env.example` are sufficient to run the full dev environment wi
 Start both apps together from the root:
 
 ```bash
-pnpm dev
+npm run dev
 ```
 
-This runs `apps/web` (`http://localhost:3000`) and `apps/api` (`http://localhost:4000`) in parallel via pnpm's recursive `--parallel` runner — no extra process manager is installed for this (`CLAUDE.md` §4: avoid unnecessary infrastructure/tooling).
+This starts `apps/web` (`http://localhost:3000`) and `apps/api` (`http://localhost:4000`) together using the Node-based runner in `scripts/dev.mjs`.
 
 To run just one app:
 
 ```bash
-pnpm dev:web
-pnpm dev:api
+npm run dev:web
+npm run dev:api
 ```
 
 Open `http://localhost:3000` — the landing page shows a live connectivity indicator that calls `apps/api`'s `/health` endpoint through the shared API client.
@@ -107,22 +94,22 @@ Never commit real Supabase credentials. `apps/api/.env` and `apps/web/.env.local
 ## 5. Quality checks
 
 ```bash
-pnpm lint        # ESLint across all three packages
-pnpm typecheck   # tsc --noEmit across all three packages
-pnpm test        # Vitest across all three packages
-pnpm build       # Production build of apps/web and apps/api
+npm run lint        # ESLint across all workspaces
+npm run typecheck   # tsc --noEmit across all workspaces
+npm run test        # Vitest across all workspaces
+npm run build       # Production build of apps/web and apps/api
 ```
 
 Run these before opening a pull request (see `.github/pull_request_template.md`).
 
 ## 6. Troubleshooting
 
-- **`pnpm: command not found`** — see "Installing pnpm" above.
-- **`corepack enable` fails with an EPERM/permission error on Windows** — your Node install directory isn't writable by the current user; use `npm install -g pnpm` instead.
+- **`npm: command not found`** — install Node.js 20 or later, then reopen PowerShell.
+- **npm warns that dependency install scripts were blocked** — run `npm install-scripts ls`, review the listed packages, and approve only required scripts (for example, `npm install-scripts approve esbuild` if esbuild is listed). Then run `npm rebuild esbuild` if its binary was not installed.
 - **Port already in use (3000 or 4000)** — another process is using it; stop it, or override `PORT` in `apps/api/.env` and `NEXT_PUBLIC_API_URL` in `apps/web/.env.local` together.
-- **API connectivity indicator shows "API unreachable"** — confirm `apps/api` is actually running (`pnpm dev:api`) and that `NEXT_PUBLIC_API_URL` in `apps/web/.env.local` matches the port `apps/api` is listening on.
+- **API connectivity indicator shows "API unreachable"** — confirm `apps/api` is actually running (`npm run dev:api`) and that `NEXT_PUBLIC_API_URL` in `apps/web/.env.local` matches the port `apps/api` is listening on.
 - **CORS error in the browser console** — `CORS_ORIGIN` in `apps/api/.env` must exactly match the frontend's origin (scheme + host + port).
-- **TypeScript errors about `@tattva/contracts` not found** — run `pnpm install` again from the repo root; pnpm workspace symlinks are created there, not inside individual app directories.
+- **TypeScript errors about `@tattva/contracts` not found** — run `npm install` again from the repository root; npm workspace links are created there.
 - **Session banner shows "Demo mode — Supabase not configured"** — `NEXT_PUBLIC_SUPABASE_URL`/`NEXT_PUBLIC_SUPABASE_ANON_KEY` are blank in `apps/web/.env.local`; copy them from `npx supabase start`'s output (see §4).
 - **`/api/v1/*` requests return `503 auth_not_configured`** — same cause on the backend: `SUPABASE_URL`/`SUPABASE_ANON_KEY` are blank in `apps/api/.env`.
 - **`401 invalid_token`** — the local Supabase stack was restarted (new JWT signing material) while an old session was cached in the browser; clear local storage for `localhost:3000` or open a private window.

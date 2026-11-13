@@ -36,6 +36,7 @@ The append-only Cognitive Stamina ledger (PRD §10). Server-authored only; immut
 | `id` | `uuid`, PK, default `gen_random_uuid()` | Source identity |
 | `title` | `text`, not null | |
 | `description` | `text`, not null | |
+| `content` | `text`, not null | Curated source body supplied to the AI adapter and source viewer; added in the Golden Path workflow migration |
 | `source_type` | `text`, not null | Proposed enum: `'video'` \| `'document'` \| `'transcript'` — Pending final list |
 | `duration_minutes` | `integer`, not null | Reading/runtime equivalent. Check: `duration_minutes >= 25` (PRD §2) |
 | `source_reference` | `text`, not null | URL or storage pointer to the curated material |
@@ -244,10 +245,10 @@ See [ARCHITECTURE.md §6 Security Architecture](ARCHITECTURE.md#6-security-archi
 
 - **`auth.users`** is managed entirely by Supabase Auth; the application never writes to it directly.
 - **`learning_sources`**: `SELECT` allowed for any authenticated (including anonymous) role — `USING (auth.role() = 'authenticated')`. No `INSERT`/`UPDATE`/`DELETE` policy for the browser; curated content is seeded via privileged backend/migration tooling only.
-- **`inquiries`**, **`question_nodes`**, **`follow_up_questions`**: `SELECT`/`INSERT` policies scoped to `USING (user_id = auth.uid())` / `WITH CHECK (user_id = auth.uid())` (directly on `inquiries`; on `question_nodes`/`follow_up_questions` via a join back to the owning `inquiries.user_id`, since those tables don't carry `user_id` directly). No `UPDATE`/`DELETE` policy for ordinary users in the MVP — nodes are immutable once created (Proposed; revisit if editing is added later).
+- **`inquiries`**: owner-scoped `SELECT`/`INSERT`. **`question_nodes`** and **`follow_up_questions`**: owner-scoped `SELECT`; authenticated/anon roles have no direct `INSERT`/`UPDATE`/`DELETE` grants after the Golden Path migration. Server-role RPCs create graph rows atomically and check the owning inquiry; trap resolution is server-only and one-way.
 - **`wallet_transactions`**: `SELECT` policy `USING (user_id = auth.uid())` so a user can read their own balance/history. **No `INSERT`/`UPDATE`/`DELETE` policy for the `authenticated` role at all** — all ledger writes happen through the backend's privileged (service-role) connection, inside a trusted service method, never via a user-scoped Supabase client. This is the one table where RLS intentionally grants zero direct write access to end users; see ARCHITECTURE.md for why this is safe only because the backend enforces authorization before using its privileged credential.
 
-**Design principle (Confirmed, from `CLAUDE.md` §4):** prefer request-scoped, user-authorized database operations for ordinary reads/writes, and narrowly restrict privileged service-role operations to the Stamina ledger and any other explicitly trusted workflow.
+**Design principle (Confirmed, from `CLAUDE.md` §4):** use request-scoped, user-authorized reads; restrict privileged service-role writes to validated graph/trap RPCs and trusted Stamina ledger operations. Graph RPCs verify ownership in SQL and browser roles cannot call them.
 
 ## 11. Append-only ledger strategy
 
@@ -255,7 +256,7 @@ See [ARCHITECTURE.md §6 Security Architecture](ARCHITECTURE.md#6-security-archi
 2. **No soft-delete, no correction rows that overwrite.** A mistaken award is corrected by inserting a new, clearly-tagged compensating transaction (e.g. `event_type = 'correction'`, negative `final_points`), never by editing the original row. This is Proposed since the hackathon scope may never need corrections, but the rule should hold from day one so the ledger's audit guarantee is never informally violated.
 3. **Idempotency enforced at the database** via `UNIQUE (idempotency_key)` — a retried request or a race between two tabs produces a unique-constraint violation that the service layer treats as "already awarded," not an error surfaced to the user.
 4. **Multiplier application is server-only.** The value of `research_mode` used to decide the 3× multiplier is read from the `question_nodes` row the backend itself just persisted in the same transaction — never trusted from client-supplied request fields at the point of awarding Stamina.
-5. **Node + follow-up transactional integrity.** Because a `question_node` is only "complete" with exactly 3 `follow_up_questions`, the service layer wraps `INSERT question_nodes` + `INSERT follow_up_questions ×3` (+ the related `wallet_transactions` row, where applicable) in a single database transaction. A partial failure (e.g. Sarvam returned 2 follow-ups after validation) rolls back the whole write — the API returns an error rather than persisting an incomplete node (see ARCHITECTURE.md §5 failure handling).
+5. **Node + follow-up transactional integrity.** The `create_question_node` RPC inserts the node, exactly three follow-ups, and selected child linkage in one transaction after the API validates Sarvam's output. A partial failure rolls back the whole write.
 
 ## 12. Data ownership boundaries
 

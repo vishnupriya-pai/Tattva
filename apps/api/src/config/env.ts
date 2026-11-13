@@ -1,11 +1,14 @@
 import { config as loadDotenv } from 'dotenv';
+import { resolve } from 'node:path';
 import { z } from 'zod';
 
 // Loads apps/api/.env into process.env. Must run before envSchema.safeParse
 // below — nothing else in this app reads .env otherwise (tsx/node don't do
 // this automatically), which previously left SUPABASE_URL/SUPABASE_ANON_KEY
 // unset even when the file had real values.
-loadDotenv();
+// `pnpm --filter @tattva/api dev` runs from apps/api. Support both the
+// conventional .env and the .env.local filename used in Next.js projects.
+loadDotenv({ path: [resolve(process.cwd(), '.env.local'), resolve(process.cwd(), '.env')] });
 
 /**
  * Server-side environment contract for apps/api.
@@ -33,7 +36,14 @@ const envSchema = z.object({
 export type Env = z.infer<typeof envSchema>;
 
 function loadEnv(): Env {
-  const parsed = envSchema.safeParse(process.env);
+  const parsed = envSchema.safeParse({
+    ...process.env,
+    SUPABASE_URL: process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL,
+    SUPABASE_ANON_KEY:
+      process.env.SUPABASE_ANON_KEY ||
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+  });
 
   if (!parsed.success) {
     console.error('Invalid environment configuration:', parsed.error.flatten().fieldErrors);

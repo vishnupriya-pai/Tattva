@@ -4,7 +4,7 @@ Status key: **Confirmed**, **Proposed**, **Pending** (see [ARCHITECTURE.md](ARCH
 
 Related: [ARCHITECTURE.md](ARCHITECTURE.md) · [DATABASE.md](DATABASE.md) · [implementation-status.md](implementation-status.md)
 
-**Stage 5 implementation note:** `GET /health`, `GET /api/v1/me`, `POST /api/v1/inquiries`, and `GET /api/v1/inquiries/:inquiryId` below are now implemented exactly as specified (see `apps/api/src/routes`). `POST /api/v1/inquiries/:inquiryId/nodes`, the trap-attempts endpoint, and `GET /api/v1/stamina/me` remain **Pending implementation** — explicitly out of Stage 5's scope. One endpoint not originally drafted here was added: **`GET /api/v1/inquiries`** (list the caller's own inquiries, §3a below), because the Stage 5 task brief required a "list inquiries belonging to the authenticated user" capability and [DATABASE.md §14](DATABASE.md#14-expected-query-patterns) already documents the matching query pattern (`WHERE user_id = $1 ORDER BY created_at DESC`).
+**Implementation note:** `GET /health`, `GET /api/v1/me`, inquiry CRUD/read, node creation, trap attempts, and `GET /api/v1/stamina/me` are implemented in `apps/api/src/routes`. Stamina read returns the caller's ledger balance/history; award writes remain disabled until base point values are decided. Graph writes and trap resolution require migration `20261113120000_golden_path_workflows.sql`.
 
 ## 0. Conventions (Proposed)
 
@@ -95,6 +95,8 @@ Related: [ARCHITECTURE.md](ARCHITECTURE.md) · [DATABASE.md](DATABASE.md) · [im
       "learningSource": {
         "id": "uuid",
         "title": "string",
+        "description": "string",
+        "content": "string",
         "sourceType": "string",
         "sourceReference": "string",
         "durationMinutes": 25
@@ -143,14 +145,14 @@ Related: [ARCHITECTURE.md](ARCHITECTURE.md) · [DATABASE.md](DATABASE.md) · [im
   {
     "data": {
       "node": { "...": "as in GET /inquiries/:id" },
-      "staminaAwarded": { "eventType": "followup_selected", "finalPoints": 0 } 
+      "staminaAwarded": null
     }
   }
   ```
   `staminaAwarded` is `null` when no ledger event applies to this call (exact point values Pending, [DATABASE.md §6](DATABASE.md#6-pending-product-decisions-do-not-guess)).
 - **Validation:** `question` non-empty and length-capped (exact cap Proposed, e.g. 2000 chars, to bound prompt size — §6.6 of ARCHITECTURE.md); `parentNodeId`/`selectedFollowUpId` UUID format when present; service-layer check that at most one root node exists per inquiry; service-layer check that the Sarvam response contains exactly 3 follow-ups before persisting ([DATABASE.md §3.4](DATABASE.md#34-follow_up_questions)).
 - **Expected errors:** `400` (validation failure, or attempting a second root node), `404` (inquiry/parent node not found or not owned), `409` (`parentNodeId`'s trap is unresolved — see §5 below, request rejected until trap is resolved), `502` (Sarvam call failed), `422` (Sarvam output failed schema validation after any configured retry).
-- **Database interactions:** ownership check on `inquiries`; transactional `INSERT` of one `question_nodes` row + exactly 3 `follow_up_questions` rows; conditional `INSERT` into `wallet_transactions` via the privileged client.
+- **Database interactions:** ownership check on `inquiries`; after Sarvam output validation, the service-role graph RPC inserts one node plus exactly 3 follow-ups transactionally and links the selected follow-up. Browser roles cannot execute that RPC. Stamina awards are currently disabled pending point values.
 - **Authorization:** `inquiries.user_id` must equal caller; if `parentNodeId` is supplied, that node must belong to the same inquiry.
 
 ## 5. `POST /api/v1/question-nodes/:nodeId/trap-attempts`
@@ -168,17 +170,17 @@ Related: [ARCHITECTURE.md](ARCHITECTURE.md) · [DATABASE.md](DATABASE.md) · [im
     "data": {
       "result": "survived",
       "trapResolvedAt": "iso8601",
-      "staminaAwarded": { "eventType": "trap_survived", "finalPoints": 0 }
+      "staminaAwarded": null
     }
   }
   ```
-- **Response `200` (not yet sufficient — Proposed, since grading mechanism is Pending per [ARCHITECTURE.md §8](ARCHITECTURE.md#8-adversarial-trap-lifecycle)):**
+- **Response `200` (not yet sufficient):**
   ```json
   { "data": { "result": "retry", "feedback": "string" } }
   ```
 - **Validation:** `response` non-empty; `nodeId` must reference a node with `isTrap = true` and `trapResolvedAt IS NULL`.
 - **Expected errors:** `400` (empty response, or node is not currently in a trap state), `404` (node not found/not owned), `502`/`422` (grading call to Sarvam fails/returns unparseable output, if the chosen grading mechanism calls Sarvam — Pending per ARCHITECTURE.md §8).
-- **Database interactions:** `SELECT` + ownership check on `question_nodes`; on survival, `UPDATE question_nodes SET trap_resolved_at = now()` (the one narrowly-scoped exception to node immutability — Proposed, since this is a status transition, not a rewrite of history) and `INSERT` into `wallet_transactions`.
+- **Database interactions:** `SELECT` + ownership check on `question_nodes`; on survival, the service-role `resolve_trap` RPC applies the one-way status transition after AI evaluation. Browser roles cannot call this RPC. Stamina awards are currently disabled pending point values.
 - **Authorization:** the node's inquiry must belong to the caller.
 
 ## 6. `GET /api/v1/stamina/me`
@@ -190,7 +192,7 @@ Related: [ARCHITECTURE.md](ARCHITECTURE.md) · [DATABASE.md](DATABASE.md) · [im
 - **Response `200`:**
   ```json
   {
-    "data": {
+  "data": {
       "balance": 0,
       "recentTransactions": [
         {

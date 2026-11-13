@@ -4,6 +4,8 @@ import type { LearningSourceSummary } from '@tattva/contracts';
 interface LearningSourceRow {
   id: string;
   title: string;
+  description: string;
+  content: string;
   source_type: 'video' | 'document' | 'transcript';
   source_reference: string;
   duration_minutes: number;
@@ -13,6 +15,8 @@ function mapRow(row: LearningSourceRow): LearningSourceSummary {
   return {
     id: row.id,
     title: row.title,
+    description: row.description,
+    content: row.content,
     sourceType: row.source_type,
     sourceReference: row.source_reference,
     durationMinutes: row.duration_minutes,
@@ -30,7 +34,7 @@ export async function findLearningSourceById(
 ): Promise<LearningSourceSummary | null> {
   const { data, error } = await client
     .from('learning_sources')
-    .select('id, title, source_type, source_reference, duration_minutes')
+    .select('id, title, description, content, source_type, source_reference, duration_minutes')
     .eq('id', id)
     .maybeSingle();
 

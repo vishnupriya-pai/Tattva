@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { FollowUpQuestion, QuestionNode, TrapMetadata } from '@tattva/contracts';
+import { ApiError } from '../types/api';
 
 interface FollowUpRow {
   id: string;
@@ -74,4 +75,47 @@ export async function listNodesForInquiry(client: SupabaseClient, inquiryId: str
   }
 
   return (data ?? []).map((row) => mapNode(row as unknown as QuestionNodeRow));
+}
+
+export async function createNodeAtomically(client: SupabaseClient, input: {
+  userId: string; inquiryId: string; parentNodeId: string | null; selectedFollowUpId: string | null;
+  question: string; explanation: string; researchMode: boolean; isTrap: boolean;
+  trapMetadata: TrapMetadata | null; followUps: string[];
+}): Promise<string> {
+  const { data, error } = await client.rpc('create_question_node', {
+    p_user_id: input.userId, p_inquiry_id: input.inquiryId, p_parent_node_id: input.parentNodeId,
+    p_selected_follow_up_id: input.selectedFollowUpId, p_user_question: input.question,
+    p_ai_explanation: input.explanation, p_research_mode: input.researchMode,
+    p_is_trap: input.isTrap, p_trap_metadata: input.trapMetadata,
+    p_follow_ups: input.followUps,
+  });
+  if (error?.code === '23505') throw new ApiError(409, 'graph_conflict', 'That root question or follow-up was already submitted. Refresh and try again.');
+  if (error?.code === '23514') throw new ApiError(409, 'graph_progress_blocked', 'Resolve the parent trap before continuing.');
+  if (error || typeof data !== 'string') throw new Error(`Failed to persist generated node: ${error?.message ?? 'missing node id'}`);
+  return data;
+}
+
+export async function resolveTrapForUser(client: SupabaseClient, userId: string, nodeId: string): Promise<string> {
+  const { data, error } = await client.rpc('resolve_trap', { p_user_id: userId, p_node_id: nodeId });
+  if (error?.code === 'P0002') throw new ApiError(409, 'trap_unavailable', 'This trap is no longer available to resolve. Refresh the workspace.');
+  if (error || typeof data !== 'string') throw new Error(`Failed to resolve trap: ${error?.message ?? 'missing timestamp'}`);
+  return data;
+}
+
+export async function readStamina(client: SupabaseClient): Promise<{
+  balance: number;
+  recentTransactions: Array<{ id: string; eventType: string; basePoints: number; multiplier: number; finalPoints: number; createdAt: string }>;
+}> {
+  const { data, error } = await client.from('wallet_transactions')
+    .select('id, event_type, base_points, multiplier, final_points, created_at')
+    .order('created_at', { ascending: false });
+  if (error) throw new Error(`Failed to load Stamina ledger: ${error.message}`);
+  const rows = data ?? [];
+  return {
+    balance: rows.reduce((total, row) => total + Number(row.final_points), 0),
+    recentTransactions: rows.slice(0, 20).map((row) => ({
+      id: row.id, eventType: row.event_type, basePoints: Number(row.base_points),
+      multiplier: Number(row.multiplier), finalPoints: Number(row.final_points), createdAt: row.created_at,
+    })),
+  };
 }

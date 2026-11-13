@@ -48,11 +48,7 @@ export interface QuestionNode {
   status: NodeRenderStatus;
 }
 
-export type StaminaEventType =
-  | 'inquiry_started'
-  | 'followup_selected'
-  | 'trap_survived'
-  | 'node_completed_research_mode';
+export type StaminaEventType = string;
 
 export interface StaminaTransaction {
   id: string;

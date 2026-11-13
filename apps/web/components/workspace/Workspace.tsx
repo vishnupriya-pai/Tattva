@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { createQuestionNode, getInquiry, getStamina, submitTrapAttempt as sendTrapAttempt } from '../../lib/api-client';
 import type { LearningSource, QuestionNode, StaminaState, TrapSubmissionState } from '../../lib/workspace-types';
 import { SourceViewer } from '../source-viewer/SourceViewer';
 import { KnowledgeGraphCanvas, type GraphStatus } from '../knowledge-graph/KnowledgeGraphCanvas';
@@ -10,126 +11,147 @@ import { InquiryComposer } from '../inquiry/InquiryComposer';
 import { Panel } from '../shared/Panel';
 import { NodeDetailPanel } from './NodeDetailPanel';
 
-const NOT_CONNECTED_MESSAGE =
-  'Sarvam integration is not wired up yet — this will call POST /api/v1/inquiries/:inquiryId/nodes.';
-
 export function Workspace({
   source,
   sourceBody,
   initialNodes,
   initialStamina,
+  inquiryId,
 }: {
   source: LearningSource;
   sourceBody: string;
   initialNodes: QuestionNode[];
   initialStamina: StaminaState;
+  inquiryId: string;
 }) {
-  const [nodes] = useState<QuestionNode[]>(initialNodes);
+  const [nodes, setNodes] = useState<QuestionNode[]>(initialNodes);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(initialNodes[0]?.id ?? null);
   const [researchMode, setResearchMode] = useState(false);
-  const [stamina] = useState<StaminaState>(initialStamina);
+  const [stamina, setStamina] = useState<StaminaState>(initialStamina);
   const [graphStatus, setGraphStatus] = useState<GraphStatus>('ready');
   const [pendingMessage, setPendingMessage] = useState<string | null>(null);
   const [trapSubmissions, setTrapSubmissions] = useState<Record<string, TrapSubmissionState>>({});
+  const [trapFeedback, setTrapFeedback] = useState<Record<string, string>>({});
+  const [retryPayload, setRetryPayload] = useState<{ question: string; parentNodeId: string | null; selectedFollowUpId: string | null } | null>(null);
 
   const selectedNode = useMemo(() => nodes.find((node) => node.id === selectedNodeId) ?? null, [nodes, selectedNodeId]);
 
-  function runNotConnectedFlow() {
-    setGraphStatus('loading');
-    setPendingMessage(null);
-    window.setTimeout(() => {
-      setGraphStatus('error');
-      setPendingMessage(NOT_CONNECTED_MESSAGE);
-    }, 700);
+  async function refreshWorkspace() {
+    const [detail, wallet] = await Promise.all([getInquiry(inquiryId), getStamina()]);
+    const freshNodes = detail.data.nodes.map((node) => ({ ...node, status: 'ready' as const }));
+    setNodes(freshNodes);
+    setStamina(wallet.data);
+    return freshNodes;
   }
 
-  function handleComposerSubmit(_question: string) {
-    runNotConnectedFlow();
+  async function createNode(question: string, parentNodeId: string | null, selectedFollowUpId: string | null) {
+    setRetryPayload({ question, parentNodeId, selectedFollowUpId });
+    setGraphStatus('loading');
+    setPendingMessage(null);
+    try {
+      const result = await createQuestionNode(inquiryId, { question, parentNodeId, selectedFollowUpId, researchMode });
+      setRetryPayload(null);
+      const freshNodes = await refreshWorkspace();
+      setSelectedNodeId(freshNodes.find((node) => node.id === result.data.node.id)?.id ?? result.data.node.id);
+      setGraphStatus('ready');
+    } catch (error) {
+      setGraphStatus('error');
+      setPendingMessage(error instanceof Error ? error.message : 'Could not create the question node. Please retry.');
+    }
   }
 
   function handleSelectFollowUp(followUpId: string) {
     if (!selectedNode) return;
     const followUp = selectedNode.followUps.find((candidate) => candidate.id === followUpId);
     if (!followUp) return;
-
     if (followUp.childNodeId) {
       setSelectedNodeId(followUp.childNodeId);
       setGraphStatus('ready');
       setPendingMessage(null);
       return;
     }
-
-    runNotConnectedFlow();
+    void createNode(followUp.questionText, selectedNode.id, followUp.id);
   }
 
-  function handleSubmitTrap(nodeId: string, _response: string) {
+  async function handleSubmitTrap(nodeId: string, response: string) {
     setTrapSubmissions((current) => ({ ...current, [nodeId]: 'submitting' }));
-    window.setTimeout(() => {
-      setTrapSubmissions((current) => ({ ...current, [nodeId]: 'submitted' }));
-    }, 600);
+    setTrapFeedback((current) => ({ ...current, [nodeId]: '' }));
+    try {
+      const result = await sendTrapAttempt(nodeId, response);
+      if (result.data.result === 'retry') {
+        const { feedback } = result.data;
+        setTrapSubmissions((current) => ({ ...current, [nodeId]: 'idle' }));
+        setTrapFeedback((current) => ({ ...current, [nodeId]: feedback }));
+      } else {
+        setTrapSubmissions((current) => ({ ...current, [nodeId]: 'submitted' }));
+        setTrapFeedback((current) => ({ ...current, [nodeId]: 'Trap survived. Further graph branching is unlocked.' }));
+        await refreshWorkspace();
+      }
+    } catch (error) {
+      setTrapSubmissions((current) => ({ ...current, [nodeId]: 'idle' }));
+      setTrapFeedback((current) => ({ ...current, [nodeId]: error instanceof Error ? error.message : 'Could not submit the trap response.' }));
+    }
   }
 
   return (
-    <div className="grid h-screen grid-cols-1 grid-rows-2 bg-[#0b0b0d] text-white lg:grid-cols-2 lg:grid-rows-1">
+    <div data-research-mode={researchMode} className={`grid h-screen grid-cols-1 grid-rows-2 text-white transition-colors lg:grid-cols-2 lg:grid-rows-1 ${researchMode ? 'bg-[#11100b]' : 'bg-[#0b0b0d]'}`}>
       <div className="min-h-0 border-b border-white/10 lg:border-b-0">
         <SourceViewer source={source} body={sourceBody} />
       </div>
 
       <div className="flex h-full min-h-0 flex-col">
-        <Panel
-          title="Knowledge graph"
-          actions={
-            <>
-              <StaminaDisplay stamina={stamina} researchMode={researchMode} />
-              <ResearchModeToggle enabled={researchMode} onChange={setResearchMode} />
-            </>
-          }
-          className="min-h-0 flex-1"
-        >
+        <Panel title="Knowledge graph" actions={<><StaminaDisplay stamina={stamina} researchMode={researchMode} /><ResearchModeToggle enabled={researchMode} onChange={setResearchMode} /></>} className="min-h-0 flex-1">
           <div className="h-full min-h-[280px]">
             <KnowledgeGraphCanvas
               nodes={nodes}
               selectedNodeId={selectedNodeId}
-              onSelectNode={(nodeId) => {
-                setSelectedNodeId(nodeId);
-                setGraphStatus('ready');
-                setPendingMessage(null);
-              }}
+              onSelectNode={(nodeId) => { setSelectedNodeId(nodeId); setGraphStatus('ready'); setPendingMessage(null); }}
               status={graphStatus}
               errorMessage={pendingMessage ?? undefined}
               onRetry={() => {
-                setGraphStatus('ready');
                 setPendingMessage(null);
+                if (retryPayload) void createNode(retryPayload.question, retryPayload.parentNodeId, retryPayload.selectedFollowUpId);
+                else setGraphStatus('ready');
               }}
             />
           </div>
         </Panel>
 
         <div className="max-h-[42%] shrink-0 space-y-4 overflow-y-auto border-t border-white/10 px-5 py-4">
-          {pendingMessage && (
-            <p className="rounded-sm border border-amber-400/25 bg-amber-400/5 px-3 py-2 text-xs text-amber-200">
-              {pendingMessage}
-            </p>
-          )}
-
-          {selectedNode && (
-            <NodeDetailPanel
-              node={selectedNode}
-              onSelectFollowUp={handleSelectFollowUp}
-              trapSubmissionState={trapSubmissions[selectedNode.id] ?? 'idle'}
-              onSubmitTrap={(response) => handleSubmitTrap(selectedNode.id, response)}
+          {pendingMessage && <div className="flex items-center justify-between gap-3 rounded-sm border border-amber-400/25 bg-amber-400/5 px-3 py-2 text-xs text-amber-200">
+            <p>{pendingMessage}</p>
+            {retryPayload && <button type="button" onClick={() => void createNode(retryPayload.question, retryPayload.parentNodeId, retryPayload.selectedFollowUpId)} className="shrink-0 underline underline-offset-2">Retry</button>}
+          </div>}
+          {selectedNode && <NodeDetailPanel
+            node={selectedNode}
+            onSelectFollowUp={handleSelectFollowUp}
+            trapSubmissionState={trapSubmissions[selectedNode.id] ?? 'idle'}
+            trapFeedback={trapFeedback[selectedNode.id]}
+            onSubmitTrap={(response) => void handleSubmitTrap(selectedNode.id, response)}
+          />}
+          <div className={selectedNode ? 'border-t border-white/10 pt-3' : ''}>
+            {selectedNode && (
+              <p className="mb-2 text-[11px] uppercase tracking-wide text-white/40">
+                {selectedNode.isTrap && !selectedNode.trapResolvedAt
+                  ? 'Custom questions (blocked by trap)'
+                  : 'Or ask your own question from this node'}
+              </p>
+            )}
+            <InquiryComposer
+              disabled={(Boolean(selectedNode?.isTrap && !selectedNode?.trapResolvedAt)) || graphStatus === 'loading'}
+              loading={graphStatus === 'loading'}
+              placeholder={
+                selectedNode
+                  ? (researchMode
+                      ? 'Ask your own question to branch from this node (Research mode: citations & Socratic analysis)...'
+                      : 'Ask your own follow-up question to branch from this node...')
+                  : (researchMode
+                      ? 'Research mode is on — expect citations and Socratic questions, not direct answers.'
+                      : 'Ask a technical question about the source material...')
+              }
+              onSubmit={(question) => void createNode(question, selectedNode?.id ?? null, null)}
             />
-          )}
-
-          <InquiryComposer
-            loading={graphStatus === 'loading'}
-            placeholder={
-              researchMode
-                ? 'Research mode is on — expect citations and Socratic questions, not direct answers.'
-                : undefined
-            }
-            onSubmit={handleComposerSubmit}
-          />
+          </div>
         </div>
       </div>
     </div>

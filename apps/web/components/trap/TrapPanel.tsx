@@ -7,11 +7,13 @@ export function TrapPanel({
   trap,
   resolved,
   submissionState,
+  feedback,
   onSubmit,
 }: {
   trap: TrapMetadata;
   resolved: boolean;
   submissionState: TrapSubmissionState;
+  feedback?: string;
   onSubmit: (response: string) => void;
 }) {
   const [response, setResponse] = useState('');
@@ -69,6 +71,7 @@ export function TrapPanel({
             {submissionState === 'submitting' ? 'Submitting…' : 'Submit response'}
           </button>
         </div>
+        {feedback && <p className="rounded-sm border border-white/10 bg-black/25 px-3 py-2 text-xs text-white/75">{feedback}</p>}
       </form>
     </div>
   );

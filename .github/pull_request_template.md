@@ -9,10 +9,10 @@
 
 ## Checks
 
-- [ ] `pnpm lint` passes
-- [ ] `pnpm typecheck` passes
-- [ ] `pnpm test` passes
-- [ ] `pnpm build` passes
+- [ ] `npm run lint` passes
+- [ ] `npm run typecheck` passes
+- [ ] `npm run test` passes
+- [ ] `npm run build` passes
 - [ ] Docs updated if setup, contracts, architecture, or behaviour changed (`CLAUDE.md` §10)
 
 ## Security

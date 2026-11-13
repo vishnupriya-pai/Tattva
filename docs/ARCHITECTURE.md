@@ -62,7 +62,7 @@ Layered, in request-flow order:
 | **Services / use cases** | Own business rules: inquiry creation, question-node generation orchestration, trap handling, Stamina awarding. Coordinate the Sarvam adapter and repositories; enforce invariants (exactly 3 follow-ups, root-node uniqueness, idempotent Stamina writes) described in [DATABASE.md](DATABASE.md). |
 | **Repositories** | Isolate Supabase Postgres access per entity (`InquiryRepository`, `QuestionNodeRepository`, `WalletTransactionRepository`, ...). Only repositories construct SQL/Supabase queries; services never embed raw queries. |
 | **Sarvam integration adapter** | The only module that knows Sarvam's request/response shape, prompt construction, and provider-specific error handling. Translates Sarvam's raw output into Tattva's internal contract shape; everything above this layer only ever sees validated, internal types (`CLAUDE.md` §4). |
-| **Supabase integration** | Two distinct Supabase clients: a **request-scoped client** using the caller's verified access token (used for ordinary, RLS-protected reads/writes), and a **privileged service-role client** used only inside the Stamina service for `wallet_transactions` writes (see §6). |
+| **Supabase integration** | A **request-scoped client** using the caller's verified token for ordinary RLS-protected reads, plus a **privileged service-role client** limited to server-validated graph/trap writes and future Stamina ledger operations (see §6). |
 
 ## 4. Shared contracts (`packages/contracts`)
 
@@ -88,13 +88,13 @@ Every request to a protected `/api/v1/*` route must carry a Supabase Auth access
 ### 6.2 Authorization
 Resource ownership is enforced at two layers, intentionally overlapping:
 1. **Database RLS** on `inquiries`, `question_nodes`, `follow_up_questions` (`USING (user_id = auth.uid())`, directly or via join — [DATABASE.md §10](DATABASE.md#10-rls-strategy)), when accessed through the request-scoped Supabase client.
-2. **Service-layer checks** in `apps/api`: a service loads a resource and confirms `resource.userId === context.userId` before acting, regardless of what RLS would already prevent. This matters because the Stamina service uses a privileged client that **bypasses RLS entirely** for `wallet_transactions` writes — for that table, authorization is enforced by application code alone (see §6.3).
+2. **Service-layer checks** in `apps/api`: a service loads a resource and confirms ownership before acting. Privileged RPCs bypass RLS and therefore repeat ownership checks in SQL; the service-role key remains server-only.
 
 ### 6.3 Service-role credentials vs. RLS — the critical boundary
 `CLAUDE.md` §4 and §5 require the backend to use least-privilege, request-scoped database access for ordinary data, and narrowly restrict privileged service-role operations to trusted workflows. In this architecture:
 
-- The **request-scoped Supabase client** (constructed per-request using the verified caller's access token) is used for all `inquiries`, `question_nodes`, `follow_up_questions`, and `learning_sources` reads/writes. RLS is the enforced guarantee here: even a bug in service-layer logic cannot leak or mutate another user's rows, because Postgres itself rejects it.
-- The **privileged service-role client** is used **only** inside the Stamina service, to `INSERT` into `wallet_transactions`. RLS on that table grants the `authenticated` role **no** write access at all ([DATABASE.md §10](DATABASE.md#10-rls-strategy)) — so when the backend uses its service-role credential to write a ledger entry, **RLS is not the guarantee protecting that write; the Stamina service's own authorization and validation logic is**. Explicitly: the backend must verify (a) the request's `userId` matches the ledger entry's `user_id`, (b) the event actually occurred (e.g. the follow-up was genuinely just persisted, the trap was genuinely just resolved) before constructing the transaction, and (c) the idempotency key prevents replays. If this service-layer logic has a bug, RLS will not catch it for this table — this is a deliberate, narrowly-scoped trade-off (Confirmed rationale per `CLAUDE.md` §4), not an oversight.
+- The **request-scoped Supabase client** (constructed per-request using the verified caller's access token) is used for ordinary reads and inquiry creation. Graph node/follow-up creation and trap resolution use narrowly-scoped privileged RPCs only after API checks and SQL ownership checks; browser roles cannot execute those writes.
+- The **privileged service-role client** is limited to `create_question_node` and `resolve_trap` RPCs after API validation, plus future `wallet_transactions` writes. Browser roles cannot execute these RPCs or directly write graph rows. Each privileged RPC checks the claimed owner in SQL as well as the API service.
 - **The service-role/secret key itself never leaves `apps/api`.** It is read from server-only environment variables, never prefixed `NEXT_PUBLIC_*`, never sent to or embedded in any frontend bundle (Confirmed, `CLAUDE.md` §5).
 
 ### 6.4 User data isolation

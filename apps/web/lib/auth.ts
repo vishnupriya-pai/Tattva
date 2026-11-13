@@ -9,7 +9,7 @@ import { getSupabaseClient, isSupabaseConfigured } from './supabase/client';
  */
 export class AuthNotConfiguredError extends Error {
   constructor() {
-    super('Supabase is not configured — set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY');
+    super('Supabase is not configured — set NEXT_PUBLIC_SUPABASE_URL and a public Supabase key');
     this.name = 'AuthNotConfiguredError';
   }
 }

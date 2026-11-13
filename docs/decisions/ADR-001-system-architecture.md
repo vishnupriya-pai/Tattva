@@ -1,6 +1,8 @@
 
 # ADR-001: System Architecture — Modular Monolith with Next.js + Express + Supabase
 
+> **Implementation amendment (2026-11-13):** The workspace now supports npm workspaces as its default package manager because Windows Application Control blocked pnpm in the primary development environment. The application stack and package boundaries are unchanged. The pnpm workspace config and lockfile remain for contributors whose environments permit pnpm.
+
 ## Status
 
 Confirmed (baseline direction set by `CLAUDE.md` §4; this ADR records the rationale and alternatives).

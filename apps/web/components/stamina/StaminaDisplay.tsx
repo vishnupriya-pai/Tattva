@@ -23,7 +23,7 @@ export function StaminaDisplay({
         <p className="text-[10px] uppercase tracking-[0.2em] text-white/40">Stamina</p>
         <p className="font-mono text-base font-semibold text-white">{stamina.balance}</p>
       </div>
-      {researchMode && <Badge tone="accent">3x</Badge>}
+      {researchMode && <Badge tone="accent">3× pending scoring</Badge>}
       {latest && (
         <span className="hidden text-[11px] text-white/40 sm:inline" title={EVENT_LABEL[latest.eventType]}>
           +{latest.finalPoints} &middot; {EVENT_LABEL[latest.eventType] ?? latest.eventType}

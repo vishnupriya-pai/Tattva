@@ -1,19 +1,25 @@
 # Implementation Status
 
+## Golden Path update (2026-11-13)
+
+The previously deferred node-generation, graph persistence, trap evaluation, and Stamina read endpoints are now implemented in code. Node generation uses the Sarvam `sarvam-105b` chat API, validates the response, and writes each node plus exactly three follow-ups atomically. The workspace now loads and updates the persisted graph. Trap answers are evaluated by Sarvam and progression unlocks only after a passing evaluation. The web and API accept Supabase publishable keys, and the API loads `.env.local` as well as `.env`.
+
+Required before a live end-to-end run: apply `supabase/migrations/20261113120000_golden_path_workflows.sql` to the chosen Supabase project and set `SARVAM_API_KEY` plus `SUPABASE_SERVICE_ROLE_KEY` in `apps/api/.env.local`. The service-role key is used only by the API after verifying ownership and AI output; it never belongs in the web env file. The migration stores the curated source body and adds atomic workflow functions. Stamina balance/history is now API-backed, but ledger awards and the 3× Research Mode multiplier remain disabled until product point values are selected. Full content ingestion is deferred.
+
 Classifies every Golden Path feature as **IMPLEMENTED**, **PARTIALLY IMPLEMENTED**, **MOCK DATA**, or **NOT IMPLEMENTED**, per the Stage 5 audit requirement. Written before Stage 5's changes (Phase 1 audit) and updated after them (this version) — see git history for the pre-Stage-5 snapshot if needed.
 
 ## Frontend workspace (`apps/web`)
 
 | Feature | Status | Notes |
 |---|---|---|
-| Source Material panel | **MOCK DATA** | Renders `fixtureSource`/`fixtureSourceBody` (`lib/fixtures/workspace-fixtures.ts`). No ingestion/body-fetch endpoint exists; out of Stage 5 scope. |
-| Knowledge Graph (nodes/edges) | **MOCK DATA** | Renders `fixtureNodes` via `@xyflow/react`. No node-creation endpoint exists yet (deferred to the Sarvam-integration milestone, per this stage's strict scope boundaries). |
-| Root question node / child nodes | **MOCK DATA** (rendering) + **IMPLEMENTED** (persistence substrate) | The `question_nodes`/`follow_up_questions` tables, RLS, and a read path (`GET /api/v1/inquiries/:inquiryId`) are real and persisted; nothing currently writes a node, so the graph above still renders fixtures. |
-| Follow-up questions | **MOCK DATA** (rendering) + **IMPLEMENTED** (schema) | Same as above — `follow_up_questions` schema/constraints exist and are read-path ready; no write path yet. |
-| Research Mode toggle | **PARTIALLY IMPLEMENTED** | UI toggle flips theme and would set `researchMode` on the (not-yet-existing) node-creation request; no backend node endpoint consumes it yet. |
-| Trap UI | **MOCK DATA** | `TrapPanel` + `handleSubmitTrap` use a local `setTimeout` to fake "submitted" — no `POST /api/v1/question-nodes/:nodeId/trap-attempts` exists (explicitly deferred, out of Stage 5 scope). |
-| Cognitive Stamina display | **MOCK DATA** | Renders `fixtureStamina`. `wallet_transactions` schema/RLS/append-only grants exist; no `GET /api/v1/stamina/me` or award-writing service exists yet (explicitly deferred). |
-| Inquiry composer | **MOCK DATA** (submission) | Submitting a question still hits the `NOT_CONNECTED_MESSAGE` fallback in `Workspace.tsx` — no node-creation endpoint to call. |
+| Source Material panel | **IMPLEMENTED** (curated source) | Loads the seeded source body from `learning_sources`; full ingestion remains deferred. |
+| Knowledge Graph (nodes/edges) | **IMPLEMENTED** | Loads persisted inquiry nodes and renders parent-child edges via `@xyflow/react`. |
+| Root question node / child nodes | **IMPLEMENTED** | Nodes and follow-ups persist atomically through the authenticated API and database RPC migration. |
+| Follow-up questions | **IMPLEMENTED** | Sarvam output is validated to exactly three; selecting a follow-up atomically creates and links one child node. |
+| Research Mode toggle | **PARTIALLY IMPLEMENTED** | UI theme and AI prompt behavior change. The 3× Stamina multiplier awaits product scoring values. |
+| Trap UI | **IMPLEMENTED** | Submissions are evaluated by the backend using Sarvam; branching stays blocked until the trap is resolved. |
+| Cognitive Stamina display | **PARTIALLY IMPLEMENTED** | Balance/history read from the caller's ledger via API; award writes are disabled pending point-value decisions. |
+| Inquiry composer | **IMPLEMENTED** | Root questions submit to the authenticated node-generation API. |
 | Authenticated identity | **IMPLEMENTED** | `lib/auth.ts` establishes/reuses a real Supabase anonymous session; `SessionStatus` surfaces it. Never a client-invented user ID. |
 | Inquiry creation/retrieval | **IMPLEMENTED** | `lib/workspace-bootstrap.ts` creates/reuses one real, persisted `inquiries` row per browser identity against the seeded demo `learning_sources` row, via the real API. |
 
@@ -27,9 +33,9 @@ Classifies every Golden Path feature as **IMPLEMENTED**, **PARTIALLY IMPLEMENTED
 | `POST /api/v1/inquiries` | **IMPLEMENTED** | Validates `learningSourceId` (format + existence), inserts via the request-scoped (RLS-protected) client with `user_id` from the verified token. |
 | `GET /api/v1/inquiries` | **IMPLEMENTED** | Added in Stage 5 beyond the original `API_CONTRACTS.md` draft — see that doc's note. Lists the caller's own inquiries. |
 | `GET /api/v1/inquiries/:inquiryId` | **IMPLEMENTED** | Ownership-checked (404, not 403, on mismatch/missing); assembles inquiry + learning source + nodes (nodes array empty until node-creation exists). |
-| `POST /api/v1/inquiries/:inquiryId/nodes` | **NOT IMPLEMENTED** | Explicitly out of Stage 5 scope (no Sarvam integration, no dynamic question generation yet). |
-| `POST /api/v1/question-nodes/:nodeId/trap-attempts` | **NOT IMPLEMENTED** | Explicitly out of scope (trap evaluation deferred). |
-| `GET /api/v1/stamina/me` | **NOT IMPLEMENTED** | Explicitly out of scope (Stamina awarding logic deferred). |
+| `POST /api/v1/inquiries/:inquiryId/nodes` | **IMPLEMENTED** | Calls Sarvam, validates output, persists exactly three follow-ups and the node atomically. |
+| `POST /api/v1/question-nodes/:nodeId/trap-attempts` | **IMPLEMENTED** | Evaluates responses server-side and persists resolution. |
+| `GET /api/v1/stamina/me` | **IMPLEMENTED** | Reads owner-only ledger balance/history; awarding remains disabled pending point values. |
 
 ## Database (`supabase/`)
 
@@ -37,9 +43,9 @@ Classifies every Golden Path feature as **IMPLEMENTED**, **PARTIALLY IMPLEMENTED
 |---|---|---|
 | `learning_sources` table + RLS + seed | **IMPLEMENTED** | One curated row seeded (Memory Arena Allocators, matching the frontend fixture's content). |
 | `inquiries` table + RLS + indexes | **IMPLEMENTED** | Owner-only select/insert; no update/delete policy (immutable once created). |
-| `question_nodes` table + RLS + root-uniqueness | **IMPLEMENTED** (schema) | Single-root-per-inquiry enforced by a partial unique index; no rows are ever written yet (no node-creation endpoint). |
-| `follow_up_questions` table + RLS + position constraints | **IMPLEMENTED** (schema) | `UNIQUE(question_node_id, position)`, `CHECK(position IN (1,2,3))`; the cross-row "exactly 3" invariant is explicitly a future service-layer responsibility (ADR-003), not enforced here. |
-| `wallet_transactions` table + append-only grants | **IMPLEMENTED** (schema) | `REVOKE UPDATE, DELETE` from all roles including `service_role`; owner-only `SELECT`; no `INSERT`/`UPDATE`/`DELETE` policy for `authenticated`. No application code writes here yet. |
+| `question_nodes` table + RLS + root-uniqueness | **IMPLEMENTED** | Single-root-per-inquiry enforced by a partial unique index; node writes use the authenticated atomic workflow RPC. |
+| `follow_up_questions` table + RLS + position constraints | **IMPLEMENTED** | Exactly three validated follow-ups are inserted in the same RPC transaction as the node. |
+| `wallet_transactions` table + append-only grants | **IMPLEMENTED** (schema) | Append-only owner-readable ledger. Award writes remain disabled until the point policy is selected. |
 
 ## What remains blocked without a live Supabase project
 

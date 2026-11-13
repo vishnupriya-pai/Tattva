@@ -6,11 +6,13 @@ export function NodeDetailPanel({
   node,
   onSelectFollowUp,
   trapSubmissionState,
+  trapFeedback,
   onSubmitTrap,
 }: {
   node: QuestionNode;
   onSelectFollowUp: (followUpId: string) => void;
   trapSubmissionState: TrapSubmissionState;
+  trapFeedback?: string;
   onSubmitTrap: (response: string) => void;
 }) {
   const trapBlocksProgress = node.isTrap && !node.trapResolvedAt;
@@ -35,6 +37,7 @@ export function NodeDetailPanel({
           trap={node.trapMetadata}
           resolved={Boolean(node.trapResolvedAt)}
           submissionState={trapSubmissionState}
+          feedback={trapFeedback}
           onSubmit={onSubmitTrap}
         />
       )}

@@ -1,17 +1,7 @@
-import { SessionStatus } from '../components/SessionStatus';
-import { Workspace } from '../components/workspace/Workspace';
-import { fixtureNodes, fixtureSource, fixtureSourceBody, fixtureStamina } from '../lib/fixtures/workspace-fixtures';
+import { WorkspaceEntry } from '../components/workspace/WorkspaceEntry';
 
 export default function HomePage() {
   return (
-    <div className="relative h-screen">
-      <SessionStatus />
-      <Workspace
-        source={fixtureSource}
-        sourceBody={fixtureSourceBody}
-        initialNodes={fixtureNodes}
-        initialStamina={fixtureStamina}
-      />
-    </div>
+    <WorkspaceEntry />
   );
 }

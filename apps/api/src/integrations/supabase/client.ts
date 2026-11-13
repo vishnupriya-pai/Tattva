@@ -9,10 +9,8 @@ import { env } from '../../config/env';
  *   using the caller's verified access token. Used for all ordinary,
  *   RLS-protected reads/writes (`inquiries`, `question_nodes`,
  *   `follow_up_questions`, `learning_sources`).
- * - `getAdminClient`: the privileged service-role client. Stage 5 does not
- *   yet use it from application code (no Stamina-ledger writes exist), but
- *   it is wired here so the Stamina service has a single, audited place to
- *   obtain it later rather than constructing its own client inline.
+ * - `getAdminClient`: the privileged service-role client. Used only by
+ *   validated graph creation/trap resolution and future ledger writes.
  *
  * Neither client is constructed at module load time off missing
  * credentials — callers must check `isSupabaseConfigured()` first and
@@ -21,6 +19,10 @@ import { env } from '../../config/env';
  */
 export function isSupabaseConfigured(): boolean {
   return Boolean(env.SUPABASE_URL && env.SUPABASE_ANON_KEY);
+}
+
+export function isSupabaseAdminConfigured(): boolean {
+  return Boolean(env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY);
 }
 
 export function createRequestScopedClient(accessToken: string): SupabaseClient {
@@ -60,7 +62,7 @@ let adminClient: SupabaseClient | null = null;
 /**
  * The privileged service-role client (docs/ARCHITECTURE.md §6.3). Bypasses
  * RLS entirely — must only ever be used inside a trusted service method
- * that enforces authorization itself. Not called anywhere yet in Stage 5.
+ * that enforces authorization itself. Never use for ordinary reads.
  */
 export function getAdminClient(): SupabaseClient {
   if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) {
