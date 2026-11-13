@@ -1,10 +1,12 @@
 import {
   createInquiryResponseSchema,
+  deleteInquiryResponseSchema,
   getInquiryResponseSchema,
   healthResponseSchema,
   listInquiriesResponseSchema,
   meResponseSchema,
   type CreateInquiryResponse,
+  type DeleteInquiryResponse,
   type GetInquiryResponse,
   type HealthResponse,
   type ListInquiriesResponse,
@@ -122,6 +124,12 @@ export function listInquiries(): Promise<ListInquiriesResponse> {
 
 export function getInquiry(inquiryId: string): Promise<GetInquiryResponse> {
   return authedRequest(`/api/v1/inquiries/${inquiryId}`, getInquiryResponseSchema);
+}
+
+export function deleteInquiry(inquiryId: string): Promise<DeleteInquiryResponse> {
+  return authedRequest(`/api/v1/inquiries/${inquiryId}`, deleteInquiryResponseSchema, {
+    method: 'DELETE',
+  });
 }
 
 export function createQuestionNode(inquiryId: string, input: {

@@ -6,13 +6,21 @@ import {
   type CreateInquiryResponse,
   type GetInquiryResponse,
   type ListInquiriesResponse,
+  type DeleteInquiryResponse,
   createQuestionNodeRequestSchema,
   type CreateQuestionNodeResponse,
   trapAttemptRequestSchema,
   type TrapAttemptResponse,
 } from '@tattva/contracts';
 import { ApiError } from '../types/api';
-import { createInquiryForUser, createQuestionNodeForUser, getInquiryDetail, listInquiries, submitTrapAttempt } from '../services/inquiryService';
+import {
+  createInquiryForUser,
+  createQuestionNodeForUser,
+  deleteInquiryForUser,
+  getInquiryDetail,
+  listInquiries,
+  submitTrapAttempt,
+} from '../services/inquiryService';
 
 /**
  * Controllers for the inquiry endpoints (docs/API_CONTRACTS.md §2, §3, and
@@ -44,6 +52,15 @@ export async function getInquiry(req: Request, res: Response<GetInquiryResponse>
 
   const detail = await getInquiryDetail(req.auth.accessToken, req.auth.userId, inquiryId);
   res.status(200).json({ data: detail });
+}
+
+export async function deleteInquiry(req: Request, res: Response<DeleteInquiryResponse>): Promise<void> {
+  if (!req.auth) throw new ApiError(401, 'missing_token', 'Authentication required');
+
+  const { inquiryId } = inquiryIdParamsSchema.parse(req.params);
+  await deleteInquiryForUser(req.auth.accessToken, req.auth.userId, inquiryId);
+
+  res.status(200).json({ data: { success: true, deletedId: inquiryId } });
 }
 
 export async function postQuestionNode(req: Request, res: Response<CreateQuestionNodeResponse>): Promise<void> {

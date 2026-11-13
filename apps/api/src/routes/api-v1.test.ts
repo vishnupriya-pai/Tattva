@@ -6,10 +6,11 @@ const { isSupabaseConfigured, createAnonVerificationClient } = vi.hoisted(() => 
   isSupabaseConfigured: vi.fn().mockReturnValue(true),
   createAnonVerificationClient: vi.fn(),
 }));
-const { createInquiryForUser, listInquiries, getInquiryDetail } = vi.hoisted(() => ({
+const { createInquiryForUser, listInquiries, getInquiryDetail, deleteInquiryForUser } = vi.hoisted(() => ({
   createInquiryForUser: vi.fn(),
   listInquiries: vi.fn(),
   getInquiryDetail: vi.fn(),
+  deleteInquiryForUser: vi.fn(),
 }));
 
 vi.mock('../integrations/supabase/client', () => ({
@@ -17,7 +18,7 @@ vi.mock('../integrations/supabase/client', () => ({
   createAnonVerificationClient,
   createRequestScopedClient: vi.fn(),
 }));
-vi.mock('../services/inquiryService', () => ({ createInquiryForUser, listInquiries, getInquiryDetail }));
+vi.mock('../services/inquiryService', () => ({ createInquiryForUser, listInquiries, getInquiryDetail, deleteInquiryForUser }));
 
 import { createApp } from '../app';
 
@@ -122,5 +123,33 @@ describe('GET /api/v1/inquiries/:inquiryId', () => {
 
     expect(res.status).toBe(400);
     expect(getInquiryDetail).not.toHaveBeenCalled();
+  });
+});
+
+describe('DELETE /api/v1/inquiries/:inquiryId', () => {
+  const app = createApp();
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    isSupabaseConfigured.mockReturnValue(true);
+    authorizedGetUser();
+  });
+
+  it('deletes the inquiry and returns success', async () => {
+    deleteInquiryForUser.mockResolvedValue(undefined);
+
+    const res = await request(app)
+      .delete('/api/v1/inquiries/c0c0c0c0-0000-4000-8000-000000000003')
+      .set('Authorization', 'Bearer good-token');
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.success).toBe(true);
+    expect(res.body.data.deletedId).toBe('c0c0c0c0-0000-4000-8000-000000000003');
+    expect(deleteInquiryForUser).toHaveBeenCalledWith('good-token', VERIFIED_USER.id, 'c0c0c0c0-0000-4000-8000-000000000003');
+  });
+
+  it('rejects a missing token with 401', async () => {
+    const res = await request(app).delete('/api/v1/inquiries/c0c0c0c0-0000-4000-8000-000000000003');
+    expect(res.status).toBe(401);
   });
 });

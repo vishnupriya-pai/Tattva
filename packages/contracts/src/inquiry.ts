@@ -54,3 +54,12 @@ export type GetInquiryResponse = z.infer<typeof getInquiryResponseSchema>;
 export const inquiryIdParamsSchema = z.object({
   inquiryId: z.string().uuid(),
 });
+
+export const deleteInquiryResponseSchema = z.object({
+  data: z.object({
+    success: z.literal(true),
+    deletedId: z.string().uuid(),
+  }),
+});
+
+export type DeleteInquiryResponse = z.infer<typeof deleteInquiryResponseSchema>;

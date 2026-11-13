@@ -1,11 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   ArrowRight,
   GitBranch,
   Plus,
   Sparkles,
+  Trash2,
 } from 'lucide-react';
 import type { Inquiry } from '@tattva/contracts';
 
@@ -13,13 +14,30 @@ export interface HomeDashboardViewProps {
   inquiries: Inquiry[];
   onSelectInquiry: (inquiryId: string) => void;
   onStartNewInquiry: () => void;
+  onDeleteInquiry?: (inquiryId: string) => Promise<void> | void;
 }
 
 export const HomeDashboardView: React.FC<HomeDashboardViewProps> = ({
   inquiries,
   onSelectInquiry,
   onStartNewInquiry,
+  onDeleteInquiry,
 }) => {
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const handleDelete = async (e: React.MouseEvent, inquiryId: string) => {
+    e.stopPropagation();
+    if (!onDeleteInquiry) return;
+    setDeletingId(inquiryId);
+    try {
+      await onDeleteInquiry(inquiryId);
+    } finally {
+      setDeletingId(null);
+      setConfirmDeleteId(null);
+    }
+  };
+
   return (
     <div className="mx-auto max-w-4xl space-y-8 px-4 py-12 sm:px-6 lg:px-8 text-slate-200">
       {/* 1. Hero Block: Serif + Gold Visual Identity */}
@@ -89,6 +107,9 @@ export const HomeDashboardView: React.FC<HomeDashboardViewProps> = ({
                 year: 'numeric',
               });
 
+              const isConfirming = confirmDeleteId === inquiry.id;
+              const isDeleting = deletingId === inquiry.id;
+
               return (
                 <div
                   key={inquiry.id}
@@ -115,11 +136,60 @@ export const HomeDashboardView: React.FC<HomeDashboardViewProps> = ({
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className="font-mono text-xs text-slate-400 group-hover:text-white transition">
-                      Open Graph
-                    </span>
-                    <ArrowRight className="w-4 h-4 text-[#c59a67] group-hover:translate-x-1 transition-transform" />
+                  <div className="flex items-center gap-3 shrink-0">
+                    {/* Delete action with inline confirmation */}
+                    {isConfirming ? (
+                      <div
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex items-center gap-2 rounded-xl border border-rose-500/30 bg-rose-950/60 px-3 py-1.5"
+                      >
+                        <span className="font-mono text-[11px] text-rose-200">
+                          {isDeleting ? 'Deleting…' : 'Delete graph?'}
+                        </span>
+                        {!isDeleting && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={(e) => handleDelete(e, inquiry.id)}
+                              className="rounded px-2 py-0.5 font-mono text-[11px] font-bold bg-rose-600 text-white hover:bg-rose-500 transition cursor-pointer"
+                            >
+                              Yes
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setConfirmDeleteId(null);
+                              }}
+                              className="rounded px-2 py-0.5 font-mono text-[11px] text-slate-400 hover:text-white transition cursor-pointer"
+                            >
+                              Cancel
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    ) : (
+                      onDeleteInquiry && (
+                        <button
+                          type="button"
+                          title="Delete inquiry"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setConfirmDeleteId(inquiry.id);
+                          }}
+                          className="rounded-lg p-2 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition cursor-pointer"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )
+                    )}
+
+                    <div className="flex items-center gap-2 pl-2 border-l border-white/10">
+                      <span className="font-mono text-xs text-slate-400 group-hover:text-white transition">
+                        Open Graph
+                      </span>
+                      <ArrowRight className="w-4 h-4 text-[#c59a67] group-hover:translate-x-1 transition-transform" />
+                    </div>
                   </div>
                 </div>
               );

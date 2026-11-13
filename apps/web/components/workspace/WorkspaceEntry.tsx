@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import {
   createInquiry,
   createQuestionNode,
+  deleteInquiry,
   getInquiry,
   getMe,
   getStamina,
@@ -168,6 +169,28 @@ export function WorkspaceEntry() {
     await loadInquiryWorkspace(inquiryId);
   };
 
+  const handleDeleteInquiry = async (inquiryId: string) => {
+    setErrorMessage(null);
+    try {
+      await deleteInquiry(inquiryId);
+      const listRes = await listInquiries();
+      setInquiries(listRes.data);
+
+      if (activeInquiryId === inquiryId) {
+        const nextInquiry = listRes.data[0];
+        if (nextInquiry) {
+          await loadInquiryWorkspace(nextInquiry.id);
+        } else {
+          setActiveInquiryId(null);
+          setWorkspaceData(null);
+          setActiveView('home');
+        }
+      }
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : 'Could not delete inquiry.');
+    }
+  };
+
   const handleCreateInquiry = async ({
     question,
     learningSourceId,
@@ -236,6 +259,7 @@ export function WorkspaceEntry() {
               inquiries={inquiries}
               onSelectInquiry={handleSelectInquiry}
               onStartNewInquiry={() => setActiveView('create')}
+              onDeleteInquiry={handleDeleteInquiry}
             />
           </div>
         ) : activeView === 'create' ? (
@@ -254,6 +278,7 @@ export function WorkspaceEntry() {
             initialNodes={workspaceData.nodes}
             initialStamina={stamina}
             inquiryId={activeInquiryId}
+            onDeleteInquiry={() => void handleDeleteInquiry(activeInquiryId)}
           />
         ) : (
           <div className="grid h-full place-items-center bg-[#0b0b0d] px-6 text-center text-sm text-white/70">

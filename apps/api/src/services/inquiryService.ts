@@ -4,6 +4,7 @@ import { ApiError } from '../types/api';
 import { findLearningSourceById } from '../repositories/learningSourceRepository';
 import {
   createInquiry as createInquiryRow,
+  deleteInquiryById,
   findInquiryByIdForUser,
   listInquiriesForUser,
 } from '../repositories/inquiryRepository';
@@ -123,4 +124,19 @@ export async function getInquiryDetail(
   const nodes = await listNodesForInquiry(client, inquiry.id);
 
   return { id: inquiry.id, learningSource: source, nodes };
+}
+
+export async function deleteInquiryForUser(
+  accessToken: string,
+  userId: string,
+  inquiryId: string,
+): Promise<void> {
+  const client = createRequestScopedClient(accessToken);
+  const inquiry = await findInquiryByIdForUser(client, inquiryId, userId);
+  if (!inquiry || inquiry.userId !== userId) {
+    throw new ApiError(404, 'inquiry_not_found', 'Inquiry not found');
+  }
+
+  const admin = isSupabaseAdminConfigured() ? getAdminClient() : client;
+  await deleteInquiryById(admin, inquiryId);
 }

@@ -79,3 +79,17 @@ export async function findInquiryByIdForUser(
 
   return data ? mapRow(data) : null;
 }
+
+export async function deleteInquiryById(
+  client: SupabaseClient,
+  inquiryId: string,
+): Promise<void> {
+  const { error } = await client
+    .from('inquiries')
+    .delete()
+    .eq('id', inquiryId);
+
+  if (error) {
+    throw new Error(`Failed to delete inquiry ${inquiryId}: ${error.message}`);
+  }
+}

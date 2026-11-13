@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { Trash2 } from 'lucide-react';
 import { createQuestionNode, getInquiry, getStamina, submitTrapAttempt as sendTrapAttempt } from '../../lib/api-client';
 import type { LearningSource, QuestionNode, StaminaState, TrapSubmissionState } from '../../lib/workspace-types';
 import { computeNodeMetrics } from '../../lib/graph-metrics';
@@ -19,12 +20,14 @@ export function Workspace({
   initialNodes,
   initialStamina,
   inquiryId,
+  onDeleteInquiry,
 }: {
   source: LearningSource;
   sourceBody: string;
   initialNodes: QuestionNode[];
   initialStamina: StaminaState;
   inquiryId: string;
+  onDeleteInquiry?: () => void;
 }) {
   const [nodes, setNodes] = useState<QuestionNode[]>(initialNodes);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(initialNodes[0]?.id ?? null);
@@ -33,6 +36,7 @@ export function Workspace({
   const [stamina, setStamina] = useState<StaminaState>(initialStamina);
   const [graphStatus, setGraphStatus] = useState<GraphStatus>('ready');
   const [pendingMessage, setPendingMessage] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [trapSubmissions, setTrapSubmissions] = useState<Record<string, TrapSubmissionState>>({});
   const [trapFeedback, setTrapFeedback] = useState<Record<string, string>>({});
   const [retryPayload, setRetryPayload] = useState<{ question: string; parentNodeId: string | null; selectedFollowUpId: string | null } | null>(null);
@@ -110,7 +114,49 @@ export function Workspace({
       </div>
 
       <div className="flex h-full min-h-0 flex-col">
-        <Panel title="Knowledge graph" actions={<><StaminaDisplay stamina={stamina} researchMode={researchMode} /><ResearchModeToggle enabled={researchMode} onChange={setResearchMode} /></>} className="min-h-0 flex-1">
+        <Panel
+          title="Knowledge graph"
+          actions={
+            <div className="flex items-center gap-2">
+              <StaminaDisplay stamina={stamina} researchMode={researchMode} />
+              <ResearchModeToggle enabled={researchMode} onChange={setResearchMode} />
+              {onDeleteInquiry && (
+                confirmDelete ? (
+                  <div className="flex items-center gap-1.5 rounded-lg border border-rose-500/30 bg-rose-950/70 px-2 py-1 text-xs">
+                    <span className="text-rose-200 text-[10px] font-mono">Delete?</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setConfirmDelete(false);
+                        onDeleteInquiry();
+                      }}
+                      className="rounded bg-rose-600 px-1.5 py-0.5 text-[10px] font-bold text-white hover:bg-rose-500 cursor-pointer"
+                    >
+                      Yes
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setConfirmDelete(false)}
+                      className="rounded px-1.5 py-0.5 text-[10px] text-slate-400 hover:text-white cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    title="Delete this inquiry"
+                    onClick={() => setConfirmDelete(true)}
+                    className="rounded-lg p-1 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition cursor-pointer"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )
+              )}
+            </div>
+          }
+          className="min-h-0 flex-1"
+        >
           <div className="h-full min-h-[280px]">
             <KnowledgeGraphCanvas
               nodes={nodes}
