@@ -8,27 +8,77 @@ export interface AudioRecordingResult {
   mimeType: string;
 }
 
+/**
+ * Encodes 16-bit mono PCM samples at 16kHz into a standard RIFF WAV Blob.
+ * 16kHz mono WAV is the exact recommended format for Sarvam AI (saaras:v4).
+ */
+function encodeWAV(samples: Float32Array, sampleRate: number = 16000): Blob {
+  const buffer = new ArrayBuffer(44 + samples.length * 2);
+  const view = new DataView(buffer);
+
+  function writeString(offset: number, str: string) {
+    for (let i = 0; i < str.length; i++) {
+      view.setUint8(offset + i, str.charCodeAt(i));
+    }
+  }
+
+  // RIFF identifier
+  writeString(0, 'RIFF');
+  // RIFF chunk length
+  view.setUint32(4, 36 + samples.length * 2, true);
+  // RIFF type
+  writeString(8, 'WAVE');
+  // Format chunk identifier
+  writeString(12, 'fmt ');
+  // Format chunk length (16 for PCM)
+  view.setUint32(16, 16, true);
+  // Sample format (1 = PCM)
+  view.setUint16(20, 1, true);
+  // Channel count (1 = mono)
+  view.setUint16(22, 1, true);
+  // Sample rate
+  view.setUint32(24, sampleRate, true);
+  // Byte rate (SampleRate * Channels * BitsPerSample/8)
+  view.setUint32(28, sampleRate * 2, true);
+  // Block align (Channels * BitsPerSample/8)
+  view.setUint16(32, 2, true);
+  // Bits per sample
+  view.setUint16(34, 16, true);
+  // Data chunk identifier
+  writeString(36, 'data');
+  // Data chunk length
+  view.setUint32(40, samples.length * 2, true);
+
+  // Write PCM samples as signed 16-bit integers
+  let offset = 44;
+  for (let i = 0; i < samples.length; i++) {
+    const s = Math.max(-1, Math.min(1, samples[i] ?? 0));
+    view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+    offset += 2;
+  }
+
+  return new Blob([view], { type: 'audio/wav' });
+}
+
 export function useAudioRecorder() {
   const [isRecording, setIsRecording] = useState(false);
   const [recordingDuration, setRecordingDuration] = useState(0);
   const [audioLevel, setAudioLevel] = useState(0);
 
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
-  const timerRef = useRef<number | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
-  const analyserRef = useRef<AnalyserNode | null>(null);
-  const animationFrameRef = useRef<number | null>(null);
+  const processorRef = useRef<ScriptProcessorNode | null>(null);
+  const samplesRef = useRef<Float32Array[]>([]);
+  const timerRef = useRef<number | null>(null);
 
   const cleanUp = useCallback(() => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
-      animationFrameRef.current = null;
+    if (processorRef.current) {
+      processorRef.current.disconnect();
+      processorRef.current = null;
     }
     if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
       audioContextRef.current.close().catch(() => {});
@@ -38,8 +88,7 @@ export function useAudioRecorder() {
       streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
     }
-    mediaRecorderRef.current = null;
-    chunksRef.current = [];
+    samplesRef.current = [];
     setIsRecording(false);
     setAudioLevel(0);
     setRecordingDuration(0);
@@ -57,109 +106,95 @@ export function useAudioRecorder() {
       throw new Error('Microphone access is not supported in this browser.');
     }
 
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        channelCount: 1,
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+      },
+    });
     streamRef.current = stream;
 
-    // Set up audio analyzer for live waveform animation
-    try {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      const audioCtx = new AudioCtx();
-      audioContextRef.current = audioCtx;
-      const source = audioCtx.createMediaStreamSource(stream);
-      const analyser = audioCtx.createAnalyser();
-      analyser.fftSize = 64;
-      source.connect(analyser);
-      analyserRef.current = analyser;
+    const AudioCtx =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
 
-      const bufferLength = analyser.frequencyBinCount;
-      const dataArray = new Uint8Array(bufferLength);
+    // Use 16kHz sample rate optimal for Sarvam saaras:v4
+    const audioCtx = new AudioCtx({ sampleRate: 16000 });
+    audioContextRef.current = audioCtx;
 
-      const updateLevel = () => {
-        if (!analyserRef.current) return;
-        analyserRef.current.getByteFrequencyData(dataArray);
-        let sum = 0;
-        for (let i = 0; i < bufferLength; i++) {
-          sum += dataArray[i] ?? 0;
-        }
-        const avg = sum / bufferLength;
-        setAudioLevel(Math.min(100, Math.round((avg / 255) * 100)));
-        animationFrameRef.current = requestAnimationFrame(updateLevel);
-      };
-      updateLevel();
-    } catch {
-      // AudioContext optional for visualizer only
-    }
+    const source = audioCtx.createMediaStreamSource(stream);
+    // 4096 buffer size, 1 input channel, 1 output channel
+    const processor = audioCtx.createScriptProcessor(4096, 1, 1);
+    processorRef.current = processor;
+    samplesRef.current = [];
 
-    // Determine supported mime type
-    const mimeTypes = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/wav'];
-    const chosenMime = mimeTypes.find((m) => MediaRecorder.isTypeSupported(m)) ?? '';
+    processor.onaudioprocess = (e) => {
+      const inputData = e.inputBuffer.getChannelData(0);
+      samplesRef.current.push(new Float32Array(inputData));
 
-    const recorder = new MediaRecorder(stream, chosenMime ? { mimeType: chosenMime } : undefined);
-    mediaRecorderRef.current = recorder;
-    chunksRef.current = [];
-
-    recorder.ondataavailable = (event: BlobEvent) => {
-      if (event.data && event.data.size > 0) {
-        chunksRef.current.push(event.data);
+      // Calculate audio level for waveform animation
+      let sum = 0;
+      for (let i = 0; i < inputData.length; i++) {
+        const val = inputData[i] ?? 0;
+        sum += val * val;
       }
+      const rms = Math.sqrt(sum / inputData.length);
+      setAudioLevel(Math.min(100, Math.round(rms * 400)));
     };
 
-    recorder.start(100);
-    setIsRecording(true);
+    source.connect(processor);
+    processor.connect(audioCtx.destination);
 
+    setIsRecording(true);
     const startTime = Date.now();
     timerRef.current = window.setInterval(() => {
       setRecordingDuration(Math.floor((Date.now() - startTime) / 1000));
-    }, 200);
+    }, 250);
   }, [cleanUp]);
 
   const stopRecording = useCallback((): Promise<AudioRecordingResult> => {
     return new Promise((resolve, reject) => {
-      const recorder = mediaRecorderRef.current;
-      if (!recorder || recorder.state === 'inactive') {
+      if (!audioContextRef.current || samplesRef.current.length === 0) {
         cleanUp();
-        return reject(new Error('No active audio recording found.'));
+        return reject(new Error('No speech recorded. Please speak into the mic and retry.'));
       }
 
-      recorder.onstop = async () => {
-        const mimeType = recorder.mimeType || 'audio/webm';
-        const blob = new Blob(chunksRef.current, { type: mimeType });
+      // Merge all recorded Float32Array chunks
+      const totalLength = samplesRef.current.reduce((acc, chunk) => acc + chunk.length, 0);
+      const mergedSamples = new Float32Array(totalLength);
+      let offset = 0;
+      for (const chunk of samplesRef.current) {
+        mergedSamples.set(chunk, offset);
+        offset += chunk.length;
+      }
 
-        cleanUp();
+      const actualSampleRate = audioContextRef.current.sampleRate || 16000;
+      const wavBlob = encodeWAV(mergedSamples, actualSampleRate);
 
-        if (blob.size === 0) {
-          return reject(new Error('Audio recording was empty. Please speak again.'));
-        }
+      cleanUp();
 
-        try {
-          const reader = new FileReader();
-          reader.readAsDataURL(blob);
-          reader.onloadend = () => {
-            const dataUrl = reader.result as string;
-            const base64 = dataUrl.split(',')[1] ?? '';
-            resolve({ blob, base64, mimeType });
-          };
-          reader.onerror = (err) => reject(err);
-        } catch (err) {
-          reject(err);
-        }
+      if (wavBlob.size < 1000) {
+        return reject(new Error('Audio recording was too short or empty. Please speak clearly.'));
+      }
+
+      const reader = new FileReader();
+      reader.readAsDataURL(wavBlob);
+      reader.onloadend = () => {
+        const dataUrl = reader.result as string;
+        const base64 = dataUrl.split(',')[1] ?? '';
+        resolve({
+          blob: wavBlob,
+          base64,
+          mimeType: 'audio/wav',
+        });
       };
-
-      try {
-        recorder.stop();
-      } catch (err) {
-        cleanUp();
-        reject(err);
-      }
+      reader.onerror = (err) => reject(err);
     });
   }, [cleanUp]);
 
   const cancelRecording = useCallback(() => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-      try {
-        mediaRecorderRef.current.stop();
-      } catch {}
-    }
     cleanUp();
   }, [cleanUp]);
 

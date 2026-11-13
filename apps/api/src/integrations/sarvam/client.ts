@@ -118,9 +118,10 @@ export async function transcribeAudio(
   }
 
   const audioBuffer = Buffer.from(audioBase64, 'base64');
+  const filename = mimeType.includes('wav') ? 'audio.wav' : mimeType.includes('mp3') ? 'audio.mp3' : 'audio.wav';
   const blob = new Blob([audioBuffer], { type: mimeType });
   const formData = new FormData();
-  formData.append('file', blob, 'audio.wav');
+  formData.append('file', blob, filename);
   formData.append('model', 'saaras:v4');
   formData.append('mode', 'transcribe');
 
@@ -137,12 +138,28 @@ export async function transcribeAudio(
   }
 
   if (!response.ok) {
-    throw new ApiError(response.status === 429 ? 429 : 502, 'sarvam_stt_failed', 'Speech recognition failed.');
+    const errorBody = (await response.json().catch(() => null)) as { error?: { message?: string } } | null;
+    const msg = errorBody?.error?.message;
+    throw new ApiError(
+      response.status === 429 ? 429 : 502,
+      'sarvam_stt_failed',
+      msg ? `Sarvam STT: ${msg}` : 'Speech recognition failed. Please speak clearly into your mic and retry.',
+    );
   }
 
   const data = (await response.json().catch(() => null)) as { transcript?: string; language_code?: string } | null;
+  const transcript = data?.transcript?.trim() ?? '';
+
+  if (!transcript) {
+    throw new ApiError(
+      400,
+      'no_speech_detected',
+      'No clear speech was detected. Please hold the button, speak into your microphone, and tap again to stop.',
+    );
+  }
+
   return {
-    transcript: data?.transcript?.trim() ?? '',
+    transcript,
     languageCode: data?.language_code ?? 'en-IN',
   };
 }
