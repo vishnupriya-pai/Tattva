@@ -38,6 +38,8 @@ export function WorkspaceEntry() {
   const [stamina, setStamina] = useState<StaminaState>({
     balance: 0,
     recentTransactions: [],
+    streakDays: 0,
+    conqueredInquiryIds: [],
   });
 
   const [workspaceData, setWorkspaceData] = useState<{
@@ -425,6 +427,7 @@ export function WorkspaceEntry() {
         activeView={activeView}
         onChangeView={(view) => setActiveView(view)}
         staminaScore={stamina.balance}
+        streakDays={stamina.streakDays}
         user={currentUser}
         onStartNewInquiry={() => setActiveView('create')}
       />
@@ -451,6 +454,7 @@ export function WorkspaceEntry() {
                 setActiveView('create');
               }}
               onDeleteInquiry={handleDeleteInquiry}
+              conqueredInquiryIds={stamina.conqueredInquiryIds}
             />
           </div>
         ) : activeView === 'create' ? (

@@ -40,9 +40,14 @@ export const trapAttemptResponseSchema = z.object({
     z.object({ result: z.literal('retry'), feedback: z.string().min(1) }),
   ]),
 });
-export const staminaResponseSchema = z.object({ data: z.object({ balance: z.number().int(), recentTransactions: z.array(z.object({
-  id: z.string().uuid(), eventType: z.string(), basePoints: z.number().int(), multiplier: z.number(), finalPoints: z.number().int(), createdAt: z.string(),
-})) }) });
+export const staminaResponseSchema = z.object({ data: z.object({
+  balance: z.number().int(),
+  recentTransactions: z.array(z.object({
+    id: z.string().uuid(), eventType: z.string(), basePoints: z.number().int(), multiplier: z.number(), finalPoints: z.number().int(), createdAt: z.string(),
+  })),
+  streakDays: z.number().int().min(0),
+  conqueredInquiryIds: z.array(z.string().uuid()),
+}) });
 export type StaminaResponse = z.infer<typeof staminaResponseSchema>;
 
 /** Contracts for persisted graph nodes and their generated follow-up questions. */

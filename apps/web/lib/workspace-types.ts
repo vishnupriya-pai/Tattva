@@ -62,6 +62,8 @@ export interface StaminaTransaction {
 export interface StaminaState {
   balance: number;
   recentTransactions: StaminaTransaction[];
+  streakDays: number;
+  conqueredInquiryIds: string[];
 }
 
 export type TrapSubmissionState = 'idle' | 'submitting' | 'submitted';

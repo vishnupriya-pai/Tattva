@@ -16,6 +16,7 @@ export interface TopNavBarProps {
   activeView?: TopNavView;
   onChangeView: (view: TopNavView) => void;
   staminaScore?: number;
+  streakDays?: number;
   user?: {
     id: string;
     isAnonymous: boolean;
@@ -27,6 +28,7 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
   activeView = 'home',
   onChangeView,
   staminaScore = 0,
+  streakDays = 0,
   user = { id: 'anonymous', isAnonymous: true },
   onStartNewInquiry,
 }) => {
@@ -184,6 +186,11 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
             <span className="text-[10px] font-mono tracking-wider text-slate-400 uppercase hidden sm:inline">
               STAMINA
             </span>
+            {streakDays > 1 && (
+              <span className="text-[10px] font-mono text-[#c59a67] border-l border-white/10 pl-2 ml-0.5">
+                {streakDays}-day streak
+              </span>
+            )}
           </div>
 
           {/* Theme Toggle Button */}

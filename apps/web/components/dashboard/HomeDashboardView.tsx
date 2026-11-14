@@ -15,6 +15,7 @@ export interface HomeDashboardViewProps {
   onSelectInquiry: (inquiryId: string) => void;
   onStartNewInquiry: () => void;
   onDeleteInquiry?: (inquiryId: string) => Promise<void> | void;
+  conqueredInquiryIds?: string[];
 }
 
 export const HomeDashboardView: React.FC<HomeDashboardViewProps> = ({
@@ -22,6 +23,7 @@ export const HomeDashboardView: React.FC<HomeDashboardViewProps> = ({
   onSelectInquiry,
   onStartNewInquiry,
   onDeleteInquiry,
+  conqueredInquiryIds = [],
 }) => {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -109,6 +111,7 @@ export const HomeDashboardView: React.FC<HomeDashboardViewProps> = ({
 
               const isConfirming = confirmDeleteId === inquiry.id;
               const isDeleting = deletingId === inquiry.id;
+              const isConquered = conqueredInquiryIds.includes(inquiry.id);
 
               return (
                 <div
@@ -125,6 +128,14 @@ export const HomeDashboardView: React.FC<HomeDashboardViewProps> = ({
                       <span className="font-mono text-[11px] text-slate-500">
                         {formattedDate}
                       </span>
+                      {isConquered && (
+                        <>
+                          <span className="text-slate-500 text-xs">·</span>
+                          <span className="font-mono text-[10px] text-[#a3e635] uppercase tracking-wider">
+                            Conquered
+                          </span>
+                        </>
+                      )}
                     </div>
 
                     <h3 className="text-base font-semibold text-white group-hover:text-[#c59a67] transition truncate">

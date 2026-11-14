@@ -138,4 +138,6 @@ export const fixtureStamina: StaminaState = {
     { id: 'tx-2', eventType: 'followup_selected', basePoints: 15, multiplier: 1, finalPoints: 15, createdAt: '2026-11-10T09:12:30.000Z' },
     { id: 'tx-3', eventType: 'inquiry_started', basePoints: 10, multiplier: 1, finalPoints: 10, createdAt: '2026-11-10T09:00:05.000Z' },
   ],
+  streakDays: 3,
+  conqueredInquiryIds: [],
 };
