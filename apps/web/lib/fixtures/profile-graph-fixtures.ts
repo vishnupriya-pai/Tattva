@@ -13,10 +13,27 @@ function noFollowUps() {
 }
 
 export const profileGraphNodes: QuestionNode[] = [
+  // ---- Central hub: ties every domain into a single connected graph ----
+  {
+    id: 'profile-hub',
+    parentNodeId: null,
+    userQuestion: 'Your Learning Core',
+    aiExplanation:
+      'Every inquiry you have ever launched, across every source and domain, branches outward from here — ' +
+      'one continuous graph instead of disconnected fragments.',
+    researchMode: false,
+    isTrap: false,
+    trapMetadata: null,
+    trapResolvedAt: null,
+    followUps: noFollowUps(),
+    createdAt: '2026-11-01T00:00:00.000Z',
+    status: 'ready',
+  },
+
   // ---- Domain 1: Transformers & Self-Attention (AI Research) ----
   {
     id: 'profile-ai-root',
-    parentNodeId: null,
+    parentNodeId: 'profile-hub',
     userQuestion: 'Why does self-attention scale better with long-range dependencies than RNNs?',
     aiExplanation:
       'Because every token attends to every other token in a single matrix multiplication, so the ' +
@@ -115,7 +132,7 @@ export const profileGraphNodes: QuestionNode[] = [
   // ---- Domain 2: Operating Systems (low-level systems) ----
   {
     id: 'profile-os-root',
-    parentNodeId: null,
+    parentNodeId: 'profile-hub',
     userQuestion: 'Why do we need both semaphores and mutexes if a mutex is just a binary semaphore?',
     aiExplanation:
       'A mutex encodes ownership — only the thread that locked it may unlock it — while a semaphore is a ' +
@@ -199,7 +216,7 @@ export const profileGraphNodes: QuestionNode[] = [
   // ---- Domain 3: Cryptography ----
   {
     id: 'profile-crypto-root',
-    parentNodeId: null,
+    parentNodeId: 'profile-hub',
     userQuestion: 'How does Diffie-Hellman let two parties agree on a shared secret over a public channel?',
     aiExplanation:
       'Each party combines their private exponent with the other\'s public value; because modular ' +
@@ -293,3 +310,7 @@ export const profileDomainSummaries: ProfileDomainSummary[] = [
   { rootNodeId: 'profile-os-root', label: 'Operating Systems', nodeCount: 5 },
   { rootNodeId: 'profile-crypto-root', label: 'Cryptography', nodeCount: 5 },
 ];
+
+export const profileTrapsSurvived = profileGraphNodes.filter((n) => n.isTrap && n.trapResolvedAt).length;
+export const profileResearchNodes = profileGraphNodes.filter((n) => n.researchMode).length;
+export const profileTotalNodes = profileGraphNodes.length - 1; // exclude the synthetic hub node
