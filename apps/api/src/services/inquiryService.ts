@@ -39,8 +39,28 @@ export async function createQuestionNodeForUser(
   const client = createRequestScopedClient(accessToken);
   const inquiry = await findInquiryByIdForUser(client, inquiryId, userId);
   if (!inquiry) throw new ApiError(404, 'inquiry_not_found', 'Inquiry not found');
-  const source = await findLearningSourceById(client, inquiry.learningSourceId);
+  let source = await findLearningSourceById(client, inquiry.learningSourceId);
   if (!source) throw new ApiError(404, 'learning_source_not_found', 'The inquiry references a missing learning source');
+
+  // Dynamic source resolution: If the learner asks about Transformers / Deep Learning / Decoders / Attention,
+  // but the inquiry was attached to Memory Arena, dynamically attach the Attention learning source.
+  const qLower = input.question.toLowerCase();
+  const isTransformerQuestion =
+    qLower.includes('decoder') ||
+    qLower.includes('encoder') ||
+    qLower.includes('transformer') ||
+    qLower.includes('attention') ||
+    qLower.includes('masking') ||
+    qLower.includes('self-attention') ||
+    qLower.includes('multi-head') ||
+    qLower.includes('vaswani');
+
+  if (isTransformerQuestion && source.title.toLowerCase().includes('arena')) {
+    const attentionSource = await findLearningSourceById(client, '22222222-2222-4222-8222-222222222222');
+    if (attentionSource) {
+      source = attentionSource;
+    }
+  }
   const existingNodes = await listNodesForInquiry(client, inquiryId);
 
   if (input.selectedFollowUpId) {

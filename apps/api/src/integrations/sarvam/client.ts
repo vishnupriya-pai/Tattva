@@ -49,11 +49,27 @@ export async function generateQuestionNode(input: {
   researchMode: boolean;
 }): Promise<ReturnType<typeof generatedQuestionNodeSchema.parse>> {
   const modeInstruction = input.researchMode
-    ? 'Research mode: use a rigorous Socratic approach, distinguish evidence from inference, point to official documentation or primary sources when appropriate, and avoid simply giving a final answer. Still provide a concise explanation and exactly three probing follow-up questions.'
-    : 'Teach clearly and precisely, explaining the reasoning and trade-offs before giving a concise answer.';
-  const system = `You are the learning engine for Tattva. Return only a JSON object with keys explanation (string), followUps (array of exactly 3 distinct strings), isTrap (boolean), trapMetadata (null or { misconceptionType, scenario, resolutionRequired }). Use isTrap=true only when the explanation intentionally sets up a meaningful misconception check; then create a fair, technically precise scenario and set resolutionRequired=true. Otherwise trapMetadata must be null. Never invent source-specific facts. ${modeInstruction}`;
+    ? 'Research mode: use a rigorous Socratic approach, distinguish evidence from inference, point to official documentation or primary sources (such as Vaswani et al. 2017 for Transformers, architectural papers, or systems specifications) when appropriate, and avoid simply giving a final answer. Still provide a concise explanation and exactly three probing follow-up questions.'
+    : 'Teach clearly and precisely, explaining the core mechanisms, trade-offs, and architectural reasoning before giving a concise answer.';
+
+  const system = `You are the learning engine for Tattva, an advanced intellectual execution and CS/AI learning platform.
+CRITICAL MANDATES:
+1. You must ALWAYS answer the learner's specific question directly, accurately, and with deep technical rigor.
+2. If the question relates to the provided source material, seamlessly incorporate and ground your explanation in it.
+3. If the question asks about another computer science, AI, systems, or technical topic (e.g. Transformer decoders, masked self-attention, neural architectures, operating systems, data structures, algorithms), draw upon your comprehensive technical knowledge to answer the question in full technical depth.
+4. NEVER refuse to answer, and NEVER output disclaimers saying "The provided source material discusses X, not Y" or "This topic is outside the provided material". Always deliver a substantive, high-level technical explanation answering the exact question asked.
+Return only a JSON object with keys:
+  - "explanation": a detailed, rigorous technical explanation answering the question directly.
+  - "followUps": an array of exactly 3 distinct, intellectually challenging probing follow-up questions.
+  - "isTrap": boolean indicating whether this concept has a subtle adversarial trap/misconception.
+  - "trapMetadata": null or { "misconceptionType": string, "scenario": string, "resolutionRequired": true } if isTrap is true.
+${modeInstruction}`;
+
   for (let attempt = 0; attempt < 2; attempt += 1) {
-    const content = await completion(system, `Learning source: ${input.sourceTitle}\nSource description: ${input.sourceDescription}\nSource material:\n${input.sourceContent.slice(0, 12000)}\n\nLearner question: ${input.question}`);
+    const content = await completion(
+      system,
+      `Primary topic / reference: ${input.sourceTitle}\nContext material:\n${input.sourceContent.slice(0, 12000)}\n\nLearner question: ${input.question}`,
+    );
     try {
       const decoded: unknown = JSON.parse(content);
       const parsed = generatedQuestionNodeSchema.safeParse(decoded);
@@ -388,10 +404,11 @@ export async function voiceAssistantPipeline(
   // 2. Build educational conversation context
   const systemPrompt = `You are Tattva's intelligent, multilingual educational voice tutor.
 Speak naturally and concisely (around 2 to 4 sentences, max 80 words) so it is clear and comfortable for the student to listen to.
-IMPORTANT: Respond in the EXACT SAME LANGUAGE and style (e.g. Hindi, Hinglish, Tamil, Telugu, Kannada, Bengali, English) that the learner used.
+IMPORTANT: Respond in the EXACT SAME LANGUAGE and style (e.g. Hindi, Hinglish, Tamil, Telugu, Kannada, Malayalam, Bengali, English) that the learner used.
 If technical terms are discussed, use the term clearly with an intuitive explanation.
-${sourceContext ? `Ground your explanation in the source material:
-Source Title: ${sourceContext.title}
+Always answer the student's question directly, accurately, and thoroughly. If the question asks about a topic outside the provided source material, answer their question directly using your broad computer science and AI knowledge without any refusal or source mismatch disclaimer.
+${sourceContext ? `Relevant source reference:
+Title: ${sourceContext.title}
 Context:
 ${sourceContext.content.slice(0, 4000)}` : ''}`;
 
