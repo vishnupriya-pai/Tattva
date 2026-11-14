@@ -15,6 +15,7 @@ import { ensureDemoInquiry } from '../../lib/workspace-bootstrap';
 import type { LearningSource, QuestionNode, StaminaState } from '../../lib/workspace-types';
 import type { Inquiry } from '@tattva/contracts';
 import { TopNavBar, type TopNavView } from '../navigation/TopNavBar';
+import { ProfileView } from '../profile/ProfileView';
 import { HomeDashboardView } from '../dashboard/HomeDashboardView';
 import { CreateInquiryView, ATTENTION_LEARNING_SOURCE_ID } from '../inquiry/CreateInquiryView';
 import { Workspace } from './Workspace';
@@ -496,6 +497,12 @@ export function WorkspaceEntry() {
               onOpenSourceInStudio={handleOpenSourceInStudio}
             />
           </div>
+        ) : activeView === 'profile' ? (
+          <ProfileView
+            userId={currentUser.id}
+            staminaBalance={stamina.balance}
+            streakDays={stamina.streakDays}
+          />
         ) : workspaceData && activeInquiryId ? (
           /* PRESERVED EXACT WORKSPACE & KNOWLEDGE GRAPH FLOW */
           <Workspace

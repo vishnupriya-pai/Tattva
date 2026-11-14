@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 
-export type TopNavView = 'home' | 'workspace' | 'workspaces' | 'masterclass' | 'community' | 'create';
+export type TopNavView = 'home' | 'workspace' | 'workspaces' | 'masterclass' | 'community' | 'create' | 'profile';
 
 export interface TopNavBarProps {
   activeView?: TopNavView;
@@ -252,6 +252,18 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                 </div>
 
                 <div className="space-y-1 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAccountMenuOpen(false);
+                      onChangeView('profile');
+                    }}
+                    className="w-full flex items-center gap-2 px-2.5 py-1.5 font-medium text-slate-300 hover:text-white hover:bg-white/5 rounded-lg text-left cursor-pointer"
+                  >
+                    <User className="w-3.5 h-3.5 text-[#c59a67]" />
+                    <span>View Profile</span>
+                  </button>
+
                   <button
                     type="button"
                     onClick={handleStartInquiry}
