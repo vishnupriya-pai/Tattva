@@ -19,9 +19,11 @@ import {
   ZoomOut,
   Sparkles,
   GitBranch,
+  Share2,
 } from 'lucide-react';
 import type { StudySource, SourceNote } from '../../types/thinkforge';
 import { InquiryComposer } from '../inquiry/InquiryComposer';
+import { ShareGraphModal } from '../knowledge-graph/ShareGraphModal';
 
 interface SourceWorkStudioProps {
   source: StudySource;
@@ -55,6 +57,7 @@ export const SourceWorkStudio: React.FC<SourceWorkStudioProps> = ({
     scenario: string;
     resolution: string;
   } | null>(null);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   // Socratic Q&A and Voice Assistant Dialogue state
   const [dialogueHistory, setDialogueHistory] = useState<Array<{ role: 'user' | 'assistant'; text: string; time: string }>>([]);
@@ -849,6 +852,17 @@ export const SourceWorkStudio: React.FC<SourceWorkStudioProps> = ({
                   <ZoomIn className="w-3.5 h-3.5" />
                 </button>
               </div>
+
+              {/* Share Knowledge Graph Button */}
+              <button
+                type="button"
+                onClick={() => setIsShareModalOpen(true)}
+                title="Share this Knowledge Graph"
+                className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-[#181512] px-2.5 py-1 font-mono text-[11px] text-slate-300 hover:border-[#d4af37]/60 hover:text-white transition cursor-pointer"
+              >
+                <Share2 className="w-3.5 h-3.5 text-[#d4af37]" />
+                <span>Share</span>
+              </button>
             </div>
           </div>
 
@@ -1270,6 +1284,32 @@ export const SourceWorkStudio: React.FC<SourceWorkStudioProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Share Knowledge Graph Modal */}
+      <ShareGraphModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        title={source.title}
+        rootTopic={source.category}
+        nodeCount={source.knowledgeGraph.nodes.length}
+        shareUrl={
+          typeof window !== 'undefined'
+            ? `${window.location.origin}/?source=${source.id}&view=workspaces`
+            : `https://tattva.app/?source=${source.id}&view=workspaces`
+        }
+        graphData={{
+          nodes: source.knowledgeGraph.nodes.map((n) => ({
+            id: n.id,
+            label: n.label,
+            summary: n.summary,
+          })),
+          edges: source.knowledgeGraph.edges.map((e) => ({
+            from: e.source,
+            to: e.target,
+            label: e.label,
+          })),
+        }}
+      />
     </div>
   );
 };

@@ -46,10 +46,10 @@ async function createOrReuseDemoInquiry(): Promise<DemoInquirySession> {
   const me = await getMe();
 
   const existing = await listInquiries();
-  const match = existing.data.find((inquiry) => inquiry.learningSourceId === DEMO_LEARNING_SOURCE_ID);
-
-  if (match) {
-    return { inquiryId: match.id, userId: me.data.user.id, isAnonymous: me.data.user.isAnonymous };
+  // If user already has inquiries, load their most recent inquiry instead of forcing Memory Arena
+  if (existing.data.length > 0) {
+    const latest = existing.data[0]!;
+    return { inquiryId: latest.id, userId: me.data.user.id, isAnonymous: me.data.user.isAnonymous };
   }
 
   const created = await createInquiry(DEMO_LEARNING_SOURCE_ID);

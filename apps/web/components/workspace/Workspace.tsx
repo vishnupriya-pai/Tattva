@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Share2 } from 'lucide-react';
 import { createQuestionNode, getInquiry, getStamina, submitTrapAttempt as sendTrapAttempt } from '../../lib/api-client';
 import type { LearningSource, QuestionNode, StaminaState, TrapSubmissionState } from '../../lib/workspace-types';
 import { computeNodeMetrics } from '../../lib/graph-metrics';
@@ -13,6 +13,7 @@ import { InquiryComposer } from '../inquiry/InquiryComposer';
 import { Panel } from '../shared/Panel';
 import { NodeDetailPanel } from './NodeDetailPanel';
 import { NodeDetailModal } from './NodeDetailModal';
+import { ShareGraphModal } from '../knowledge-graph/ShareGraphModal';
 
 export function Workspace({
   source,
@@ -37,6 +38,7 @@ export function Workspace({
   const [graphStatus, setGraphStatus] = useState<GraphStatus>('ready');
   const [pendingMessage, setPendingMessage] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [trapSubmissions, setTrapSubmissions] = useState<Record<string, TrapSubmissionState>>({});
   const [trapFeedback, setTrapFeedback] = useState<Record<string, string>>({});
   const [retryPayload, setRetryPayload] = useState<{ question: string; parentNodeId: string | null; selectedFollowUpId: string | null } | null>(null);
@@ -120,6 +122,15 @@ export function Workspace({
             <div className="flex items-center gap-2">
               <StaminaDisplay stamina={stamina} researchMode={researchMode} />
               <ResearchModeToggle enabled={researchMode} onChange={setResearchMode} />
+              <button
+                type="button"
+                onClick={() => setIsShareModalOpen(true)}
+                title="Share this Knowledge Graph"
+                className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 font-mono text-[11px] text-slate-300 hover:border-[#d4af37]/60 hover:text-white transition cursor-pointer"
+              >
+                <Share2 className="w-3.5 h-3.5 text-[#d4af37]" />
+                <span>Share</span>
+              </button>
               {onDeleteInquiry && (
                 confirmDelete ? (
                   <div className="flex items-center gap-1.5 rounded-lg border border-rose-500/30 bg-rose-950/70 px-2 py-1 text-xs">
@@ -248,6 +259,26 @@ export function Workspace({
           isAskingCustom={graphStatus === 'loading'}
         />
       )}
+      {/* Share Knowledge Graph Modal */}
+      <ShareGraphModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        title={source.title}
+        rootTopic={source.title}
+        nodeCount={nodes.length}
+        shareUrl={
+          typeof window !== 'undefined'
+            ? `${window.location.origin}/?inquiry=${inquiryId}`
+            : `https://tattva.app/?inquiry=${inquiryId}`
+        }
+        graphData={{
+          nodes: nodes.map((n) => ({
+            id: n.id,
+            label: n.userQuestion,
+            summary: n.aiExplanation.slice(0, 180),
+          })),
+        }}
+      />
     </div>
   );
 }

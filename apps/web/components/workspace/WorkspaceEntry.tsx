@@ -61,6 +61,9 @@ export function WorkspaceEntry() {
   const handleOpenSourceInStudio = (sourceId: string) => {
     setActiveStudioSourceId(sourceId);
     setActiveView('workspaces');
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(null, '', `/?source=${sourceId}&view=workspaces`);
+    }
   };
 
   const handleConvertVideoToInquiry = (video: EngineeringVideo) => {
@@ -258,19 +261,29 @@ export function WorkspaceEntry() {
         const qLower = rootNode.userQuestion.toLowerCase();
         const isDefaultMemoryArena =
           qLower.includes('bump pointer') ||
-          (qLower.includes('arena') && qLower.includes('malloc') && !qLower.includes('attention') && !qLower.includes('transformer'));
+          (qLower.includes('arena') && qLower.includes('malloc') && !qLower.includes('attention') && !qLower.includes('transformer') && !qLower.includes('decoder'));
 
         if (!isDefaultMemoryArena) {
           if (
             qLower.includes('attention') ||
             qLower.includes('transformer') ||
+            qLower.includes('decoder') ||
+            qLower.includes('encoder') ||
+            qLower.includes('masking') ||
+            qLower.includes('self-attention') ||
             qLower.includes('recurrent neural network') ||
             qLower.includes('transduction')
           ) {
             sourceTitle = 'Attention Is All You Need: Transformers & Multi-Head Attention';
             sourceDescription =
               'The foundational 2017 paper by Vaswani et al. analyzing sequence modeling, recurrence elimination, and self-attention mechanisms.';
-            sourceBody = rootNode.userQuestion;
+            sourceBody = `Recurrent neural networks, long short-term memory [13] and gated recurrent [7] neural networks in particular, have been firmly established as state of the art approaches in sequence modeling and transduction problems such as language modeling and machine translation.
+
+The Transformer is the first transduction model relying entirely on self-attention to compute representations of its input and output without using sequence-aligned RNNs or convolution.
+
+Multi-Head Attention allows the model to jointly attend to information from different representation subspaces at different positions.
+
+In the decoder, the self-attention sub-layer is modified to prevent positions from attending to subsequent positions. This masking, combined with the fact that output embeddings are offset by one position, ensures that predictions for position i can depend only on known outputs at positions less than i.`;
             sourceType = 'document';
             sourceReference = 'arXiv:1706.03762';
           } else if (rootNode.userQuestion.length > 50) {
@@ -335,7 +348,25 @@ export function WorkspaceEntry() {
           setInquiries(listRes.data);
         }
 
-        await loadInquiryWorkspace(session.inquiryId);
+        // Check for share parameters in URL
+        const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+        const sharedInquiryId = searchParams?.get('inquiry');
+        const sharedSourceId = searchParams?.get('source');
+        const sharedView = searchParams?.get('view') as TopNavView | null;
+
+        if (sharedView) {
+          setActiveView(sharedView);
+        }
+
+        if (sharedSourceId) {
+          setActiveStudioSourceId(sharedSourceId);
+          setActiveView('workspaces');
+        } else if (sharedInquiryId) {
+          await loadInquiryWorkspace(sharedInquiryId);
+          setActiveView('workspace');
+        } else {
+          await loadInquiryWorkspace(session.inquiryId);
+        }
       } catch (error) {
         if (!active) return;
         setErrorMessage(
@@ -356,6 +387,9 @@ export function WorkspaceEntry() {
 
   const handleSelectInquiry = async (inquiryId: string) => {
     setActiveView('workspace');
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(null, '', `/?inquiry=${inquiryId}`);
+    }
     await loadInquiryWorkspace(inquiryId);
   };
 
