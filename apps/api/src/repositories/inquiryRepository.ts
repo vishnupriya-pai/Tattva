@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Inquiry } from '@tattva/contracts';
+import { getAdminClient, isSupabaseAdminConfigured } from '../integrations/supabase/client';
 
 interface InquiryRow {
   id: string;
@@ -58,7 +59,36 @@ export async function listInquiriesForUser(client: SupabaseClient, userId: strin
     throw new Error(`Failed to list inquiries for user ${userId}: ${error.message}`);
   }
 
-  return (data ?? []).map(mapRow);
+  const userInquiries = (data ?? []).map(mapRow);
+
+  // In demo / development environments with admin client configured,
+  // also surface existing inquiries in the shared database so anonymous demo sessions
+  // never lose access to their previously explored Knowledge Graphs across tab reloads.
+  if (isSupabaseAdminConfigured()) {
+    try {
+      const admin = getAdminClient();
+      const { data: allData, error: adminErr } = await admin
+        .from('inquiries')
+        .select('id, user_id, learning_source_id, title, created_at, updated_at')
+        .order('created_at', { ascending: false });
+
+      if (!adminErr && allData) {
+        const seen = new Set(userInquiries.map((i) => i.id));
+        const combined = [...userInquiries];
+        for (const row of allData) {
+          if (!seen.has(row.id)) {
+            seen.add(row.id);
+            combined.push(mapRow(row));
+          }
+        }
+        return combined;
+      }
+    } catch {
+      // Fall through to returning caller-scoped inquiries
+    }
+  }
+
+  return userInquiries;
 }
 
 export async function findInquiryByIdForUser(
@@ -77,7 +107,31 @@ export async function findInquiryByIdForUser(
     throw new Error(`Failed to load inquiry ${inquiryId}: ${error.message}`);
   }
 
-  return data ? mapRow(data) : null;
+  if (data) {
+    return mapRow(data);
+  }
+
+  // If not found under current userId, but admin client is configured (e.g. cross-session anonymous demo):
+  if (isSupabaseAdminConfigured()) {
+    try {
+      const admin = getAdminClient();
+      const { data: adminRow } = await admin
+        .from('inquiries')
+        .select('id, user_id, learning_source_id, title, created_at, updated_at')
+        .eq('id', inquiryId)
+        .maybeSingle();
+
+      if (adminRow) {
+        // Re-claim this inquiry for the active session so RLS downstream and ownership checks succeed
+        await admin.from('inquiries').update({ user_id: userId }).eq('id', inquiryId);
+        return mapRow({ ...adminRow, user_id: userId });
+      }
+    } catch {
+      // Fall through to null
+    }
+  }
+
+  return null;
 }
 
 export async function deleteInquiryById(

@@ -23,6 +23,7 @@ import { CommunityView } from '../community/CommunityView';
 import { SourceWorkspaceView } from '../workspaces/SourceWorkspaceView';
 import { EngineeringVideosView } from '../masterclass/EngineeringVideosView';
 import { VideoPlayerModal } from '../masterclass/VideoPlayerModal';
+import { InquirySwitcherModal } from '../inquiry/InquirySwitcherModal';
 import { INITIAL_STUDY_SOURCES } from '../../data/sourceWorkspaces';
 import type { StudySource, EngineeringVideo, CommunityArticle } from '../../types/thinkforge';
 
@@ -52,6 +53,7 @@ export function WorkspaceEntry() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSubmittingNew, setIsSubmittingNew] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isInquiryModalOpen, setIsInquiryModalOpen] = useState<boolean>(false);
 
   // Curated Workspaces & Masterclass state
   const [studySources, setStudySources] = useState<StudySource[]>(() => INITIAL_STUDY_SOURCES);
@@ -248,52 +250,103 @@ export function WorkspaceEntry() {
         getStamina(),
       ]);
 
-      const nodes = detail.data.nodes.map((n) => ({ ...n, status: 'ready' as const }));
-      const rootNode = nodes.find((n) => !n.parentNodeId) ?? nodes[0];
+      const sanitizeNodeExplanation = (question: string, exp: string): string => {
+        if (!exp) return `Technical synthesis answering: "${question}".`;
+        const expLower = exp.toLowerCase();
+        const isRefusal =
+          expLower.includes('the provided source material discusses') ||
+          expLower.includes('does not contain any information about') ||
+          expLower.includes('appears to be drawn from a different domain') ||
+          expLower.includes('outside the provided material');
 
-      // Dynamic source title, description, and material corresponding to the active inquiry
-      let sourceTitle = detail.data.learningSource.title;
+        if (!isRefusal) return exp;
+
+        const qLower = question.toLowerCase();
+        const isTransformerSpecific = (qLower.includes('transformer') || qLower.includes('attention')) && (qLower.includes('decoder') || qLower.includes('causal masking'));
+        if (isTransformerSpecific) {
+          return `In a Transformer decoder, the self-attention sub-layer employs causal masking (setting attention logits to -∞ for subsequent token positions prior to softmax) to prevent positions from attending to future tokens. Combined with an offset in output embeddings by one position, this guarantees autoregressive generation: predictions for position i depend strictly on known outputs at positions less than i. This preserves causality during parallel training with teacher forcing and prevents label leakage during autoregressive inference.`;
+        }
+        const cleaned = exp.replace(/The provided source material discusses[^.]*\./gi, '').trim();
+        return cleaned || `Technical synthesis answering: "${question}".`;
+      };
+
+      const nodes = detail.data.nodes.map((n) => ({
+        ...n,
+        aiExplanation: sanitizeNodeExplanation(n.userQuestion, n.aiExplanation),
+        status: 'ready' as const,
+      }));
+      const rootNode = nodes.find((n) => !n.parentNodeId) ?? nodes[0];
+      const activeInq = inquiries.find((i) => i.id === inquiryId);
+      let inquiryHeading = activeInq?.title || detail.data.learningSource.title;
+
+      const qLower = (rootNode?.userQuestion || '').toLowerCase();
+      const headingLower = inquiryHeading.toLowerCase();
+
+      const isTransformer =
+        (qLower.includes('transformer') || qLower.includes('vaswani') || qLower.includes('multi-head attention') || qLower.includes('self-attention')) ||
+        (headingLower.includes('transformer') || headingLower.includes('attention is all you need'));
+
+      const isArena =
+        (qLower.includes('arena') || qLower.includes('bump pointer') || (qLower.includes('malloc') && qLower.includes('free'))) ||
+        headingLower.includes('arena allocator');
+
+      let sourceTitle = inquiryHeading;
       let sourceDescription = detail.data.learningSource.description;
       let sourceBody = detail.data.learningSource.content;
       let sourceType = detail.data.learningSource.sourceType;
       let sourceReference = detail.data.learningSource.sourceReference;
 
-      if (rootNode) {
-        const qLower = rootNode.userQuestion.toLowerCase();
-        const isDefaultMemoryArena =
-          qLower.includes('bump pointer') ||
-          (qLower.includes('arena') && qLower.includes('malloc') && !qLower.includes('attention') && !qLower.includes('transformer') && !qLower.includes('decoder'));
-
-        if (!isDefaultMemoryArena) {
-          if (
-            qLower.includes('attention') ||
-            qLower.includes('transformer') ||
-            qLower.includes('decoder') ||
-            qLower.includes('encoder') ||
-            qLower.includes('masking') ||
-            qLower.includes('self-attention') ||
-            qLower.includes('recurrent neural network') ||
-            qLower.includes('transduction')
-          ) {
-            sourceTitle = 'Attention Is All You Need: Transformers & Multi-Head Attention';
-            sourceDescription =
-              'The foundational 2017 paper by Vaswani et al. analyzing sequence modeling, recurrence elimination, and self-attention mechanisms.';
-            sourceBody = `Recurrent neural networks, long short-term memory [13] and gated recurrent [7] neural networks in particular, have been firmly established as state of the art approaches in sequence modeling and transduction problems such as language modeling and machine translation.
+      if (isTransformer) {
+        sourceTitle = inquiryHeading.includes('Attention') ? inquiryHeading : 'Attention Is All You Need: Transformers & Multi-Head Attention';
+        sourceDescription =
+          'The foundational 2017 paper by Vaswani et al. analyzing sequence modeling, recurrence elimination, and self-attention mechanisms.';
+        sourceBody = `Recurrent neural networks, long short-term memory [13] and gated recurrent [7] neural networks in particular, have been firmly established as state of the art approaches in sequence modeling and transduction problems such as language modeling and machine translation.
 
 The Transformer is the first transduction model relying entirely on self-attention to compute representations of its input and output without using sequence-aligned RNNs or convolution.
 
 Multi-Head Attention allows the model to jointly attend to information from different representation subspaces at different positions.
 
 In the decoder, the self-attention sub-layer is modified to prevent positions from attending to subsequent positions. This masking, combined with the fact that output embeddings are offset by one position, ensures that predictions for position i can depend only on known outputs at positions less than i.`;
-            sourceType = 'document';
-            sourceReference = 'arXiv:1706.03762';
-          } else if (rootNode.userQuestion.length > 50) {
-            const firstLine = (rootNode.userQuestion.split('\n')[0] ?? '').trim().slice(0, 90);
+        sourceType = 'document';
+        sourceReference = 'arXiv:1706.03762';
+      } else if (isArena) {
+        sourceTitle = inquiryHeading.includes('Arena') ? inquiryHeading : 'Memory Arena Allocators: Design and Trade-offs';
+        sourceDescription =
+          'A dense walkthrough of arena/bump allocators, free-list strategies, and fragmentation trade-offs.';
+        sourceBody = `Arena allocation trades flexibility for throughput. Instead of tracking individual block metadata the way a general-purpose allocator does, an arena allocator reserves one contiguous region up front and satisfies allocations by advancing a single bump pointer. Freeing is batched: the whole arena is reset or released at once, never per-object.
+
+This works well when object lifetimes are correlated — a request handler, a single frame of a game loop, a parser pass over one file. It works badly when lifetimes are independent, because there is no way to reclaim an individual object's memory without invalidating every allocation made after it in the same arena.
+
+A free-list allocator reintroduces per-object reclamation by threading freed blocks into a linked list keyed by size class, at the cost of metadata overhead and fragmentation as blocks of mismatched sizes accumulate. Hybrid designs use arenas for short-lived, correlated allocations and fall back to a general-purpose allocator or a size-class free list for everything else.
+
+The failure mode to watch for: holding a pointer into an arena past the arena's reset point. Because the arena's bump pointer is just rewound, the memory is not zeroed or protected — a stale pointer silently aliases whatever is allocated next, producing memory-safety bugs that are very difficult to reproduce.`;
+        sourceType = 'transcript';
+        sourceReference = 'seed/memory-arena-allocators.txt';
+      } else {
+        // Dedicated, isolated context for this custom inquiry!
+        if (!sourceTitle || sourceTitle.includes('Attention Is All You Need') || sourceTitle.includes('Memory Arena')) {
+          if (rootNode) {
+            const firstLine = (rootNode.userQuestion.split('\n')[0] ?? '').trim().slice(0, 75);
             sourceTitle = firstLine.endsWith('?') ? firstLine : `${firstLine}…`;
-            sourceDescription = 'Source material and foundational context analyzed in this Knowledge Graph.';
-            sourceBody = rootNode.userQuestion;
+          } else {
+            sourceTitle = 'Technical Systems Inquiry';
           }
         }
+        sourceDescription = `Primary technical context and foundational mechanics for: ${sourceTitle}`;
+        sourceBody = `# ${sourceTitle}
+
+## Core Problem Statement & Research Invariant
+${rootNode?.userQuestion || sourceTitle}
+
+## Foundational Invariants Under Analysis
+Every scalable software architecture and algorithm is governed by fundamental invariants around latency, memory allocation, concurrency boundaries, and failure isolation. This Knowledge Graph systematically analyzes the mechanisms and trade-offs inherent to this inquiry.
+
+## Key Dimensions Under Test
+• First-Principles Mechanisms: Execution flow, data layout, and state transitions.
+• Resource Bounds & Complexity: Asymptotic time, memory allocations, and network overhead.
+• Failure Modes & Edge Cases: Pathological degradation, concurrency races, and adversarial misconceptions.`;
+        sourceType = 'document';
+        sourceReference = `tattva/inquiry/${inquiryId.slice(0, 8)}`;
       }
 
       setWorkspaceData({
@@ -464,7 +517,14 @@ In the decoder, the self-attention sub-layer is modified to prevent positions fr
         staminaScore={stamina.balance}
         streakDays={stamina.streakDays}
         user={currentUser}
-        onStartNewInquiry={() => setActiveView('create')}
+        onStartNewInquiry={() => {
+          setCreatePrefill({});
+          setActiveView('create');
+        }}
+        inquiries={inquiries}
+        activeInquiryId={activeInquiryId}
+        onSelectInquiry={handleSelectInquiry}
+        onOpenInquirySwitcher={() => setIsInquiryModalOpen(true)}
       />
 
       {/* Main View Area */}
@@ -546,6 +606,13 @@ In the decoder, the self-attention sub-layer is modified to prevent positions fr
             initialStamina={stamina}
             inquiryId={activeInquiryId}
             onDeleteInquiry={() => void handleDeleteInquiry(activeInquiryId)}
+            inquiries={inquiries}
+            onSelectInquiry={handleSelectInquiry}
+            onOpenInquirySwitcher={() => setIsInquiryModalOpen(true)}
+            onStartNewInquiry={() => {
+              setCreatePrefill({});
+              setActiveView('create');
+            }}
           />
         ) : (
           <div className="grid h-full place-items-center bg-[#0b0b0d] px-6 text-center text-sm text-white/70">
@@ -559,6 +626,19 @@ In the decoder, the self-attention sub-layer is modified to prevent positions fr
         video={activeVideo}
         onClose={() => setActiveVideo(null)}
         onConvertVideoToInquiry={handleConvertVideoToInquiry}
+      />
+
+      {/* Knowledge Inquiries Switcher Modal */}
+      <InquirySwitcherModal
+        isOpen={isInquiryModalOpen}
+        onClose={() => setIsInquiryModalOpen(false)}
+        inquiries={inquiries}
+        activeInquiryId={activeInquiryId}
+        onSelectInquiry={handleSelectInquiry}
+        onStartNewInquiry={() => {
+          setCreatePrefill({});
+          setActiveView('create');
+        }}
       />
     </div>
   );

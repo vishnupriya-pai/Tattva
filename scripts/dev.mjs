@@ -2,12 +2,16 @@ import { spawn } from 'node:child_process';
 import { spawnSync } from 'node:child_process';
 
 const commands = [
-  ['API', ['run', 'dev', '--workspace=@tattva/api']],
-  ['Web', ['run', 'dev', '--workspace=@tattva/web']],
+  ['API', ['run', 'dev'], { cwd: 'apps/api' }],
+  ['Web', ['run', 'dev'], { cwd: 'apps/web' }],
 ];
 
-const children = commands.map(([label, args]) => {
-  const child = spawn('npm', args, { stdio: 'inherit', shell: process.platform === 'win32' });
+const children = commands.map(([label, args, options]) => {
+  const child = spawn('npm', args, {
+    stdio: 'inherit',
+    shell: process.platform === 'win32',
+    ...options,
+  });
   child.on('error', (error) => {
     process.stderr.write(`${label} dev server could not start: ${error.message}\n`);
     stopAll(1);

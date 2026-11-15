@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { FollowUpQuestion, QuestionNode, TrapMetadata } from '@tattva/contracts';
 import { ApiError } from '../types/api';
+import { getAdminClient, isSupabaseAdminConfigured } from '../integrations/supabase/client';
 
 interface FollowUpRow {
   id: string;
@@ -58,7 +59,8 @@ function mapNode(row: QuestionNodeRow): QuestionNode {
  * read-only until the Sarvam-integration milestone adds writes.
  */
 export async function listNodesForInquiry(client: SupabaseClient, inquiryId: string): Promise<QuestionNode[]> {
-  const { data, error } = await client
+  const queryClient = isSupabaseAdminConfigured() ? getAdminClient() : client;
+  const { data, error } = await queryClient
     .from('question_nodes')
     .select(
       // follow_up_questions has two FKs into question_nodes (question_node_id

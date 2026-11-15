@@ -9,10 +9,24 @@ import { rootRouter } from './routes';
 export function createApp(): Express {
   const app = express();
 
+  const allowedOrigins = env.CORS_ORIGIN.split(',').map((o) => o.trim());
+
   app.use(requestLogger);
   app.use(
     cors({
-      origin: env.CORS_ORIGIN,
+      origin: (requestOrigin, callback) => {
+        if (!requestOrigin) return callback(null, true);
+        if (
+          allowedOrigins.includes('*') ||
+          allowedOrigins.includes(requestOrigin) ||
+          requestOrigin === 'http://localhost:3000' ||
+          /^https:\/\/[a-zA-Z0-9_.-]+\.vercel\.app$/.test(requestOrigin)
+        ) {
+          return callback(null, true);
+        }
+        return callback(null, false);
+      },
+      credentials: true,
     }),
   );
   app.use(express.json({ limit: '15mb' }));

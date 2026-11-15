@@ -34,7 +34,7 @@ interface ParseableSchema<T> {
  * (ADR-002), and response validation live in exactly one place rather than
  * scattered fetch() calls.
  */
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000').replace(/\/+$/, '');
 
 export class ApiClientError extends Error {
   constructor(

@@ -9,7 +9,25 @@ import {
 } from 'lucide-react';
 import { DEMO_LEARNING_SOURCE_ID } from '../../lib/workspace-bootstrap';
 
+export const GENERAL_LEARNING_SOURCE_ID = '33333333-3333-4333-8333-333333333333';
 export const ATTENTION_LEARNING_SOURCE_ID = '22222222-2222-4222-8222-222222222222';
+
+export function deriveTitleFromQuestion(q: string): string {
+  const trimmed = q.trim();
+  if (!trimmed) return '';
+  const firstLine = trimmed.split('\n')[0]?.trim() ?? trimmed;
+  let clean = firstLine
+    .replace(/^(what is|what are|how does|how do|explain|describe|analyze|why does|why do|can you explain|compare|evaluate)\s+/i, '')
+    .replace(/[?.!]+$/, '')
+    .trim();
+  if (clean.length > 65) {
+    clean = clean.slice(0, 62) + '…';
+  }
+  if (clean.length > 0) {
+    clean = clean.charAt(0).toUpperCase() + clean.slice(1);
+  }
+  return clean;
+}
 
 export interface CreateInquiryViewProps {
   initialQuestion?: string;
@@ -25,6 +43,15 @@ export interface CreateInquiryViewProps {
 }
 
 const CURATED_SOURCES = [
+  {
+    id: GENERAL_LEARNING_SOURCE_ID,
+    title: 'Custom Engineering & Systems Inquiry',
+    duration: '40 min',
+    sourceType: 'document',
+    topic: 'Any CS, AI, or Engineering Topic',
+    description: 'Explore any technical domain (databases, operating systems, networking, algorithms, distributed systems) with its own isolated knowledge graph and dedicated context.',
+    sampleQuestion: 'How do LSM-Trees achieve high write throughput compared to B-Trees, and what is write amplification?',
+  },
   {
     id: ATTENTION_LEARNING_SOURCE_ID,
     title: 'Attention Is All You Need: Transformers & Multi-Head Attention',
@@ -47,13 +74,15 @@ const CURATED_SOURCES = [
 
 export const CreateInquiryView: React.FC<CreateInquiryViewProps> = ({
   initialQuestion = '',
-  initialSourceId = ATTENTION_LEARNING_SOURCE_ID,
+  initialSourceId,
   onCreateInquiry,
   onCancel,
   isSubmitting = false,
 }) => {
-  const [selectedSourceId, setSelectedSourceId] = useState<string>(initialSourceId);
+  const [selectedSourceId, setSelectedSourceId] = useState<string>(initialSourceId || GENERAL_LEARNING_SOURCE_ID);
   const [question, setQuestion] = useState<string>(initialQuestion);
+  const [inquiryTitle, setInquiryTitle] = useState<string>(() => deriveTitleFromQuestion(initialQuestion));
+  const [userEditedTitle, setUserEditedTitle] = useState<boolean>(false);
   const [researchMode, setResearchMode] = useState<boolean>(false);
 
   const selectedSource = CURATED_SOURCES.find((s) => s.id === selectedSourceId) ?? CURATED_SOURCES[0];
@@ -62,10 +91,29 @@ export const CreateInquiryView: React.FC<CreateInquiryViewProps> = ({
     e.preventDefault();
     if (!question.trim() || isSubmitting) return;
 
+    const qLower = question.toLowerCase();
+    let resolvedSourceId = selectedSourceId;
+    let finalTitle = inquiryTitle.trim() || deriveTitleFromQuestion(question);
+
+    if (qLower.includes('transformer') || qLower.includes('attention is all you need') || qLower.includes('multi-head attention')) {
+      resolvedSourceId = ATTENTION_LEARNING_SOURCE_ID;
+      if (!finalTitle) finalTitle = 'Attention & Transformers Architecture';
+    } else if (qLower.includes('arena') || qLower.includes('bump pointer')) {
+      resolvedSourceId = DEMO_LEARNING_SOURCE_ID;
+      if (!finalTitle) finalTitle = 'Memory Arena Allocators';
+    } else {
+      if (resolvedSourceId === ATTENTION_LEARNING_SOURCE_ID || resolvedSourceId === DEMO_LEARNING_SOURCE_ID) {
+        resolvedSourceId = GENERAL_LEARNING_SOURCE_ID;
+      }
+      if (!finalTitle) {
+        finalTitle = 'Technical Systems Inquiry';
+      }
+    }
+
     onCreateInquiry({
       question: question.trim(),
-      learningSourceId: selectedSourceId,
-      title: selectedSource?.title ?? 'Technical Inquiry',
+      learningSourceId: resolvedSourceId,
+      title: finalTitle,
       researchMode,
     });
   };
@@ -161,7 +209,12 @@ export const CreateInquiryView: React.FC<CreateInquiryViewProps> = ({
               {selectedSource?.sampleQuestion && (
                 <button
                   type="button"
-                  onClick={() => setQuestion(selectedSource.sampleQuestion)}
+                  onClick={() => {
+                    setQuestion(selectedSource.sampleQuestion);
+                    if (!userEditedTitle) {
+                      setInquiryTitle(selectedSource.title);
+                    }
+                  }}
                   className="text-[11px] font-mono text-[#c59a67] hover:underline cursor-pointer"
                 >
                   Use sample prompt
@@ -173,12 +226,41 @@ export const CreateInquiryView: React.FC<CreateInquiryViewProps> = ({
           <textarea
             rows={5}
             value={question}
-            onChange={(e) => setQuestion(e.target.value)}
+            onChange={(e) => {
+              const newQ = e.target.value;
+              setQuestion(newQ);
+              if (!userEditedTitle) {
+                setInquiryTitle(deriveTitleFromQuestion(newQ));
+              }
+            }}
             disabled={isSubmitting}
             maxLength={6000}
             placeholder="Paste your technical passage or formulate the foundational mechanism / trade-off you want to explore..."
             className="w-full rounded-xl border border-white/15 bg-[#13161b] px-4 py-3 text-sm text-white placeholder-slate-500 focus:border-[#c59a67] focus:outline-none focus:ring-1 focus:ring-[#c59a67] disabled:opacity-50 font-sans leading-relaxed"
           />
+
+          {/* Inquiry Heading Input */}
+          <div className="space-y-1.5 pt-1">
+            <div className="flex items-center justify-between">
+              <label className="block font-mono text-[11px] font-bold text-slate-300 uppercase tracking-wider">
+                Inquiry Heading (auto-generated from your question)
+              </label>
+              <span className="text-[10px] font-mono text-slate-500">
+                Displayed in Knowledge Graph & Switcher
+              </span>
+            </div>
+            <input
+              type="text"
+              value={inquiryTitle}
+              onChange={(e) => {
+                setInquiryTitle(e.target.value);
+                setUserEditedTitle(true);
+              }}
+              disabled={isSubmitting}
+              placeholder="e.g. LSM Trees: Write Amplification & Compaction"
+              className="w-full rounded-xl border border-white/15 bg-[#13161b] px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:border-[#c59a67] focus:outline-none focus:ring-1 focus:ring-[#c59a67] disabled:opacity-50 font-sans"
+            />
+          </div>
         </div>
 
         {/* Step 3: Research Mode Toggle */}

@@ -42,24 +42,56 @@ export async function createQuestionNodeForUser(
   let source = await findLearningSourceById(client, inquiry.learningSourceId);
   if (!source) throw new ApiError(404, 'learning_source_not_found', 'The inquiry references a missing learning source');
 
-  // Dynamic source resolution: If the learner asks about Transformers / Deep Learning / Decoders / Attention,
-  // but the inquiry was attached to Memory Arena, dynamically attach the Attention learning source.
+  // Dynamic source resolution: Never force Memory Arena or Transformers as a static fallback for other topics.
+  // Resolve appropriate context based on the user's specific inquiry topic and question.
   const qLower = input.question.toLowerCase();
-  const isTransformerQuestion =
-    qLower.includes('decoder') ||
-    qLower.includes('encoder') ||
-    qLower.includes('transformer') ||
-    qLower.includes('attention') ||
-    qLower.includes('masking') ||
-    qLower.includes('self-attention') ||
-    qLower.includes('multi-head') ||
-    qLower.includes('vaswani');
+  const inqTitle = inquiry.title || '';
+  const inqTitleLower = inqTitle.toLowerCase();
 
-  if (isTransformerQuestion && source.title.toLowerCase().includes('arena')) {
+  const isTransformerQuestion =
+    (qLower.includes('transformer') || qLower.includes('vaswani') || qLower.includes('multi-head attention') || qLower.includes('self-attention')) ||
+    (inqTitleLower.includes('transformer') || inqTitleLower.includes('attention is all you need'));
+
+  const isArenaQuestion =
+    (qLower.includes('arena') || qLower.includes('bump pointer') || (qLower.includes('allocator') && qLower.includes('malloc'))) ||
+    inqTitleLower.includes('arena');
+
+  let effectiveTitle = inqTitle || source.title;
+  let effectiveDescription = source.description;
+  let effectiveContent = source.content;
+
+  if (isTransformerQuestion) {
     const attentionSource = await findLearningSourceById(client, '22222222-2222-4222-8222-222222222222');
-    if (attentionSource) {
-      source = attentionSource;
-    }
+    effectiveTitle = inqTitle || attentionSource?.title || 'Attention Is All You Need: Transformers & Multi-Head Attention';
+    effectiveDescription =
+      attentionSource?.description ??
+      'The foundational 2017 paper by Vaswani et al. analyzing sequence modeling, recurrence elimination, and self-attention mechanisms.';
+    effectiveContent =
+      attentionSource?.content ??
+      `The Transformer is the first transduction model relying entirely on self-attention to compute representations of its input and output without using sequence-aligned RNNs or convolution.
+Multi-Head Attention allows the model to jointly attend to information from different representation subspaces at different positions.
+In the decoder, the self-attention sub-layer is modified to prevent positions from attending to subsequent positions. This masking, combined with the fact that output embeddings are offset by one position, ensures that predictions for position i can depend only on known outputs at positions less than i.`;
+  } else if (isArenaQuestion) {
+    const arenaSource = await findLearningSourceById(client, '11111111-1111-4111-8111-111111111111');
+    effectiveTitle = inqTitle || arenaSource?.title || 'Memory Arena Allocators: Design and Trade-offs';
+    effectiveDescription =
+      arenaSource?.description ??
+      'A dense walkthrough of arena/bump allocators, free-list strategies, and the fragmentation trade-offs systems engineers accept when they trade general-purpose malloc for a custom allocator.';
+    effectiveContent =
+      arenaSource?.content ??
+      `Arena allocation trades flexibility for throughput. Instead of tracking individual block metadata the way a general-purpose allocator does, an arena allocator reserves one contiguous region up front and satisfies allocations by advancing a single bump pointer. Freeing is batched: the whole arena is reset or released at once, never per-object.`;
+  } else {
+    // Isolated, dedicated context for this specific technical inquiry
+    const topicHeading = inqTitle || input.question.slice(0, 80);
+    effectiveTitle = topicHeading;
+    effectiveDescription = `First-principles technical analysis and systems mechanics for: ${topicHeading}`;
+    effectiveContent = `Domain: Computer Science, Software Engineering, AI & Systems Architecture.
+Topic: ${topicHeading}
+Learner Question: ${input.question}
+
+Foundational Analysis:
+Analyze the fundamental mechanisms, algorithmic invariants, architectural trade-offs, and failure domains for ${topicHeading}.
+All follow-up questions must be strictly, uniquely focused on ${topicHeading}.`;
   }
   const existingNodes = await listNodesForInquiry(client, inquiryId);
 
@@ -80,7 +112,10 @@ export async function createQuestionNodeForUser(
 
   if (!isSupabaseAdminConfigured()) throw new ApiError(503, 'admin_database_not_configured', 'Set SUPABASE_SERVICE_ROLE_KEY in apps/api/.env.local to enable graph writes.');
   const generated = await generateQuestionNode({
-    question: input.question, sourceTitle: source.title, sourceDescription: source.description, sourceContent: source.content,
+    question: input.question,
+    sourceTitle: effectiveTitle,
+    sourceDescription: effectiveDescription,
+    sourceContent: effectiveContent,
     researchMode: input.researchMode,
   });
   const id = await createNodeAtomically(getAdminClient(), {
@@ -143,7 +178,12 @@ export async function getInquiryDetail(
 
   const nodes = await listNodesForInquiry(client, inquiry.id);
 
-  return { id: inquiry.id, learningSource: source, nodes };
+  const tailoredSource = {
+    ...source,
+    title: inquiry.title || source.title,
+  };
+
+  return { id: inquiry.id, learningSource: tailoredSource, nodes };
 }
 
 export async function deleteInquiryForUser(

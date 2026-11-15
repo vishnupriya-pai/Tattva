@@ -8,6 +8,7 @@ import {
   Sun,
   User,
 } from 'lucide-react';
+import type { Inquiry } from '@tattva/contracts';
 import { useTheme } from '../../context/ThemeContext';
 
 export type TopNavView = 'home' | 'workspace' | 'workspaces' | 'masterclass' | 'community' | 'create' | 'profile';
@@ -22,6 +23,10 @@ export interface TopNavBarProps {
     isAnonymous: boolean;
   };
   onStartNewInquiry?: () => void;
+  inquiries?: Inquiry[];
+  activeInquiryId?: string | null;
+  onSelectInquiry?: (id: string) => void;
+  onOpenInquirySwitcher?: () => void;
 }
 
 export const TopNavBar: React.FC<TopNavBarProps> = ({
@@ -31,6 +36,10 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
   streakDays = 0,
   user = { id: 'anonymous', isAnonymous: true },
   onStartNewInquiry,
+  inquiries = [],
+  activeInquiryId,
+  onSelectInquiry,
+  onOpenInquirySwitcher,
 }) => {
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const accountMenuRef = useRef<HTMLDivElement | null>(null);
@@ -125,14 +134,34 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
 
           <button
             type="button"
-            onClick={() => onChangeView('workspace')}
-            className={`py-1 transition relative cursor-pointer ${
+            onClick={() => {
+              if (activeView === 'workspace' && onOpenInquirySwitcher) {
+                onOpenInquirySwitcher();
+              } else {
+                onChangeView('workspace');
+              }
+            }}
+            className={`py-1 transition relative cursor-pointer flex items-center gap-1.5 ${
               activeView === 'workspace'
                 ? 'text-white font-semibold after:absolute after:bottom-[-20px] after:left-0 after:right-0 after:h-[2px] after:bg-[#c59a67]'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            Knowledge Graph
+            <span>Knowledge Graph</span>
+            {inquiries.length > 0 && (
+              <span
+                onClick={(e) => {
+                  if (onOpenInquirySwitcher) {
+                    e.stopPropagation();
+                    onOpenInquirySwitcher();
+                  }
+                }}
+                title="Switch inquiry"
+                className="rounded-full bg-[#c59a67]/20 border border-[#c59a67]/30 px-1.5 py-0.2 text-[10px] font-mono text-[#c59a67] font-semibold hover:bg-[#c59a67]/40 transition"
+              >
+                {inquiries.length}
+              </span>
+            )}
           </button>
 
           <button

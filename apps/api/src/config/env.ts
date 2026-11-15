@@ -24,7 +24,7 @@ loadDotenv({ path: [resolve(process.cwd(), '.env.local'), resolve(process.cwd(),
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().default(4000),
-  CORS_ORIGIN: z.string().url().default('http://localhost:3000'),
+  CORS_ORIGIN: z.string().default('http://localhost:3000'),
 
   // Optional integrations (Pending real values — do not fabricate credentials).
   SARVAM_API_KEY: z.string().min(1).optional(),

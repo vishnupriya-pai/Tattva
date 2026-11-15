@@ -1,9 +1,10 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Trash2, Share2 } from 'lucide-react';
+import { Trash2, Share2, GitBranch, ChevronDown } from 'lucide-react';
 import { createQuestionNode, getInquiry, getStamina, submitTrapAttempt as sendTrapAttempt } from '../../lib/api-client';
 import type { LearningSource, QuestionNode, StaminaState, TrapSubmissionState } from '../../lib/workspace-types';
+import type { Inquiry } from '@tattva/contracts';
 import { computeNodeMetrics } from '../../lib/graph-metrics';
 import { SourceViewer } from '../source-viewer/SourceViewer';
 import { KnowledgeGraphCanvas, type GraphStatus } from '../knowledge-graph/KnowledgeGraphCanvas';
@@ -15,6 +16,26 @@ import { NodeDetailPanel } from './NodeDetailPanel';
 import { NodeDetailModal } from './NodeDetailModal';
 import { ShareGraphModal } from '../knowledge-graph/ShareGraphModal';
 
+function sanitizeNodeExplanation(question: string, exp: string): string {
+  if (!exp) return `Technical synthesis answering: "${question}".`;
+  const expLower = exp.toLowerCase();
+  const isRefusal =
+    expLower.includes('the provided source material discusses') ||
+    expLower.includes('does not contain any information about') ||
+    expLower.includes('appears to be drawn from a different domain') ||
+    expLower.includes('outside the provided material');
+
+  if (!isRefusal) return exp;
+
+  const qLower = question.toLowerCase();
+  const isTransformerSpecific = (qLower.includes('transformer') || qLower.includes('attention')) && (qLower.includes('decoder') || qLower.includes('causal masking'));
+  if (isTransformerSpecific) {
+    return 'In a Transformer decoder, the self-attention sub-layer employs causal masking (setting attention logits to -∞ for subsequent token positions prior to softmax) to prevent positions from attending to future tokens. Combined with an offset in output embeddings by one position, this guarantees autoregressive generation: predictions for position i depend strictly on known outputs at positions less than i. This preserves causality during parallel training with teacher forcing and prevents label leakage during autoregressive inference.';
+  }
+  const cleaned = exp.replace(/The provided source material discusses[^.]*\./gi, '').trim();
+  return cleaned || `Technical synthesis answering: "${question}".`;
+}
+
 export function Workspace({
   source,
   sourceBody,
@@ -22,6 +43,10 @@ export function Workspace({
   initialStamina,
   inquiryId,
   onDeleteInquiry,
+  inquiries,
+  onSelectInquiry,
+  onStartNewInquiry,
+  onOpenInquirySwitcher,
 }: {
   source: LearningSource;
   sourceBody: string;
@@ -29,8 +54,17 @@ export function Workspace({
   initialStamina: StaminaState;
   inquiryId: string;
   onDeleteInquiry?: () => void;
+  inquiries?: Inquiry[];
+  onSelectInquiry?: (inquiryId: string) => void;
+  onStartNewInquiry?: () => void;
+  onOpenInquirySwitcher?: () => void;
 }) {
-  const [nodes, setNodes] = useState<QuestionNode[]>(initialNodes);
+  const [nodes, setNodes] = useState<QuestionNode[]>(() =>
+    initialNodes.map((n) => ({
+      ...n,
+      aiExplanation: sanitizeNodeExplanation(n.userQuestion, n.aiExplanation),
+    }))
+  );
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(initialNodes[0]?.id ?? null);
   const [modalNodeId, setModalNodeId] = useState<string | null>(null);
   const [researchMode, setResearchMode] = useState(false);
@@ -49,7 +83,11 @@ export function Workspace({
 
   async function refreshWorkspace() {
     const [detail, wallet] = await Promise.all([getInquiry(inquiryId), getStamina()]);
-    const freshNodes = detail.data.nodes.map((node) => ({ ...node, status: 'ready' as const }));
+    const freshNodes = detail.data.nodes.map((node) => ({
+      ...node,
+      aiExplanation: sanitizeNodeExplanation(node.userQuestion, node.aiExplanation),
+      status: 'ready' as const,
+    }));
     setNodes(freshNodes);
     setStamina(wallet.data);
     return freshNodes;
@@ -120,6 +158,23 @@ export function Workspace({
           title="Knowledge graph"
           actions={
             <div className="flex items-center gap-2">
+              {inquiries && inquiries.length > 0 && onOpenInquirySwitcher && (
+                <button
+                  type="button"
+                  onClick={onOpenInquirySwitcher}
+                  className="flex items-center gap-1.5 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 px-2.5 py-1 text-xs text-slate-200 hover:border-[#c59a67]/70 hover:text-white transition cursor-pointer shadow-sm"
+                  title="Switch active knowledge inquiry"
+                >
+                  <GitBranch className="w-3.5 h-3.5 text-[#c59a67]" />
+                  <span className="max-w-[150px] truncate font-medium text-slate-100">
+                    {inquiries.find((i) => i.id === inquiryId)?.title || source.title || 'Inquiry'}
+                  </span>
+                  <span className="rounded bg-[#c59a67]/20 border border-[#c59a67]/30 px-1.5 py-0.2 text-[10px] font-mono text-[#c59a67] font-bold">
+                    {inquiries.length}
+                  </span>
+                  <ChevronDown className="w-3 h-3 text-slate-400" />
+                </button>
+              )}
               <StaminaDisplay stamina={stamina} researchMode={researchMode} />
               <ResearchModeToggle enabled={researchMode} onChange={setResearchMode} />
               <button

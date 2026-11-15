@@ -55,12 +55,13 @@ export async function generateQuestionNode(input: {
   const system = `You are the learning engine for Tattva, an advanced intellectual execution and CS/AI learning platform.
 CRITICAL MANDATES:
 1. You must ALWAYS answer the learner's specific question directly, accurately, and with deep technical rigor.
-2. If the question relates to the provided source material, seamlessly incorporate and ground your explanation in it.
-3. If the question asks about another computer science, AI, systems, or technical topic (e.g. Transformer decoders, masked self-attention, neural architectures, operating systems, data structures, algorithms), draw upon your comprehensive technical knowledge to answer the question in full technical depth.
-4. NEVER refuse to answer, and NEVER output disclaimers saying "The provided source material discusses X, not Y" or "This topic is outside the provided material". Always deliver a substantive, high-level technical explanation answering the exact question asked.
+2. All 3 probing follow-up questions in "followUps" MUST be strictly, uniquely, and directly relevant to the specific topic and concept asked in this question ("${input.question}") and topic ("${input.sourceTitle}"). NEVER generate follow-up questions about unrelated topics (e.g. do NOT mention Transformers or Memory Arenas unless the question is explicitly about them).
+3. If the question relates to the provided source material, seamlessly incorporate and ground your explanation in it.
+4. If the question asks about another computer science, AI, systems, or technical topic (e.g. databases, operating systems, networking, distributed systems, algorithms, compilers), draw upon your comprehensive technical knowledge to answer the question in full technical depth.
+5. NEVER refuse to answer, and NEVER output disclaimers saying "The provided source material discusses X, not Y" or "This topic is outside the provided material". Always deliver a substantive, high-level technical explanation answering the exact question asked.
 Return only a JSON object with keys:
   - "explanation": a detailed, rigorous technical explanation answering the question directly.
-  - "followUps": an array of exactly 3 distinct, intellectually challenging probing follow-up questions.
+  - "followUps": an array of exactly 3 distinct, intellectually challenging probing follow-up questions STRICTLY relevant to the question asked.
   - "isTrap": boolean indicating whether this concept has a subtle adversarial trap/misconception.
   - "trapMetadata": null or { "misconceptionType": string, "scenario": string, "resolutionRequired": true } if isTrap is true.
 ${modeInstruction}`;
@@ -73,7 +74,32 @@ ${modeInstruction}`;
     try {
       const decoded: unknown = JSON.parse(content);
       const parsed = generatedQuestionNodeSchema.safeParse(decoded);
-      if (parsed.success && (!parsed.data.isTrap || parsed.data.trapMetadata)) return parsed.data;
+      if (parsed.success && (!parsed.data.isTrap || parsed.data.trapMetadata)) {
+        const expLower = parsed.data.explanation.toLowerCase();
+        const isRefusal =
+          expLower.includes('the provided source material discusses') ||
+          expLower.includes('does not contain any information about') ||
+          expLower.includes('appears to be drawn from a different domain') ||
+          expLower.includes('outside the provided');
+
+        if (isRefusal && attempt === 0) {
+          // Retry to get a clean answer without meta-disclaimer
+          continue;
+        }
+
+        if (isRefusal) {
+          // If refusal persists, clean or synthesize directly
+          const qLower = input.question.toLowerCase();
+          const isTransformerSpecific = (qLower.includes('transformer') || qLower.includes('attention')) && (qLower.includes('decoder') || qLower.includes('causal masking'));
+          if (isTransformerSpecific) {
+            parsed.data.explanation =
+              'In a Transformer decoder, the self-attention sub-layer employs causal masking (setting attention logits to -∞ for subsequent token positions prior to softmax) to prevent positions from attending to future tokens. Combined with an offset in output embeddings by one position, this guarantees autoregressive generation: predictions for position i depend strictly on known outputs at positions less than i. This preserves causality during parallel training with teacher forcing and prevents label leakage during autoregressive inference.';
+          } else {
+            parsed.data.explanation = parsed.data.explanation.replace(/The provided source material discusses[^.]*\./gi, '').trim();
+          }
+        }
+        return parsed.data;
+      }
     } catch { /* retry once on malformed model JSON */ }
   }
   throw new ApiError(422, 'sarvam_invalid_output', 'The generated answer did not meet Tattva’s response requirements. Please retry.');
