@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "Tattva frontend — Next.js App Router workspace shell",
+  "packageManager": "npm@10.8.2",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
