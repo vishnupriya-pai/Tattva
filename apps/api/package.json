@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc -p tsconfig.json",
-    "start": "node dist/server.js",
+    "start": "tsx src/server.ts",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
@@ -24,6 +24,7 @@
     "pino": "10.4.0",
     "pino-http": "11.0.0",
     "sarvamai": "^1.1.18",
+    "tsx": "4.23.15",
     "typescript": "6.0.3",
     "zod": "4.6.7"
   },
@@ -33,7 +34,6 @@
     "eslint": "10.14.0",
     "globals": "17.14.0",
     "supertest": "7.3.2",
-    "tsx": "4.23.15",
     "typescript-eslint": "8.72.2",
     "vitest": "5.1.0"
   }
