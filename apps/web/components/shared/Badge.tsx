@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react';
 
 const TONES = {
-  neutral: 'border-white/15 bg-white/5 text-white/60',
-  accent: 'border-amber-400/30 bg-amber-400/10 text-amber-300',
-  danger: 'border-red-400/30 bg-red-400/10 text-red-300',
-  success: 'border-emerald-400/30 bg-emerald-400/10 text-emerald-300',
+  neutral: 'border-line-strong bg-surface-2/5 text-fg/60',
+  accent: 'border-gold/30 bg-gold/10 text-gold',
+  danger: 'border-trap/30 bg-trap/10 text-trap',
+  success: 'border-explored/30 bg-explored/10 text-explored',
 } as const;
 
 export function Badge({ tone = 'neutral', children }: { tone?: keyof typeof TONES; children: ReactNode }) {

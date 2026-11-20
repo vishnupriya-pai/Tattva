@@ -122,12 +122,12 @@ export function KnowledgeGraphCanvas({
         edgesReconnectable={false}
       >
         <Background color="rgba(255,255,255,0.05)" gap={28} size={1} />
-        <Controls showInteractive={false} className="!border-white/10 !bg-[#141417] !fill-white" />
+        <Controls showInteractive={false} className="!border-line !bg-surface-1 !fill-fg" />
         <MiniMap
           position="top-right"
           pannable
           zoomable
-          className="!h-20 !w-28 !rounded-lg !border !border-white/10 !bg-[#141417]/90 backdrop-blur-sm"
+          className="!h-20 !w-28 !rounded-lg !border !border-line !bg-surface-1/90 backdrop-blur-sm"
           maskColor="rgba(0,0,0,0.65)"
           nodeColor={(n) => {
             const data = n.data as CircularConceptNodeType['data'];
@@ -139,22 +139,22 @@ export function KnowledgeGraphCanvas({
         />
 
         {/* Legend Overlay */}
-        <div className="pointer-events-none absolute bottom-3 left-3 z-10 flex flex-wrap items-center gap-3 rounded-lg border border-white/10 bg-[#141417]/80 px-3 py-1.5 backdrop-blur-md text-[10px]">
-          <span className="text-white/40 uppercase tracking-widest font-semibold">Graph Heatmap:</span>
-          <span className="flex items-center gap-1.5 text-zinc-300">
-            <span className="h-2 w-2 rounded-full border border-zinc-500 bg-zinc-800" />
+        <div className="pointer-events-none absolute bottom-3 left-3 z-10 flex flex-wrap items-center gap-3 rounded-lg border border-line bg-surface-1/80 px-3 py-1.5 backdrop-blur-md text-[10px]">
+          <span className="text-fg/40 uppercase tracking-widest font-semibold">Graph Heatmap:</span>
+          <span className="flex items-center gap-1.5 text-fg-muted">
+            <span className="h-2 w-2 rounded-full border border-line-strong bg-surface-2" />
             B&W (Initial)
           </span>
-          <span className="flex items-center gap-1.5 text-amber-300">
-            <span className="h-2 w-2 rounded-full bg-amber-400 shadow-[0_0_6px_rgba(245,158,11,0.6)]" />
+          <span className="flex items-center gap-1.5 text-gold">
+            <span className="h-2 w-2 rounded-full bg-gold" />
             Yellow (Moderate)
           </span>
-          <span className="flex items-center gap-1.5 text-emerald-300">
-            <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,0.7)]" />
+          <span className="flex items-center gap-1.5 text-explored">
+            <span className="h-2 w-2 rounded-full bg-explored" />
             Green (Deep Dive)
           </span>
-          <span className="flex items-center gap-1.5 text-rose-300">
-            <span className="h-2 w-2 rounded-full bg-rose-500 shadow-[0_0_6px_rgba(244,63,94,0.6)]" />
+          <span className="flex items-center gap-1.5 text-trap">
+            <span className="h-2 w-2 rounded-full bg-trap" />
             Red (Divergent / Trap)
           </span>
         </div>

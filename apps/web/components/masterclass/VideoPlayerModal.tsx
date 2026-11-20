@@ -33,7 +33,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="video-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/75 backdrop-blur-xs"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-bg/75 backdrop-blur-xs"
       onClick={onClose}
     >
       <div
@@ -43,7 +43,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
         {/* Top bar */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-primary)] bg-[var(--bg-muted)]">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#d4af37] text-black">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gold text-gold-ink">
               <YoutubeIcon className="w-3.5 h-3.5" />
               {video.lectureBadge}
             </span>
@@ -63,7 +63,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
         </div>
 
         {/* Video Embed Frame (16:9) */}
-        <div className="relative w-full aspect-video bg-black shrink-0">
+        <div className="relative w-full aspect-video bg-bg shrink-0">
           <iframe
             src={`https://www.youtube-nocookie.com/embed/${video.youtubeId}?autoplay=1&rel=0`}
             title={video.title}
@@ -101,7 +101,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
                 onConvertVideoToInquiry(video);
                 onClose();
               }}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white text-xs sm:text-sm font-semibold shadow-sm shrink-0 cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-fg text-xs sm:text-sm font-semibold shadow-sm shrink-0 cursor-pointer"
             >
               <GitBranch className="w-4 h-4" />
               <span>Explore as Knowledge Graph</span>

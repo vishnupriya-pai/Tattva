@@ -36,6 +36,9 @@ interface Badge {
 export function ProfileView({ userId = 'anonymous', staminaBalance = 0, streakDays = 0 }: ProfileViewProps) {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
 
+  const earnedAccent = 'text-gold border-gold-line bg-surface-1';
+  const unearnedAccent = 'text-fg-muted border-line-strong bg-surface-1';
+
   const badges: Badge[] = [
     {
       id: 'polymath',
@@ -43,7 +46,7 @@ export function ProfileView({ userId = 'anonymous', staminaBalance = 0, streakDa
       detail: `${profileDomainSummaries.length} domains explored`,
       icon: Layers,
       earned: true,
-      accent: 'text-[#c59a67] border-[#c59a67]/30 bg-[#c59a67]/10',
+      accent: earnedAccent,
     },
     {
       id: 'trap-survivor',
@@ -51,7 +54,7 @@ export function ProfileView({ userId = 'anonymous', staminaBalance = 0, streakDa
       detail: `${profileTrapsSurvived} adversarial traps resolved`,
       icon: ShieldCheck,
       earned: profileTrapsSurvived > 0,
-      accent: 'text-emerald-300 border-emerald-500/30 bg-emerald-950/30',
+      accent: profileTrapsSurvived > 0 ? earnedAccent : unearnedAccent,
     },
     {
       id: 'research-initiate',
@@ -59,7 +62,7 @@ export function ProfileView({ userId = 'anonymous', staminaBalance = 0, streakDa
       detail: `${profileResearchNodes} Research Mode inquiries`,
       icon: Compass,
       earned: profileResearchNodes > 0,
-      accent: 'text-amber-300 border-amber-500/30 bg-amber-950/30',
+      accent: profileResearchNodes > 0 ? earnedAccent : unearnedAccent,
     },
     {
       id: 'deep-grapher',
@@ -67,7 +70,7 @@ export function ProfileView({ userId = 'anonymous', staminaBalance = 0, streakDa
       detail: `${profileTotalNodes} nodes in your graph`,
       icon: Network,
       earned: profileTotalNodes >= 10,
-      accent: 'text-sky-300 border-sky-500/30 bg-sky-950/30',
+      accent: profileTotalNodes >= 10 ? earnedAccent : unearnedAccent,
     },
     {
       id: 'streak',
@@ -75,63 +78,63 @@ export function ProfileView({ userId = 'anonymous', staminaBalance = 0, streakDa
       detail: streakDays > 1 ? `${streakDays}-day streak` : 'Start a streak',
       icon: Flame,
       earned: streakDays > 1,
-      accent: 'text-rose-300 border-rose-500/30 bg-rose-950/30',
+      accent: streakDays > 1 ? earnedAccent : unearnedAccent,
     },
   ];
 
   return (
-    <div className="flex h-full overflow-hidden text-slate-200">
+    <div className="flex h-full overflow-hidden text-fg">
       {/* Left rail: identity, stats, badges — LeetCode-profile style */}
-      <aside className="flex w-[320px] shrink-0 flex-col gap-6 overflow-y-auto border-r border-white/10 bg-[#0b0d0f] px-5 py-6">
+      <aside className="flex w-[320px] shrink-0 flex-col gap-6 overflow-y-auto border-r border-line bg-bg px-5 py-6">
         <div className="flex items-center gap-3">
-          <div className="flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-[#181b22]">
-            <User className="h-6 w-6 text-slate-300" />
+          <div className="flex h-14 w-14 items-center justify-center rounded-full border border-line bg-surface-2">
+            <User className="h-6 w-6 text-fg-body" />
           </div>
           <div>
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#c59a67]">Learner Profile</p>
-            <h1 className="text-lg font-semibold text-white">{userId}</h1>
+            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-gold">Learner Profile</p>
+            <h1 className="text-lg font-semibold text-fg">{userId}</h1>
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-xl border border-white/10 bg-[#13161b] p-3">
-            <p className="font-mono text-[10px] uppercase tracking-wider text-slate-500">Domains</p>
-            <p className="font-mono text-xl font-bold text-white">{profileDomainSummaries.length}</p>
+          <div className="rounded-xl border border-line bg-surface-1 p-3">
+            <p className="font-mono text-[10px] uppercase tracking-wider text-fg-muted">Domains</p>
+            <p className="font-mono text-xl font-bold text-fg">{profileDomainSummaries.length}</p>
           </div>
-          <div className="rounded-xl border border-white/10 bg-[#13161b] p-3">
-            <p className="font-mono text-[10px] uppercase tracking-wider text-slate-500">Nodes</p>
-            <p className="font-mono text-xl font-bold text-white">{profileTotalNodes}</p>
+          <div className="rounded-xl border border-line bg-surface-1 p-3">
+            <p className="font-mono text-[10px] uppercase tracking-wider text-fg-muted">Nodes</p>
+            <p className="font-mono text-xl font-bold text-fg">{profileTotalNodes}</p>
           </div>
-          <div className="rounded-xl border border-white/10 bg-[#13161b] p-3">
-            <p className="font-mono text-[10px] uppercase tracking-wider text-slate-500">Stamina</p>
-            <p className="font-mono text-xl font-bold text-white">{staminaBalance.toLocaleString()}</p>
+          <div className="rounded-xl border border-line bg-surface-1 p-3">
+            <p className="font-mono text-[10px] uppercase tracking-wider text-fg-muted">Stamina</p>
+            <p className="font-mono text-xl font-bold text-fg">{staminaBalance.toLocaleString()}</p>
           </div>
-          <div className="rounded-xl border border-white/10 bg-[#13161b] p-3">
-            <p className="font-mono text-[10px] uppercase tracking-wider text-slate-500">Streak</p>
-            <p className="font-mono text-xl font-bold text-[#c59a67]">{streakDays > 1 ? `${streakDays}d` : '—'}</p>
+          <div className="rounded-xl border border-line bg-surface-1 p-3">
+            <p className="font-mono text-[10px] uppercase tracking-wider text-fg-muted">Streak</p>
+            <p className="font-mono text-xl font-bold text-gold">{streakDays > 1 ? `${streakDays}d` : '—'}</p>
           </div>
         </div>
 
         <div>
           <div className="mb-2 flex items-center gap-1.5">
-            <GitBranch className="h-3.5 w-3.5 text-[#c59a67]" />
-            <span className="font-mono text-[11px] uppercase tracking-wider text-slate-500">Since day one</span>
+            <GitBranch className="h-3.5 w-3.5 text-gold" />
+            <span className="font-mono text-[11px] uppercase tracking-wider text-fg-muted">Since day one</span>
           </div>
           <div className="flex flex-col gap-1.5">
             {profileDomainSummaries.map((domain) => (
               <div
                 key={domain.rootNodeId}
-                className="flex items-center justify-between rounded-lg border border-white/10 bg-[#13161b] px-2.5 py-1.5"
+                className="flex items-center justify-between rounded-lg border border-line bg-surface-1 px-2.5 py-1.5"
               >
-                <span className="font-mono text-[11px] text-slate-300">{domain.label}</span>
-                <span className="font-mono text-[10px] text-slate-500">{domain.nodeCount} nodes</span>
+                <span className="font-mono text-[11px] text-fg-body">{domain.label}</span>
+                <span className="font-mono text-[10px] text-fg-muted">{domain.nodeCount} nodes</span>
               </div>
             ))}
           </div>
         </div>
 
         <div>
-          <p className="mb-2 font-mono text-[11px] uppercase tracking-wider text-slate-500">Badges</p>
+          <p className="mb-2 font-mono text-[11px] uppercase tracking-wider text-fg-muted">Badges</p>
           <div className="grid grid-cols-2 gap-2">
             {badges.map((badge) => {
               const Icon = badge.icon;
@@ -140,7 +143,7 @@ export function ProfileView({ userId = 'anonymous', staminaBalance = 0, streakDa
                   key={badge.id}
                   title={badge.detail}
                   className={`flex flex-col items-start gap-1.5 rounded-xl border p-2.5 transition ${
-                    badge.earned ? badge.accent : 'border-white/10 bg-[#13161b] text-slate-600 opacity-50'
+                    badge.earned ? badge.accent : 'border-line bg-surface-1 text-fg-faint opacity-50'
                   }`}
                 >
                   <Icon className="h-4 w-4" />

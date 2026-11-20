@@ -79,7 +79,7 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
   };
 
   return (
-    <header className="shrink-0 border-b border-white/10 bg-[#0b0d0f] z-40 text-slate-200">
+    <header className="shrink-0 border-b border-line bg-bg z-40 text-fg">
       <div className="h-16 px-4 sm:px-6 flex items-center justify-between gap-4">
         {/* Left: TATTVA Brand with Sacred Geometry Wireframe Icon */}
         <div className="flex items-center gap-3 shrink-0">
@@ -90,9 +90,9 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
             className="flex items-center gap-2.5 text-left cursor-pointer group"
           >
             {/* Sacred Geometry Emblem */}
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-stone-800 to-stone-900 border border-white/15 flex items-center justify-center shadow-inner group-hover:border-[#c59a67]/60 transition">
+            <div className="w-8 h-8 rounded-lg bg-surface-1 border border-line-strong flex items-center justify-center shadow-inner group-hover:border-gold/60 transition">
               <svg
-                className="w-4.5 h-4.5 text-[#c59a67]"
+                className="w-4.5 h-4.5 text-gold"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -107,10 +107,10 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
 
             <div className="leading-tight">
               <div className="flex items-baseline gap-2">
-                <span className="text-base font-extrabold tracking-[0.18em] text-white font-sans uppercase">
+                <span className="text-base font-extrabold tracking-[0.18em] text-fg font-sans uppercase">
                   TATTVA
                 </span>
-                <span className="hidden xl:inline text-[9px] font-mono tracking-widest text-slate-400 uppercase">
+                <span className="hidden xl:inline text-[9px] font-mono tracking-widest text-fg-muted uppercase">
                   INTELLECTUAL EXECUTION PLATFORM
                 </span>
               </div>
@@ -125,8 +125,8 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
             onClick={() => onChangeView('home')}
             className={`py-1 transition relative cursor-pointer ${
               activeView === 'home'
-                ? 'text-white font-semibold after:absolute after:bottom-[-20px] after:left-0 after:right-0 after:h-[2px] after:bg-[#c59a67]'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'text-fg font-semibold after:absolute after:bottom-[-20px] after:left-0 after:right-0 after:h-[2px] after:bg-gold'
+                : 'text-fg-muted hover:text-fg'
             }`}
           >
             Overview
@@ -143,8 +143,8 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
             }}
             className={`py-1 transition relative cursor-pointer flex items-center gap-1.5 ${
               activeView === 'workspace'
-                ? 'text-white font-semibold after:absolute after:bottom-[-20px] after:left-0 after:right-0 after:h-[2px] after:bg-[#c59a67]'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'text-fg font-semibold after:absolute after:bottom-[-20px] after:left-0 after:right-0 after:h-[2px] after:bg-gold'
+                : 'text-fg-muted hover:text-fg'
             }`}
           >
             <span>Knowledge Graph</span>
@@ -157,7 +157,7 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                   }
                 }}
                 title="Switch inquiry"
-                className="rounded-full bg-[#c59a67]/20 border border-[#c59a67]/30 px-1.5 py-0.2 text-[10px] font-mono text-[#c59a67] font-semibold hover:bg-[#c59a67]/40 transition"
+                className="rounded-full bg-gold/20 border border-gold/30 px-1.5 py-0.2 text-[10px] font-mono text-gold font-semibold hover:bg-gold/40 transition"
               >
                 {inquiries.length}
               </span>
@@ -169,8 +169,8 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
             onClick={() => onChangeView('workspaces')}
             className={`py-1 transition relative cursor-pointer ${
               activeView === 'workspaces'
-                ? 'text-white font-semibold after:absolute after:bottom-[-20px] after:left-0 after:right-0 after:h-[2px] after:bg-[#c59a67]'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'text-fg font-semibold after:absolute after:bottom-[-20px] after:left-0 after:right-0 after:h-[2px] after:bg-gold'
+                : 'text-fg-muted hover:text-fg'
             }`}
           >
             Workspaces
@@ -181,8 +181,8 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
             onClick={() => onChangeView('masterclass')}
             className={`py-1 transition relative cursor-pointer ${
               activeView === 'masterclass'
-                ? 'text-white font-semibold after:absolute after:bottom-[-20px] after:left-0 after:right-0 after:h-[2px] after:bg-[#c59a67]'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'text-fg font-semibold after:absolute after:bottom-[-20px] after:left-0 after:right-0 after:h-[2px] after:bg-gold'
+                : 'text-fg-muted hover:text-fg'
             }`}
           >
             Masterclass
@@ -193,8 +193,8 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
             onClick={() => onChangeView('community')}
             className={`py-1 transition relative cursor-pointer ${
               activeView === 'community'
-                ? 'text-white font-semibold after:absolute after:bottom-[-20px] after:left-0 after:right-0 after:h-[2px] after:bg-[#c59a67]'
-                : 'text-slate-400 hover:text-slate-200'
+                ? 'text-fg font-semibold after:absolute after:bottom-[-20px] after:left-0 after:right-0 after:h-[2px] after:bg-gold'
+                : 'text-fg-muted hover:text-fg'
             }`}
           >
             Community
@@ -206,17 +206,17 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
           {/* Cognitive Stamina Badge */}
           <div
             title="Cognitive Stamina: Verified intellectual activity"
-            className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-white/10 bg-[#13161b]"
+            className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-line bg-surface-1"
           >
-            <div className="w-1.5 h-1.5 rounded-full bg-[#a3e635] shadow-[0_0_8px_#a3e635]" />
-            <span className="font-mono text-xs font-bold text-white tabular-nums">
+            <div className="w-1.5 h-1.5 rounded-full bg-live" />
+            <span className="font-mono text-xs font-bold text-fg tabular-nums">
               {staminaScore.toLocaleString()}
             </span>
-            <span className="text-[10px] font-mono tracking-wider text-slate-400 uppercase hidden sm:inline">
+            <span className="text-[10px] font-mono tracking-wider text-fg-muted uppercase hidden sm:inline">
               STAMINA
             </span>
             {streakDays > 1 && (
-              <span className="text-[10px] font-mono text-[#c59a67] border-l border-white/10 pl-2 ml-0.5">
+              <span className="text-[10px] font-mono text-gold border-l border-line pl-2 ml-0.5">
                 {streakDays}-day streak
               </span>
             )}
@@ -228,16 +228,16 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
             onClick={toggleTheme}
             aria-label={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
             title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-white/10 bg-[#13161b] hover:border-white/20 transition cursor-pointer text-slate-300 hover:text-white"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-line bg-surface-1 hover:border-line-strong transition cursor-pointer text-fg-body hover:text-fg"
           >
             {theme === 'dark' ? (
               <>
-                <Sun className="w-3.5 h-3.5 text-amber-400" />
+                <Sun className="w-3.5 h-3.5 text-gold" />
                 <span className="hidden xl:inline font-mono text-[11px] font-medium">Light</span>
               </>
             ) : (
               <>
-                <Moon className="w-3.5 h-3.5 text-teal-700" />
+                <Moon className="w-3.5 h-3.5 text-fg-muted" />
                 <span className="hidden xl:inline font-mono text-[11px] font-medium">Dark</span>
               </>
             )}
@@ -251,13 +251,13 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
               aria-expanded={accountMenuOpen}
               aria-haspopup="menu"
               title={`Identity: ${user.id} (${user.isAnonymous ? 'Anonymous' : 'Authenticated'})`}
-              className="flex items-center gap-1.5 p-1 rounded-full border border-white/15 bg-[#181b22] hover:border-[#c59a67]/60 cursor-pointer transition"
+              className="flex items-center gap-1.5 p-1 rounded-full border border-line-strong bg-surface-2 hover:border-gold/60 cursor-pointer transition"
             >
-              <div className="w-6 h-6 rounded-full bg-stone-800 text-stone-200 flex items-center justify-center text-[10px] font-bold font-mono border border-white/10">
-                <User className="w-3.5 h-3.5 text-slate-300" />
+              <div className="w-6 h-6 rounded-full bg-surface-2 text-fg flex items-center justify-center text-[10px] font-bold font-mono border border-line">
+                <User className="w-3.5 h-3.5 text-fg-body" />
               </div>
               <ChevronDown
-                className={`w-3 h-3 text-slate-400 mr-1 transition-transform ${
+                className={`w-3 h-3 text-fg-muted mr-1 transition-transform ${
                   accountMenuOpen ? 'rotate-180' : ''
                 }`}
               />
@@ -266,16 +266,16 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
             {accountMenuOpen && (
               <div
                 role="menu"
-                className="absolute right-0 mt-2 w-64 rounded-xl bg-[#13161b] border border-white/10 shadow-2xl p-3 z-50 space-y-2.5"
+                className="absolute right-0 mt-2 w-64 rounded-xl bg-surface-1 border border-line shadow-2xl p-3 z-50 space-y-2.5"
               >
-                <div className="pb-2.5 border-b border-white/10">
-                  <div className="text-xs font-bold text-white truncate font-mono">
+                <div className="pb-2.5 border-b border-line">
+                  <div className="text-xs font-bold text-fg truncate font-mono">
                     {user.id}
                   </div>
-                  <div className="font-mono text-[10px] text-[#c59a67] truncate mt-0.5">
+                  <div className="font-mono text-[10px] text-gold truncate mt-0.5">
                     {user.isAnonymous ? 'Anonymous Session' : 'Verified Learner'}
                   </div>
-                  <div className="text-[10px] text-slate-400 truncate mt-0.5 font-mono">
+                  <div className="text-[10px] text-fg-muted truncate mt-0.5 font-mono">
                     System: Active &middot; {staminaScore} Stamina
                   </div>
                 </div>
@@ -287,18 +287,18 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                       setAccountMenuOpen(false);
                       onChangeView('profile');
                     }}
-                    className="w-full flex items-center gap-2 px-2.5 py-1.5 font-medium text-slate-300 hover:text-white hover:bg-white/5 rounded-lg text-left cursor-pointer"
+                    className="w-full flex items-center gap-2 px-2.5 py-1.5 font-medium text-fg-body hover:text-fg hover:bg-surface-2/5 rounded-lg text-left cursor-pointer"
                   >
-                    <User className="w-3.5 h-3.5 text-[#c59a67]" />
+                    <User className="w-3.5 h-3.5 text-gold" />
                     <span>View Profile</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={handleStartInquiry}
-                    className="w-full flex items-center gap-2 px-2.5 py-1.5 font-medium text-slate-300 hover:text-white hover:bg-white/5 rounded-lg text-left cursor-pointer"
+                    className="w-full flex items-center gap-2 px-2.5 py-1.5 font-medium text-fg-body hover:text-fg hover:bg-surface-2/5 rounded-lg text-left cursor-pointer"
                   >
-                    <PlusCircle className="w-3.5 h-3.5 text-[#c59a67]" />
+                    <PlusCircle className="w-3.5 h-3.5 text-gold" />
                     <span>Launch New Inquiry</span>
                   </button>
 
@@ -307,17 +307,17 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                     onClick={() => {
                       toggleTheme();
                     }}
-                    className="w-full flex items-center justify-between px-2.5 py-1.5 font-medium text-slate-300 hover:text-white hover:bg-white/5 rounded-lg text-left cursor-pointer"
+                    className="w-full flex items-center justify-between px-2.5 py-1.5 font-medium text-fg-body hover:text-fg hover:bg-surface-2/5 rounded-lg text-left cursor-pointer"
                   >
                     <div className="flex items-center gap-2">
                       {theme === 'dark' ? (
-                        <Sun className="w-3.5 h-3.5 text-amber-400" />
+                        <Sun className="w-3.5 h-3.5 text-gold" />
                       ) : (
-                        <Moon className="w-3.5 h-3.5 text-teal-700" />
+                        <Moon className="w-3.5 h-3.5 text-fg-muted" />
                       )}
                       <span>Appearance</span>
                     </div>
-                    <span className="font-mono text-[10px] font-bold text-[#c59a67] px-2 py-0.5 rounded bg-white/5 border border-white/10 uppercase">
+                    <span className="font-mono text-[10px] font-bold text-gold px-2 py-0.5 rounded bg-surface-2/5 border border-line uppercase">
                       {theme === 'dark' ? 'Dark Mode' : 'Light Mode'}
                     </span>
                   </button>

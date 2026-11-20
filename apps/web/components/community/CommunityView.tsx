@@ -180,13 +180,13 @@ export const CommunityView: React.FC<CommunityViewProps> = ({
               onClick={() => handleToggleSpark(activeArticle.id)}
               className={`inline-flex items-center gap-1.5 rounded-xl border px-3.5 py-1.5 text-xs font-bold transition cursor-pointer ${
                 activeArticle.starredByUser
-                  ? 'border-rose-300 bg-rose-50 text-rose-600'
-                  : 'border-[var(--border-primary)] bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:bg-rose-50 hover:text-rose-600'
+                  ? 'border-trap bg-trap-wash text-trap'
+                  : 'border-[var(--border-primary)] bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:bg-trap-wash hover:text-trap'
               }`}
             >
               <Heart
                 className={`w-4 h-4 ${
-                  activeArticle.starredByUser ? 'fill-rose-500 text-rose-500' : ''
+                  activeArticle.starredByUser ? 'fill-trap text-trap' : ''
                 }`}
               />
               <span>{activeArticle.sparks} Sparks</span>
@@ -210,10 +210,10 @@ export const CommunityView: React.FC<CommunityViewProps> = ({
                     onOpenSourceInStudio(matchedSource);
                   }
                 }}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-[#d4af37] hover:bg-[#e5c158] text-black px-3.5 py-1.5 text-xs font-bold transition shadow-xs cursor-pointer"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-gold hover:bg-gold-hover text-gold-ink px-3.5 py-1.5 text-xs font-bold transition shadow-xs cursor-pointer"
                 title="Fork a copy of this article into your Personal Workspaces Studio"
               >
-                <GitBranch className="w-3.5 h-3.5 text-black" />
+                <GitBranch className="w-3.5 h-3.5 text-gold-ink" />
                 <span>Fork in Studio</span>
               </button>
             )}
@@ -221,38 +221,38 @@ export const CommunityView: React.FC<CommunityViewProps> = ({
         </div>
 
         {/* Main Article Container with Defined Light Stroke */}
-        <div className="rounded-2xl border border-white/10 bg-[#181512] p-6 sm:p-12 shadow-2xl space-y-8 text-slate-200">
+        <div className="rounded-2xl border border-line bg-surface-2 p-6 sm:p-12 shadow-2xl space-y-8 text-fg">
           {/* Article Header */}
-          <div className="space-y-4 border-b border-white/10 pb-6">
+          <div className="space-y-4 border-b border-line pb-6">
             <div className="flex items-center gap-2">
-              <span className="rounded font-mono text-[10px] font-bold uppercase tracking-wider text-[#d4af37] bg-[#d4af37]/15 border border-[#d4af37]/30 px-2.5 py-0.5">
+              <span className="rounded font-mono text-[10px] font-bold uppercase tracking-wider text-gold bg-gold/15 border border-gold/30 px-2.5 py-0.5">
                 {activeArticle.category}
               </span>
-              <span className="text-xs text-slate-500">·</span>
-              <span className="text-xs font-mono text-slate-400 flex items-center gap-1">
+              <span className="text-xs text-fg-muted">·</span>
+              <span className="text-xs font-mono text-fg-muted flex items-center gap-1">
                 <Clock className="w-3.5 h-3.5" />
                 {activeArticle.readTime}
               </span>
-              <span className="text-xs text-slate-500">·</span>
-              <span className="text-xs font-mono text-slate-400">{activeArticle.publishedAt}</span>
+              <span className="text-xs text-fg-muted">·</span>
+              <span className="text-xs font-mono text-fg-muted">{activeArticle.publishedAt}</span>
             </div>
 
-            <h1 className="font-serif-tattva text-2xl sm:text-4xl font-normal text-white tracking-tight leading-tight">
+            <h1 className="font-serif-tattva text-2xl sm:text-4xl font-normal text-fg tracking-tight leading-tight">
               {activeArticle.title}
             </h1>
 
-            <p className="text-sm sm:text-base text-slate-400 leading-relaxed font-sans">
+            <p className="text-sm sm:text-base text-fg-muted leading-relaxed font-sans">
               {activeArticle.subtitle}
             </p>
 
             {/* Author Profile */}
             <div className="flex items-center gap-3 pt-2">
-              <div className="w-9 h-9 rounded-full bg-stone-900 border border-white/10 text-[#d4af37] font-bold flex items-center justify-center text-xs shadow-inner font-mono">
+              <div className="w-9 h-9 rounded-full bg-surface-1 border border-line text-gold font-bold flex items-center justify-center text-xs shadow-inner font-mono">
                 {activeArticle.authorName.charAt(0)}
               </div>
               <div>
-                <div className="text-xs font-bold text-white">{activeArticle.authorName}</div>
-                <div className="text-[11px] font-mono text-slate-500">
+                <div className="text-xs font-bold text-fg">{activeArticle.authorName}</div>
+                <div className="text-[11px] font-mono text-fg-muted">
                   {activeArticle.authorHandle} · {activeArticle.authorRole}
                 </div>
               </div>
@@ -260,8 +260,8 @@ export const CommunityView: React.FC<CommunityViewProps> = ({
           </div>
 
           {/* Highlights Box in Dark Imperial Gold */}
-          <div className="rounded-xl border border-[#d4af37]/30 bg-[#d4af37]/10 p-5 space-y-2.5">
-            <div className="flex items-center gap-2 text-[#d4af37]">
+          <div className="rounded-xl border border-gold/30 bg-gold/10 p-5 space-y-2.5">
+            <div className="flex items-center gap-2 text-gold">
               <Sparkles className="w-4 h-4 fill-current" />
               <h3 className="font-mono text-xs font-bold uppercase tracking-wider">
                 Key Article Takeaways &amp; Core Invariants
@@ -270,8 +270,8 @@ export const CommunityView: React.FC<CommunityViewProps> = ({
 
             <ul className="space-y-2">
               {activeArticle.highlights.map((highlight, idx) => (
-                <li key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm text-slate-200 leading-relaxed font-sans">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37] mt-2 shrink-0" />
+                <li key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm text-fg leading-relaxed font-sans">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gold mt-2 shrink-0" />
                   <span className="font-medium">{highlight}</span>
                 </li>
               ))}
@@ -279,19 +279,19 @@ export const CommunityView: React.FC<CommunityViewProps> = ({
           </div>
 
           {/* FULL FORMATTED ARTICLE BODY */}
-          <div className="pt-2 text-slate-200 font-sans">
+          <div className="pt-2 text-fg font-sans">
             <FormattedArticleReader content={activeArticle.content} />
           </div>
 
           {/* Article Tags */}
-          <div className="flex flex-wrap items-center gap-2 pt-6 border-t border-white/10">
-            <span className="font-mono text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+          <div className="flex flex-wrap items-center gap-2 pt-6 border-t border-line">
+            <span className="font-mono text-[11px] font-bold text-fg-muted uppercase tracking-wider">
               Topics:
             </span>
             {activeArticle.tags.map((tag, i) => (
               <span
                 key={i}
-                className="rounded font-mono bg-white/5 text-slate-300 px-2.5 py-1 text-xs border border-white/10"
+                className="rounded font-mono bg-surface-2/5 text-fg-body px-2.5 py-1 text-xs border border-line"
               >
                 #{tag}
               </span>
@@ -300,15 +300,15 @@ export const CommunityView: React.FC<CommunityViewProps> = ({
         </div>
 
         {/* Discussion & Peer Insights */}
-        <div className="rounded-2xl border border-white/10 bg-[#181512] p-6 space-y-6 text-slate-200">
+        <div className="rounded-2xl border border-line bg-surface-2 p-6 space-y-6 text-fg">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 text-[#d4af37]" />
-              <h3 className="text-base font-bold text-white font-sans">
+              <MessageSquare className="w-4 h-4 text-gold" />
+              <h3 className="text-base font-bold text-fg font-sans">
                 Community Discussion ({comments.length})
               </h3>
             </div>
-            <span className="text-xs font-mono text-slate-500">Peer verified answers</span>
+            <span className="text-xs font-mono text-fg-muted">Peer verified answers</span>
           </div>
 
           {/* Add Comment Input */}
@@ -318,25 +318,25 @@ export const CommunityView: React.FC<CommunityViewProps> = ({
               value={commentInput}
               onChange={(e) => setCommentInput(e.target.value)}
               placeholder="Share an insight, question, or architectural critique..."
-              className="flex-1 rounded-xl border border-white/10 bg-[#12100e] px-4 py-2 text-xs text-white placeholder-slate-500 focus:border-[#d4af37] focus:outline-none font-sans"
+              className="flex-1 rounded-xl border border-line bg-surface-1 px-4 py-2 text-xs text-fg placeholder-fg-faint focus:border-gold focus:outline-none font-sans"
             />
             <button
               type="submit"
-              className="rounded-xl bg-[#d4af37] px-4 py-2 text-xs font-bold text-[#12100e] hover:bg-[#e5c158] transition cursor-pointer"
+              className="rounded-xl bg-gold px-4 py-2 text-xs font-bold text-gold-ink hover:bg-gold-hover transition cursor-pointer"
             >
               Post Comment
             </button>
           </form>
 
           {/* Comment List */}
-          <div className="space-y-3 divide-y divide-white/5">
+          <div className="space-y-3 divide-y divide-line">
             {comments.map((c, i) => (
               <div key={i} className="pt-3 first:pt-0 space-y-1">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-white">{c.author}</span>
-                  <span className="font-mono text-[10px] text-slate-500">{c.time}</span>
+                  <span className="font-bold text-fg">{c.author}</span>
+                  <span className="font-mono text-[10px] text-fg-muted">{c.time}</span>
                 </div>
-                <p className="text-xs text-slate-400 leading-relaxed font-sans">{c.text}</p>
+                <p className="text-xs text-fg-muted leading-relaxed font-sans">{c.text}</p>
               </div>
             ))}
           </div>
@@ -375,7 +375,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({
         <button
           type="button"
           onClick={() => setIsPostingModalOpen(true)}
-          className="inline-flex items-center gap-2 rounded-xl bg-[#d4af37] hover:bg-[#e5c158] text-black px-4 py-2.5 text-xs font-bold shadow-xs transition shrink-0 cursor-pointer"
+          className="inline-flex items-center gap-2 rounded-xl bg-gold hover:bg-gold-hover text-gold-ink px-4 py-2.5 text-xs font-bold shadow-xs transition shrink-0 cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           <span>Post an Article</span>
@@ -395,8 +395,8 @@ export const CommunityView: React.FC<CommunityViewProps> = ({
                 onClick={() => setSelectedCategory(cat)}
                 className={`rounded-full px-4 py-1.5 text-xs font-semibold transition cursor-pointer ${
                   isSelected
-                    ? 'bg-[var(--brand-pine)] text-white shadow-xs'
-                    : 'bg-[var(--bg-surface)] text-[var(--text-secondary)] border border-[var(--border-primary)] hover:border-slate-400'
+                    ? 'bg-[var(--brand-pine)] text-fg shadow-xs'
+                    : 'bg-[var(--bg-surface)] text-[var(--text-secondary)] border border-[var(--border-primary)] hover:border-line-strong'
                 }`}
               >
                 {cat}
@@ -407,13 +407,13 @@ export const CommunityView: React.FC<CommunityViewProps> = ({
 
         {/* Search */}
         <div className="relative w-full sm:w-72">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-muted" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search articles, topics, or authors..."
-            className="w-full rounded-xl border border-[var(--border-primary)] bg-[var(--bg-surface)] pl-9 pr-4 py-2 text-xs text-[var(--text-primary)] placeholder-slate-400 focus:border-[#d4af37] focus:outline-none"
+            className="w-full rounded-xl border border-[var(--border-primary)] bg-[var(--bg-surface)] pl-9 pr-4 py-2 text-xs text-[var(--text-primary)] placeholder-fg-faint focus:border-gold focus:outline-none"
           />
         </div>
       </div>
@@ -424,16 +424,16 @@ export const CommunityView: React.FC<CommunityViewProps> = ({
           <div
             key={article.id}
             onClick={() => setSelectedArticleId(article.id)}
-            className="group flex flex-col justify-between rounded-2xl border border-white/10 bg-[#181512] p-6 shadow-xl hover:border-[#d4af37]/60 transition-all duration-200 cursor-pointer"
+            className="group flex flex-col justify-between rounded-2xl border border-line bg-surface-2 p-6 shadow-xl hover:border-gold/60 transition-all duration-200 cursor-pointer"
           >
             <div className="space-y-4">
               {/* Header: Domain, Read Time, Date */}
               <div className="flex items-center justify-between gap-2">
-                <span className="rounded font-mono text-[10px] font-bold uppercase tracking-wider text-[#d4af37] bg-[#d4af37]/15 border border-[#d4af37]/30 px-2.5 py-0.5">
+                <span className="rounded font-mono text-[10px] font-bold uppercase tracking-wider text-gold bg-gold/15 border border-gold/30 px-2.5 py-0.5">
                   {article.category}
                 </span>
 
-                <div className="flex items-center gap-2 text-xs text-slate-500 font-mono">
+                <div className="flex items-center gap-2 text-xs text-fg-muted font-mono">
                   <span className="flex items-center gap-1">
                     <Clock className="w-3 h-3" />
                     {article.readTime}
@@ -445,17 +445,17 @@ export const CommunityView: React.FC<CommunityViewProps> = ({
 
               {/* Title & Subtitle */}
               <div>
-                <h2 className="font-serif-tattva text-xl font-normal text-white group-hover:text-[#d4af37] transition line-clamp-2 leading-snug">
+                <h2 className="font-serif-tattva text-xl font-normal text-fg group-hover:text-gold transition line-clamp-2 leading-snug">
                   {article.title}
                 </h2>
-                <p className="mt-1 text-xs text-slate-400 line-clamp-2 leading-relaxed font-sans">
+                <p className="mt-1 text-xs text-fg-muted line-clamp-2 leading-relaxed font-sans">
                   {article.subtitle}
                 </p>
               </div>
 
               {/* HIGHLIGHT OF THAT ARTICLE IN FRONT (As requested) */}
-              <div className="rounded-xl border border-[#d4af37]/30 bg-[#d4af37]/10 p-4 space-y-2">
-                <div className="flex items-center gap-1.5 text-[#d4af37]">
+              <div className="rounded-xl border border-gold/30 bg-gold/10 p-4 space-y-2">
+                <div className="flex items-center gap-1.5 text-gold">
                   <Sparkles className="w-3.5 h-3.5 fill-current" />
                   <span className="font-mono text-[10px] font-bold uppercase tracking-wider">
                     Key Highlights &amp; Discoveries
@@ -464,8 +464,8 @@ export const CommunityView: React.FC<CommunityViewProps> = ({
 
                 <ul className="space-y-1.5 font-sans">
                   {article.highlights.slice(0, 3).map((highlight, idx) => (
-                    <li key={idx} className="flex items-start gap-2 text-xs text-slate-200 leading-snug">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37] mt-1.5 shrink-0" />
+                    <li key={idx} className="flex items-start gap-2 text-xs text-fg leading-snug">
+                      <span className="w-1.5 h-1.5 rounded-full bg-gold mt-1.5 shrink-0" />
                       <span className="font-medium line-clamp-2">{highlight}</span>
                     </li>
                   ))}
@@ -477,7 +477,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({
                 {article.tags.slice(0, 3).map((tag, idx) => (
                   <span
                     key={idx}
-                    className="text-[10px] px-2 py-0.5 rounded bg-white/5 border border-white/10 text-slate-400"
+                    className="text-[10px] px-2 py-0.5 rounded bg-surface-2/5 border border-line text-fg-muted"
                   >
                     #{tag}
                   </span>
@@ -486,14 +486,14 @@ export const CommunityView: React.FC<CommunityViewProps> = ({
             </div>
 
             {/* Card Footer */}
-            <div className="mt-5 pt-4 border-t border-white/10 flex items-center justify-between">
+            <div className="mt-5 pt-4 border-t border-line flex items-center justify-between">
               {/* Author info */}
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full bg-stone-900 border border-white/10 text-[#d4af37] font-bold flex items-center justify-center text-xs font-mono">
+                <div className="w-7 h-7 rounded-full bg-surface-1 border border-line text-gold font-bold flex items-center justify-center text-xs font-mono">
                   {article.authorName.charAt(0)}
                 </div>
                 <div className="text-xs">
-                  <span className="font-bold text-white">{article.authorName}</span>
+                  <span className="font-bold text-fg">{article.authorName}</span>
                 </div>
               </div>
 
@@ -504,24 +504,24 @@ export const CommunityView: React.FC<CommunityViewProps> = ({
                   onClick={(e) => handleToggleSpark(article.id, e)}
                   className={`inline-flex items-center gap-1 rounded px-2 py-0.5 font-mono transition ${
                     article.starredByUser
-                      ? 'bg-rose-950/40 border border-rose-500/50 text-rose-300'
-                      : 'text-slate-500 hover:text-rose-400'
+                      ? 'bg-trap-wash border border-trap/50 text-trap'
+                      : 'text-fg-muted hover:text-trap'
                   }`}
                 >
                   <Heart
                     className={`w-3.5 h-3.5 ${
-                      article.starredByUser ? 'fill-rose-400 text-rose-400' : ''
+                      article.starredByUser ? 'fill-trap text-trap' : ''
                     }`}
                   />
                   <span>{article.sparks}</span>
                 </button>
 
-                <span className="inline-flex items-center gap-1 text-slate-500 font-mono">
+                <span className="inline-flex items-center gap-1 text-fg-muted font-mono">
                   <MessageSquare className="w-3.5 h-3.5" />
                   <span>{article.commentsCount}</span>
                 </span>
 
-                <span className="font-bold text-[#d4af37] group-hover:translate-x-0.5 transition-transform flex items-center gap-1 font-mono text-xs">
+                <span className="font-bold text-gold group-hover:translate-x-0.5 transition-transform flex items-center gap-1 font-mono text-xs">
                   <span>Read Article</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </span>
@@ -533,19 +533,19 @@ export const CommunityView: React.FC<CommunityViewProps> = ({
 
       {/* MODAL: POST AN ARTICLE */}
       {isPostingModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-xs p-4">
-          <div className="w-full max-w-2xl rounded-2xl border border-white/10 bg-[#181512] p-6 sm:p-8 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto text-slate-200">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg/80 backdrop-blur-xs p-4">
+          <div className="w-full max-w-2xl rounded-2xl border border-line bg-surface-2 p-6 sm:p-8 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto text-fg">
+            <div className="flex items-center justify-between border-b border-line pb-3">
               <div className="flex items-center gap-2">
-                <BookOpen className="w-5 h-5 text-[#d4af37]" />
-                <h3 className="text-base font-bold text-white font-sans">
+                <BookOpen className="w-5 h-5 text-gold" />
+                <h3 className="text-base font-bold text-fg font-sans">
                   Publish Article to TATTVA Community
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setIsPostingModalOpen(false)}
-                className="text-slate-400 hover:text-white cursor-pointer"
+                className="text-fg-muted hover:text-fg cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -553,24 +553,24 @@ export const CommunityView: React.FC<CommunityViewProps> = ({
 
             <form onSubmit={handlePostArticle} className="space-y-4">
               <div>
-                <label className="block text-xs font-mono text-slate-400">Article Title</label>
+                <label className="block text-xs font-mono text-fg-muted">Article Title</label>
                 <input
                   type="text"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
                   placeholder="e.g., Zero-Knowledge Proofs in Post-Quantum Cryptography"
-                  className="mt-1 w-full rounded-xl border border-white/10 bg-[#12100e] px-3.5 py-2 text-xs text-white focus:border-[#d4af37] focus:outline-none"
+                  className="mt-1 w-full rounded-xl border border-line bg-surface-1 px-3.5 py-2 text-xs text-fg focus:border-gold focus:outline-none"
                   required
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-mono text-slate-400">Category</label>
+                  <label className="block text-xs font-mono text-fg-muted">Category</label>
                   <select
                     value={newCategory}
                     onChange={(e) => setNewCategory(e.target.value as CommunityArticle['category'])}
-                    className="mt-1 w-full rounded-xl border border-white/10 bg-[#12100e] px-3 py-2 text-xs text-slate-200 focus:border-[#d4af37] focus:outline-none"
+                    className="mt-1 w-full rounded-xl border border-line bg-surface-1 px-3 py-2 text-xs text-fg focus:border-gold focus:outline-none"
                   >
                     <option value="Cybersecurity">Cybersecurity</option>
                     <option value="AIML">AI &amp; Machine Learning (AIML)</option>
@@ -580,23 +580,23 @@ export const CommunityView: React.FC<CommunityViewProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-mono text-slate-400">Subtitle</label>
+                  <label className="block text-xs font-mono text-fg-muted">Subtitle</label>
                   <input
                     type="text"
                     value={newSubtitle}
                     onChange={(e) => setNewSubtitle(e.target.value)}
                     placeholder="Short architectural one-liner..."
-                    className="mt-1 w-full rounded-xl border border-white/10 bg-[#12100e] px-3.5 py-2 text-xs text-white focus:border-[#d4af37] focus:outline-none"
+                    className="mt-1 w-full rounded-xl border border-line bg-surface-1 px-3.5 py-2 text-xs text-fg focus:border-gold focus:outline-none"
                   />
                 </div>
               </div>
 
               {/* Highlights Inputs (Shown in front!) */}
-              <div className="space-y-2 rounded-xl bg-[#12100e] border border-white/10 p-4">
-                <label className="block text-xs font-mono font-bold text-[#d4af37]">
+              <div className="space-y-2 rounded-xl bg-surface-1 border border-line p-4">
+                <label className="block text-xs font-mono font-bold text-gold">
                   ⚡ 3 Key Highlights (Displayed in front on the card)
                 </label>
-                <p className="text-[11px] text-slate-400">
+                <p className="text-[11px] text-fg-muted">
                   Summarize the breakthrough takeaways so readers immediately understand the value.
                 </p>
 
@@ -611,14 +611,14 @@ export const CommunityView: React.FC<CommunityViewProps> = ({
                       setNewHighlights(updated);
                     }}
                     placeholder={`Highlight #${idx + 1}...`}
-                    className="w-full rounded-lg border border-white/10 bg-[#181512] px-3 py-1.5 text-xs text-white focus:border-[#d4af37] focus:outline-none"
+                    className="w-full rounded-lg border border-line bg-surface-2 px-3 py-1.5 text-xs text-fg focus:border-gold focus:outline-none"
                   />
                 ))}
               </div>
 
               {/* Full Content */}
               <div>
-                <label className="block text-xs font-mono text-slate-400">
+                <label className="block text-xs font-mono text-fg-muted">
                   Full Article Content (Markdown, equations, and code blocks)
                 </label>
                 <textarea
@@ -626,7 +626,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({
                   value={newContent}
                   onChange={(e) => setNewContent(e.target.value)}
                   placeholder="Write the complete article breakdown..."
-                  className="mt-1 w-full rounded-xl border border-white/10 bg-[#12100e] px-3.5 py-2.5 text-xs text-white focus:border-[#d4af37] focus:outline-none font-mono"
+                  className="mt-1 w-full rounded-xl border border-line bg-surface-1 px-3.5 py-2.5 text-xs text-fg focus:border-gold focus:outline-none font-mono"
                   required
                 />
               </div>
@@ -635,13 +635,13 @@ export const CommunityView: React.FC<CommunityViewProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsPostingModalOpen(false)}
-                  className="rounded-xl border border-white/10 px-4 py-2 text-xs font-medium text-slate-400 hover:text-white cursor-pointer"
+                  className="rounded-xl border border-line px-4 py-2 text-xs font-medium text-fg-muted hover:text-fg cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="rounded-xl bg-[#d4af37] px-5 py-2 text-xs font-bold text-[#12100e] hover:bg-[#e5c158] transition cursor-pointer"
+                  className="rounded-xl bg-gold px-5 py-2 text-xs font-bold text-gold-ink hover:bg-gold-hover transition cursor-pointer"
                 >
                   Publish Article
                 </button>

@@ -509,7 +509,7 @@ Every scalable software architecture and algorithm is governed by fundamental in
   };
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-[#0b0d0f] text-slate-100">
+    <div className="flex h-screen flex-col overflow-hidden bg-bg text-fg">
       {/* Top Navigation Bar from BhoomikaContributions */}
       <TopNavBar
         activeView={activeView}
@@ -530,13 +530,13 @@ Every scalable software architecture and algorithm is governed by fundamental in
       {/* Main View Area */}
       <main className="flex-1 min-h-0 overflow-hidden relative">
         {errorMessage && (
-          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50 rounded-xl border border-rose-500/30 bg-rose-950/80 px-4 py-2 text-xs text-rose-200 backdrop-blur-md shadow-xl">
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50 rounded-xl border border-trap/30 bg-trap-wash px-4 py-2 text-xs text-trap backdrop-blur-md shadow-xl">
             {errorMessage}
           </div>
         )}
 
         {isLoading ? (
-          <div className="grid h-full place-items-center bg-[#0b0b0d] px-6 text-center text-sm text-white/70">
+          <div className="grid h-full place-items-center bg-bg px-6 text-center text-sm text-fg/70">
             <p>Loading knowledge workspace…</p>
           </div>
         ) : activeView === 'home' ? (
@@ -615,7 +615,7 @@ Every scalable software architecture and algorithm is governed by fundamental in
             }}
           />
         ) : (
-          <div className="grid h-full place-items-center bg-[#0b0b0d] px-6 text-center text-sm text-white/70">
+          <div className="grid h-full place-items-center bg-bg px-6 text-center text-sm text-fg/70">
             <p>No active inquiry selected.</p>
           </div>
         )}

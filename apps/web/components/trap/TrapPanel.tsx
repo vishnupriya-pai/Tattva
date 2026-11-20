@@ -21,7 +21,7 @@ export function TrapPanel({
 
   if (resolved) {
     return (
-      <div className="rounded-md border border-emerald-400/30 bg-emerald-400/5 px-4 py-3 text-sm text-emerald-300">
+      <div className="rounded-md border border-explored/30 bg-explored/5 px-4 py-3 text-sm text-explored">
         Trap resolved — graph progression unlocked.
       </div>
     );
@@ -30,12 +30,12 @@ export function TrapPanel({
   const disabled = submissionState === 'submitting' || submissionState === 'submitted';
 
   return (
-    <div className="rounded-md border border-red-400/40 bg-red-400/5 p-4" role="alert">
-      <p className="text-sm font-semibold uppercase tracking-wide text-red-300">⚠️ Be careful here!!</p>
-      <p className="mt-2 text-xs font-medium uppercase tracking-wide text-white/40">
+    <div className="rounded-md border border-trap/40 bg-trap/5 p-4" role="alert">
+      <p className="text-sm font-semibold uppercase tracking-wide text-trap">⚠️ Be careful here!!</p>
+      <p className="mt-2 text-xs font-medium uppercase tracking-wide text-fg/40">
         Misconception: {trap.misconceptionType.replaceAll('_', ' ')}
       </p>
-      <p className="mt-1.5 text-sm leading-relaxed text-white/80">{trap.scenario}</p>
+      <p className="mt-1.5 text-sm leading-relaxed text-fg/80">{trap.scenario}</p>
 
       <form
         className="mt-3 space-y-2"
@@ -55,10 +55,10 @@ export function TrapPanel({
           disabled={disabled}
           rows={3}
           placeholder="Explain exactly what happens and why — this input is required before the graph can proceed."
-          className="w-full resize-none rounded-sm border border-white/15 bg-black/30 px-3 py-2 text-sm text-white/90 placeholder:text-white/30 focus:border-red-400/50 focus:outline-none disabled:opacity-60"
+          className="w-full resize-none rounded-sm border border-line-strong bg-bg/30 px-3 py-2 text-sm text-fg/90 placeholder:text-fg/30 focus:border-trap/50 focus:outline-none disabled:opacity-60"
         />
         <div className="flex items-center justify-between">
-          <p className="text-[11px] text-white/40">
+          <p className="text-[11px] text-fg/40">
             {submissionState === 'submitted'
               ? 'Submitted — awaiting backend evaluation.'
               : 'The standard question input stays disabled until this is resolved.'}
@@ -66,12 +66,12 @@ export function TrapPanel({
           <button
             type="submit"
             disabled={disabled || response.trim().length === 0}
-            className="rounded-sm border border-red-400/40 bg-red-400/10 px-3 py-1.5 text-xs font-medium text-red-200 hover:bg-red-400/20 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-sm border border-trap/40 bg-trap/10 px-3 py-1.5 text-xs font-medium text-trap hover:bg-trap/20 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {submissionState === 'submitting' ? 'Submitting…' : 'Submit response'}
           </button>
         </div>
-        {feedback && <p className="rounded-sm border border-white/10 bg-black/25 px-3 py-2 text-xs text-white/75">{feedback}</p>}
+        {feedback && <p className="rounded-sm border border-line bg-bg/25 px-3 py-2 text-xs text-fg/75">{feedback}</p>}
       </form>
     </div>
   );

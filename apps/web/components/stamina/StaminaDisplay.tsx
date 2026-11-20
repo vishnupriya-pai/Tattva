@@ -20,15 +20,15 @@ export function StaminaDisplay({
   return (
     <div className="flex items-center gap-3">
       <div className="text-right leading-none">
-        <p className="text-[10px] uppercase tracking-[0.2em] text-white/40">Stamina</p>
-        <p className="font-mono text-base font-semibold text-white">{stamina.balance}</p>
+        <p className="text-[10px] uppercase tracking-[0.2em] text-fg/40">Stamina</p>
+        <p className="font-mono text-base font-semibold text-fg">{stamina.balance}</p>
       </div>
       {stamina.streakDays > 1 && (
-        <span className="text-[11px] text-white/40">{stamina.streakDays}-day streak</span>
+        <span className="text-[11px] text-fg/40">{stamina.streakDays}-day streak</span>
       )}
       {researchMode && <Badge tone="accent">3× pending scoring</Badge>}
       {latest && (
-        <span className="hidden text-[11px] text-white/40 sm:inline" title={EVENT_LABEL[latest.eventType]}>
+        <span className="hidden text-[11px] text-fg/40 sm:inline" title={EVENT_LABEL[latest.eventType]}>
           +{latest.finalPoints} &middot; {EVENT_LABEL[latest.eventType] ?? latest.eventType}
         </span>
       )}
