@@ -43,7 +43,7 @@ export function SessionStatus() {
   }, []);
 
   const dotColor =
-    status.kind === 'ready' ? 'bg-explored' : status.kind === 'error' ? 'bg-trap' : 'bg-gold';
+    status.kind === 'ready' ? 'bg-explored' : status.kind === 'error' ? 'bg-trap' : 'bg-fg-muted';
 
   return (
     <div className="pointer-events-none absolute right-3 top-3 z-10 flex items-center gap-2 rounded-md border border-line bg-bg/60 px-3 py-1.5 text-xs text-fg/80 backdrop-blur-sm">

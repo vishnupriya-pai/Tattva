@@ -30,7 +30,7 @@ export function SourceViewer({
               onClick={() => setActiveTab('source')}
               className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 transition cursor-pointer ${
                 activeTab === 'source'
-                  ? 'bg-gold font-semibold text-gold-ink shadow'
+                  ? 'bg-surface-2 font-semibold text-fg shadow'
                   : 'text-fg-muted hover:text-fg'
               }`}
             >
@@ -42,7 +42,7 @@ export function SourceViewer({
               onClick={() => setActiveTab('node')}
               className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 transition cursor-pointer ${
                 activeTab === 'node'
-                  ? 'bg-gold font-semibold text-gold-ink shadow'
+                  ? 'bg-surface-2 font-semibold text-fg shadow'
                   : 'text-fg-muted hover:text-fg'
               }`}
             >
@@ -76,7 +76,7 @@ export function SourceViewer({
           <div className="flex-1 space-y-6 px-6 py-5">
             <div className="space-y-3 border-b border-line pb-5">
               <div className="flex items-center gap-2">
-                <span className="font-mono text-[10px] font-bold text-gold uppercase tracking-wider bg-gold/10 px-2.5 py-0.5 rounded border border-gold/30">
+                <span className="font-mono text-[10px] font-bold text-fg-muted uppercase tracking-wider bg-surface-2 px-2.5 py-0.5 rounded">
                   {activeNode.parentNodeId ? 'Branching Node' : 'Root Question'}
                 </span>
                 {activeNode.researchMode && (
@@ -102,8 +102,8 @@ export function SourceViewer({
             </div>
 
             <div className="space-y-2">
-              <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-gold">
-                <Sparkles className="w-3.5 h-3.5 text-gold" />
+              <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider text-fg-muted">
+                <Sparkles className="w-3.5 h-3.5 text-fg-muted" />
                 <span>Sarvam AI Socratic Synthesis</span>
               </div>
               <div className="rounded-xl border border-line bg-surface-1 p-4 text-sm leading-relaxed text-fg-body">
@@ -123,7 +123,7 @@ export function SourceViewer({
                       key={fu.id}
                       className="rounded-lg border border-line bg-surface-1/60 px-3.5 py-2.5 text-xs text-fg-body flex items-start gap-2.5"
                     >
-                      <span className="font-mono text-gold font-bold shrink-0">{idx + 1}.</span>
+                      <span className="font-mono text-fg-muted font-bold shrink-0">{idx + 1}.</span>
                       <span className="leading-relaxed">{fu.questionText}</span>
                     </div>
                   ))}

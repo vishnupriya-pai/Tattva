@@ -44,8 +44,8 @@ export const InquirySwitcherModal: React.FC<InquirySwitcherModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-line px-5 py-4 bg-surface-2/[0.02]">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-gold/15 border border-gold/30 flex items-center justify-center">
-              <GitBranch className="w-4 h-4 text-gold" />
+            <div className="w-7 h-7 rounded-lg bg-surface-2 border border-line-strong flex items-center justify-center">
+              <GitBranch className="w-4 h-4 text-fg-muted" />
             </div>
             <div>
               <h2 className="text-sm font-semibold text-fg tracking-wide">
@@ -64,7 +64,7 @@ export const InquirySwitcherModal: React.FC<InquirySwitcherModalProps> = ({
                 onClose();
                 onStartNewInquiry();
               }}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-gold/40 bg-gold/10 hover:bg-gold/20 px-3 py-1.5 text-xs font-mono font-bold text-gold hover:text-fg transition cursor-pointer"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-gold hover:bg-gold-hover px-3 py-1.5 text-xs font-mono font-bold text-gold-ink transition cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>New Inquiry</span>
@@ -104,8 +104,8 @@ export const InquirySwitcherModal: React.FC<InquirySwitcherModalProps> = ({
                   }}
                   className={`group p-3.5 rounded-xl border transition cursor-pointer flex items-center justify-between gap-3 ${
                     isCurrent
-                      ? 'bg-gold/15 border-gold/50 text-fg shadow-md'
-                      : 'bg-surface-2/[0.02] border-line hover:border-gold/50 hover:bg-surface-2/[0.06] text-fg-body hover:text-fg'
+                      ? 'bg-surface-2 border-line-strong text-fg shadow-md'
+                      : 'bg-surface-2/[0.02] border-line hover:border-line-strong hover:bg-surface-2/[0.06] text-fg-body hover:text-fg'
                   }`}
                 >
                   <div className="min-w-0 flex-1 space-y-1">
@@ -114,7 +114,7 @@ export const InquirySwitcherModal: React.FC<InquirySwitcherModalProps> = ({
                         {inq.title || 'Curated Technical Source'}
                       </span>
                       {isCurrent && (
-                        <span className="text-[10px] font-mono uppercase tracking-wider text-gold bg-gold/20 border border-gold/30 px-1.5 py-0.2 rounded font-bold shrink-0 flex items-center gap-1">
+                        <span className="text-[10px] font-mono uppercase tracking-wider text-fg bg-surface-3 px-1.5 py-0.2 rounded font-bold shrink-0 flex items-center gap-1">
                           <Check className="w-2.5 h-2.5" />
                           Active
                         </span>
@@ -129,9 +129,9 @@ export const InquirySwitcherModal: React.FC<InquirySwitcherModalProps> = ({
 
                   <div className="shrink-0 flex items-center text-xs font-mono text-fg-muted group-hover:text-fg transition">
                     {isCurrent ? (
-                      <span className="text-gold text-xs">Viewing</span>
+                      <span className="text-fg text-xs">Viewing</span>
                     ) : (
-                      <span className="flex items-center gap-1 text-gold opacity-80 group-hover:opacity-100">
+                      <span className="flex items-center gap-1 text-fg-muted group-hover:text-fg">
                         Open <ArrowRight className="w-3.5 h-3.5" />
                       </span>
                     )}

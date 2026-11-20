@@ -20,7 +20,7 @@ function renderInlineFormatting(text: string): React.ReactNode[] {
       return (
         <code
           key={idx}
-          className="rounded bg-surface-1 text-gold border border-line px-1.5 py-0.5 font-mono text-xs font-semibold"
+          className="rounded bg-surface-1 text-fg border border-line px-1.5 py-0.5 font-mono text-xs font-semibold"
         >
           {part.slice(1, -1)}
         </code>
@@ -32,7 +32,7 @@ function renderInlineFormatting(text: string): React.ReactNode[] {
       return (
         <span
           key={idx}
-          className="rounded bg-gold/10 text-gold border border-gold/30 px-1.5 py-0.5 font-mono text-xs font-medium"
+          className="rounded bg-surface-2 text-fg border border-line-strong px-1.5 py-0.5 font-mono text-xs font-medium"
         >
           {part.slice(1, -1)}
         </span>
@@ -143,7 +143,7 @@ export const FormattedArticleReader: React.FC<FormattedArticleReaderProps> = ({ 
             <span>TERMINAL / INVARIANT ENGINE</span>
             <span>UTF-8</span>
           </div>
-          <pre className="font-mono text-xs sm:text-[13px] text-gold overflow-x-auto leading-relaxed whitespace-pre">
+          <pre className="font-mono text-xs sm:text-[13px] text-fg overflow-x-auto leading-relaxed whitespace-pre">
             {codeText}
           </pre>
         </div>
@@ -160,10 +160,10 @@ export const FormattedArticleReader: React.FC<FormattedArticleReaderProps> = ({ 
           key={idx}
           className="my-5 rounded-2xl bg-surface-2 border border-line px-6 py-4 text-center font-mono text-sm sm:text-base text-fg shadow-xl overflow-x-auto"
         >
-          <span className="text-[10px] text-gold font-mono uppercase font-bold tracking-wider block mb-1">
+          <span className="text-[10px] text-fg-muted font-mono uppercase font-bold tracking-wider block mb-1">
             Mathematical Invariant
           </span>
-          <code className="text-gold font-bold">{mathText}</code>
+          <code className="text-fg font-bold">{mathText}</code>
         </div>
       );
       idx++;
@@ -202,7 +202,7 @@ export const FormattedArticleReader: React.FC<FormattedArticleReaderProps> = ({ 
           key={idx}
           className="font-serif-tattva text-xl sm:text-2xl font-normal text-fg mt-8 mb-3 pb-2 border-b border-line tracking-tight flex items-center gap-2"
         >
-          <span className="w-1.5 h-4 rounded-full bg-gold shrink-0" />
+          <span className="w-1.5 h-4 rounded-full bg-line-strong shrink-0" />
           <span>{renderInlineFormatting(block.replace(/^##\s+/, ''))}</span>
         </h2>
       );
@@ -212,7 +212,7 @@ export const FormattedArticleReader: React.FC<FormattedArticleReaderProps> = ({ 
 
     if (block.startsWith('### ')) {
       renderedElements.push(
-        <h3 key={idx} className="font-serif-tattva text-lg sm:text-xl font-normal text-gold mt-5 mb-2 tracking-tight">
+        <h3 key={idx} className="font-serif-tattva text-lg sm:text-xl font-normal text-fg mt-5 mb-2 tracking-tight">
           {renderInlineFormatting(block.replace(/^###\s+/, ''))}
         </h3>
       );
@@ -225,7 +225,7 @@ export const FormattedArticleReader: React.FC<FormattedArticleReaderProps> = ({ 
       renderedElements.push(
         <blockquote
           key={idx}
-          className="my-4 border-l-4 border-gold bg-gold/10 pl-4 py-2.5 text-xs sm:text-sm text-fg italic rounded-r-xl font-sans"
+          className="my-4 border-l-4 border-line-strong bg-surface-2 pl-4 py-2.5 text-xs sm:text-sm text-fg italic rounded-r-xl font-sans"
         >
           {renderInlineFormatting(block.replace(/^>\s+/, ''))}
         </blockquote>
@@ -243,7 +243,7 @@ export const FormattedArticleReader: React.FC<FormattedArticleReaderProps> = ({ 
             const cleanText = item.replace(/^[-*]\s+|\d+\.\s+/, '');
             return (
               <li key={itemIdx} className="flex items-start gap-2.5 text-xs sm:text-sm text-fg-body leading-relaxed font-sans">
-                <span className="w-1.5 h-1.5 rounded-full bg-gold mt-2 shrink-0" />
+                <span className="w-1.5 h-1.5 rounded-full bg-fg-muted mt-2 shrink-0" />
                 <span className="flex-1">{renderInlineFormatting(cleanText)}</span>
               </li>
             );

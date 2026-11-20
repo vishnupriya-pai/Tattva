@@ -91,7 +91,7 @@ export function ProfileView({ userId = 'anonymous', staminaBalance = 0, streakDa
             <User className="h-6 w-6 text-fg-body" />
           </div>
           <div>
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-gold">Learner Profile</p>
+            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-fg-muted">Learner Profile</p>
             <h1 className="text-lg font-semibold text-fg">{userId}</h1>
           </div>
         </div>
@@ -107,17 +107,17 @@ export function ProfileView({ userId = 'anonymous', staminaBalance = 0, streakDa
           </div>
           <div className="rounded-xl border border-line bg-surface-1 p-3">
             <p className="font-mono text-[10px] uppercase tracking-wider text-fg-muted">Stamina</p>
-            <p className="font-mono text-xl font-bold text-fg">{staminaBalance.toLocaleString()}</p>
+            <p className="font-mono text-xl font-bold text-gold">{staminaBalance.toLocaleString()}</p>
           </div>
           <div className="rounded-xl border border-line bg-surface-1 p-3">
             <p className="font-mono text-[10px] uppercase tracking-wider text-fg-muted">Streak</p>
-            <p className="font-mono text-xl font-bold text-gold">{streakDays > 1 ? `${streakDays}d` : '—'}</p>
+            <p className="font-mono text-xl font-bold text-fg">{streakDays > 1 ? `${streakDays}d` : '—'}</p>
           </div>
         </div>
 
         <div>
           <div className="mb-2 flex items-center gap-1.5">
-            <GitBranch className="h-3.5 w-3.5 text-gold" />
+            <GitBranch className="h-3.5 w-3.5 text-fg-muted" />
             <span className="font-mono text-[11px] uppercase tracking-wider text-fg-muted">Since day one</span>
           </div>
           <div className="flex flex-col gap-1.5">

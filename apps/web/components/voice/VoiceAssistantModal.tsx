@@ -74,17 +74,17 @@ export function VoiceAssistantModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg/75 p-4 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-xl rounded-2xl border border-gold/40 bg-surface-1 p-6 shadow-2xl shadow-black/80 text-fg space-y-5">
+      <div className="relative w-full max-w-xl rounded-2xl border border-line-strong bg-surface-1 p-6 shadow-2xl shadow-black/80 text-fg space-y-5">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-line pb-4">
           <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-full bg-gold/20 flex items-center justify-center text-gold">
-              <Sparkles className="w-4 h-4 text-gold" />
+            <div className="h-8 w-8 rounded-full bg-surface-2 flex items-center justify-center text-fg-muted">
+              <Sparkles className="w-4 h-4 text-fg-muted" />
             </div>
             <div>
               <h2 className="text-sm font-semibold text-fg">Sarvam Multilingual Voice Tutor</h2>
               <div className="flex items-center gap-2 text-[10px] text-fg-muted font-mono">
-                <Languages className="w-3 h-3 text-gold" />
+                <Languages className="w-3 h-3 text-fg-muted" />
                 <span>Detected: {exchange.languageCode.toUpperCase()}</span>
                 <span>·</span>
                 <span>saaras:v4 + bulbul:v4-flash</span>
@@ -114,8 +114,8 @@ export function VoiceAssistantModal({
         {/* Spoken Answer & Audio Controls */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="font-mono text-[10px] uppercase tracking-wider text-gold flex items-center gap-1.5">
-              <Sparkles className="w-3 h-3 text-gold" />
+            <span className="font-mono text-[10px] uppercase tracking-wider text-fg-muted flex items-center gap-1.5">
+              <Sparkles className="w-3 h-3 text-fg-muted" />
               Sarvam AI Voice Answer
             </span>
 
@@ -124,7 +124,7 @@ export function VoiceAssistantModal({
               onClick={toggleAudio}
               className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 font-mono text-xs font-semibold transition cursor-pointer ${
                 isPlaying
-                  ? 'bg-gold text-gold-ink'
+                  ? 'bg-surface-3 text-fg'
                   : 'bg-surface-2/10 text-fg hover:bg-surface-2/20'
               }`}
             >
@@ -142,7 +142,7 @@ export function VoiceAssistantModal({
             </button>
           </div>
 
-          <div className="rounded-xl border border-gold/20 bg-gold/5 p-4 text-sm leading-relaxed text-fg font-sans">
+          <div className="rounded-xl border border-line bg-surface-2/5 p-4 text-sm leading-relaxed text-fg font-sans">
             {exchange.responseText}
           </div>
         </div>
@@ -152,7 +152,7 @@ export function VoiceAssistantModal({
           <button
             type="button"
             onClick={toggleAudio}
-            className="inline-flex items-center gap-1 text-xs text-fg-muted hover:text-gold font-mono transition cursor-pointer"
+            className="inline-flex items-center gap-1 text-xs text-fg-muted hover:text-fg font-mono transition cursor-pointer"
           >
             <RotateCcw className="w-3 h-3" />
             <span>Replay Audio</span>

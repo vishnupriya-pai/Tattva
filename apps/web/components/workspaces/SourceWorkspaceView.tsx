@@ -82,7 +82,7 @@ export const SourceWorkspaceView: React.FC<SourceWorkspaceViewProps> = ({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-line pb-6">
         <div>
           <div className="flex items-center gap-2">
-            <span className="font-mono text-[10px] font-bold text-gold uppercase tracking-wider bg-gold/10 px-2.5 py-0.5 rounded border border-gold/30">
+            <span className="font-mono text-[10px] font-bold text-fg-muted uppercase tracking-wider bg-surface-2 px-2.5 py-0.5 rounded">
               Personal Crucible Desk
             </span>
             <span className="text-xs text-fg-muted">·</span>
@@ -102,14 +102,14 @@ export const SourceWorkspaceView: React.FC<SourceWorkspaceViewProps> = ({
 
         {/* Global Mastery Snapshot */}
         <div className="flex items-center gap-4 bg-surface-2 border border-line rounded-2xl p-4 shadow-xl shrink-0">
-          <div className="w-12 h-12 rounded-xl bg-surface-1 text-gold flex items-center justify-center font-bold text-lg border border-line">
+          <div className="w-12 h-12 rounded-xl bg-surface-1 text-fg-muted flex items-center justify-center font-bold text-lg border border-line">
             <Award className="w-6 h-6" />
           </div>
           <div>
             <div className="text-[10px] font-mono tracking-widest text-fg-muted uppercase">
               Desk Mastery Average
             </div>
-            <div className="font-mono text-2xl font-bold text-gold">
+            <div className="font-mono text-2xl font-bold text-fg">
               {enrolledSources.length > 0
                 ? Math.round(
                     enrolledSources.reduce((acc, s) => acc + s.masteryScore, 0) /
@@ -136,7 +136,7 @@ export const SourceWorkspaceView: React.FC<SourceWorkspaceViewProps> = ({
           return (
             <div
               key={source.id}
-              className="flex flex-col justify-between rounded-2xl border border-line bg-surface-2 p-5 shadow-2xl hover:border-gold/60 transition-all duration-200 space-y-4"
+              className="flex flex-col justify-between rounded-2xl border border-line bg-surface-2 p-5 shadow-2xl hover:border-line-strong transition-all duration-200 space-y-4"
             >
               {/* PRD §9 Standardized Typographic Cover */}
               <div
@@ -156,7 +156,7 @@ export const SourceWorkspaceView: React.FC<SourceWorkspaceViewProps> = ({
               {/* In-Depth Progress Metrics */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between text-[11px] font-mono text-fg-muted">
-                  <span className="font-bold text-gold uppercase">
+                  <span className="font-bold text-fg-muted uppercase">
                     CRUCIBLE #{idx + 1}
                   </span>
                   <span className="text-fg-muted">{source.lastStudied}</span>
@@ -164,7 +164,7 @@ export const SourceWorkspaceView: React.FC<SourceWorkspaceViewProps> = ({
 
                 <h3
                   onClick={() => setActiveSourceId(source.id)}
-                  className="font-serif-tattva text-lg font-normal text-fg hover:text-gold transition cursor-pointer line-clamp-2 leading-snug"
+                  className="font-serif-tattva text-lg font-normal text-fg transition cursor-pointer line-clamp-2 leading-snug"
                 >
                   {source.title}
                 </h3>
@@ -179,14 +179,16 @@ export const SourceWorkspaceView: React.FC<SourceWorkspaceViewProps> = ({
                     <span className="text-[10px] text-fg-muted uppercase">
                       MASTERY PROGRESS
                     </span>
-                    <span className="font-bold text-gold">
+                    <span className="font-bold text-fg">
                       {source.masteryScore}% · {source.masteryLevel}
                     </span>
                   </div>
 
                   <div className="w-full bg-surface-2/10 rounded-full h-1.5 overflow-hidden">
                     <div
-                      className="bg-gold h-full rounded-full transition-all"
+                      className={`h-full rounded-full transition-all ${
+                        source.masteryScore >= 100 ? 'bg-gold' : 'bg-fg-body'
+                      }`}
                       style={{ width: `${source.masteryScore}%` }}
                     />
                   </div>
@@ -203,7 +205,7 @@ export const SourceWorkspaceView: React.FC<SourceWorkspaceViewProps> = ({
                 <button
                   type="button"
                   onClick={() => setActiveSourceId(source.id)}
-                  className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-gold px-4 py-2.5 font-mono text-xs font-bold text-gold-ink hover:bg-gold-hover transition cursor-pointer shadow-sm"
+                  className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-surface-2 border border-line-strong px-4 py-2.5 font-mono text-xs font-bold text-fg hover:bg-surface-3 transition cursor-pointer shadow-sm"
                 >
                   <span>RESUME SPLIT CRUCIBLE</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -217,10 +219,10 @@ export const SourceWorkspaceView: React.FC<SourceWorkspaceViewProps> = ({
         {enrolledSources.length < 3 && (
           <div
             onClick={onNavigateToHome}
-            className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-line-strong bg-surface-1/60 p-8 text-center space-y-3 hover:border-gold/60 transition cursor-pointer min-h-[380px]"
+            className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-line-strong bg-surface-1/60 p-8 text-center space-y-3 hover:border-line-strong transition cursor-pointer min-h-[380px]"
           >
             <div className="w-12 h-12 rounded-full bg-surface-2/5 flex items-center justify-center text-fg-muted">
-              <PlusCircle className="w-6 h-6 text-gold" />
+              <PlusCircle className="w-6 h-6 text-fg-faint" />
             </div>
             <div>
               <h4 className="text-sm font-bold text-fg">Enroll Another Crucible</h4>
@@ -230,7 +232,7 @@ export const SourceWorkspaceView: React.FC<SourceWorkspaceViewProps> = ({
             </div>
             <button
               type="button"
-              className="mt-2 rounded-lg border border-line bg-surface-2 px-3.5 py-1.5 font-mono text-xs text-gold hover:text-fg"
+              className="mt-2 rounded-lg border border-line bg-surface-2 px-3.5 py-1.5 font-mono text-xs text-fg-muted hover:text-fg"
             >
               Browse Masterclasses →
             </button>

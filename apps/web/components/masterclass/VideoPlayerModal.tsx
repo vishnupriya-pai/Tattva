@@ -43,7 +43,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
         {/* Top bar */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-primary)] bg-[var(--bg-muted)]">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gold text-gold-ink">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-surface-2 text-fg-muted">
               <YoutubeIcon className="w-3.5 h-3.5" />
               {video.lectureBadge}
             </span>

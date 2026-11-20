@@ -32,7 +32,7 @@ export function ApiStatus() {
   }, []);
 
   const dotColor =
-    status.kind === 'ok' ? 'bg-explored' : status.kind === 'error' ? 'bg-trap' : 'bg-gold';
+    status.kind === 'ok' ? 'bg-explored' : status.kind === 'error' ? 'bg-trap' : 'bg-fg-muted';
 
   return (
     <div className="flex items-center gap-2 rounded-md border border-line bg-surface-2/5 px-3 py-2 text-sm">

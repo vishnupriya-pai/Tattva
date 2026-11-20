@@ -162,14 +162,14 @@ export function Workspace({
                 <button
                   type="button"
                   onClick={onOpenInquirySwitcher}
-                  className="flex items-center gap-1.5 rounded-lg border border-line-strong bg-surface-2/5 hover:bg-surface-2/10 px-2.5 py-1 text-xs text-fg hover:border-gold/70 hover:text-fg transition cursor-pointer shadow-sm"
+                  className="flex items-center gap-1.5 rounded-lg border border-line-strong bg-surface-2/5 hover:bg-surface-2/10 px-2.5 py-1 text-xs text-fg hover:border-line-strong hover:text-fg transition cursor-pointer shadow-sm"
                   title="Switch active knowledge inquiry"
                 >
-                  <GitBranch className="w-3.5 h-3.5 text-gold" />
+                  <GitBranch className="w-3.5 h-3.5 text-fg-muted" />
                   <span className="max-w-[150px] truncate font-medium text-fg">
                     {inquiries.find((i) => i.id === inquiryId)?.title || source.title || 'Inquiry'}
                   </span>
-                  <span className="rounded bg-gold/20 border border-gold/30 px-1.5 py-0.2 text-[10px] font-mono text-gold font-bold">
+                  <span className="rounded bg-surface-3 px-1.5 py-0.2 text-[10px] font-mono text-fg-muted font-bold">
                     {inquiries.length}
                   </span>
                   <ChevronDown className="w-3 h-3 text-fg-muted" />
@@ -181,9 +181,9 @@ export function Workspace({
                 type="button"
                 onClick={() => setIsShareModalOpen(true)}
                 title="Share this Knowledge Graph"
-                className="flex items-center gap-1.5 rounded-lg border border-line bg-surface-2/5 px-2.5 py-1 font-mono text-[11px] text-fg-body hover:border-gold/60 hover:text-fg transition cursor-pointer"
+                className="flex items-center gap-1.5 rounded-lg border border-line bg-surface-2/5 px-2.5 py-1 font-mono text-[11px] text-fg-body hover:border-line-strong hover:text-fg transition cursor-pointer"
               >
-                <Share2 className="w-3.5 h-3.5 text-gold" />
+                <Share2 className="w-3.5 h-3.5 text-fg-muted" />
                 <span>Share</span>
               </button>
               {onDeleteInquiry && (
@@ -248,7 +248,7 @@ export function Workspace({
         {selectedNode && (
           <div className="max-h-[28vh] shrink-0 space-y-3 overflow-y-auto border-t border-line bg-surface-1/60 px-5 py-3">
             {pendingMessage && (
-              <div className="flex items-center justify-between gap-3 rounded-sm border border-gold/25 bg-gold/5 px-3 py-2 text-xs text-gold">
+              <div className="flex items-center justify-between gap-3 rounded-sm border border-trap/30 bg-trap-wash px-3 py-2 text-xs text-trap">
                 <p>{pendingMessage}</p>
                 {retryPayload && (
                   <button
