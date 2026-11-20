@@ -106,14 +106,9 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
             </div>
 
             <div className="leading-tight">
-              <div className="flex items-baseline gap-2">
-                <span className="text-lg font-semibold text-fg font-display tracking-[0.12em] uppercase">
-                  TATTVA
-                </span>
-                <span className="hidden xl:inline text-xs font-mono text-fg-muted">
-                  Intellectual execution platform
-                </span>
-              </div>
+              <span className="text-lg font-semibold text-fg font-display tracking-[0.12em] uppercase">
+                TATTVA
+              </span>
             </div>
           </button>
         </div>
