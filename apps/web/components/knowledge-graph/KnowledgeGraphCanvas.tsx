@@ -139,8 +139,8 @@ export function KnowledgeGraphCanvas({
         />
 
         {/* Legend Overlay */}
-        <div className="pointer-events-none absolute bottom-3 left-3 z-10 flex flex-wrap items-center gap-3 rounded-lg border border-line bg-surface-1/80 px-3 py-1.5 backdrop-blur-md text-[10px]">
-          <span className="text-fg/40 uppercase tracking-widest font-semibold">Graph Heatmap:</span>
+        <div className="pointer-events-none absolute bottom-3 left-3 z-10 flex flex-wrap items-center gap-3 rounded-lg border border-line bg-surface-1/80 px-3 py-1.5 backdrop-blur-md text-xs">
+          <span className="text-fg/40 font-semibold">Graph Heatmap:</span>
           <span className="flex items-center gap-1.5 text-fg-muted">
             <span className="h-2 w-2 rounded-full border border-line-strong bg-surface-2" />
             B&W (Initial)

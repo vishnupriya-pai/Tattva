@@ -31,8 +31,8 @@ export function TrapPanel({
 
   return (
     <div className="rounded-md border border-trap/40 bg-trap/5 p-4" role="alert">
-      <p className="text-sm font-semibold uppercase tracking-wide text-trap">⚠️ Be careful here!!</p>
-      <p className="mt-2 text-xs font-medium uppercase tracking-wide text-fg/40">
+      <p className="text-sm font-semibold text-trap">⚠️ Be careful here!!</p>
+      <p className="mt-2 text-xs font-medium text-fg/40">
         Misconception: {trap.misconceptionType.replaceAll('_', ' ')}
       </p>
       <p className="mt-1.5 text-sm leading-relaxed text-fg/80">{trap.scenario}</p>
@@ -58,7 +58,7 @@ export function TrapPanel({
           className="w-full resize-none rounded-sm border border-line-strong bg-bg/30 px-3 py-2 text-sm text-fg/90 placeholder:text-fg/30 focus:border-trap/50 focus:outline-none disabled:opacity-60"
         />
         <div className="flex items-center justify-between">
-          <p className="text-[11px] text-fg/40">
+          <p className="text-xs text-fg/40">
             {submissionState === 'submitted'
               ? 'Submitted — awaiting backend evaluation.'
               : 'The standard question input stays disabled until this is resolved.'}

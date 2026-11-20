@@ -45,12 +45,13 @@ export const HomeDashboardView: React.FC<HomeDashboardViewProps> = ({
       {/* 1. Hero Block: Serif + Gold Visual Identity */}
       <div className="space-y-4 text-left border-b border-line pb-8">
         <div className="flex items-center gap-2">
-          <span className="font-mono text-[10px] font-bold text-fg-muted uppercase tracking-wider bg-surface-2 px-2.5 py-0.5 rounded">
-            INTELLECTUAL EXECUTION PLATFORM
+          <span className="font-mono text-xs font-bold text-fg-muted bg-surface-2 px-2.5 py-0.5 rounded">
+            Intellectual execution platform
           </span>
           <span className="text-xs text-fg-muted">·</span>
-          <span className="font-mono text-xs text-fg-muted">
-            SYSTEM: ACTIVE
+          <span className="inline-flex items-center gap-1.5 text-xs text-fg-muted">
+            <span className="h-1.5 w-1.5 rounded-full bg-live" />
+            System active
           </span>
         </div>
 
@@ -70,7 +71,7 @@ export const HomeDashboardView: React.FC<HomeDashboardViewProps> = ({
             className="inline-flex items-center gap-2 rounded-xl bg-gold px-5 py-3 font-mono text-xs font-bold text-gold-ink hover:bg-gold-hover transition cursor-pointer shadow-lg shadow-black/40"
           >
             <Plus className="w-4 h-4 text-gold-ink" />
-            <span>START A NEW INQUIRY</span>
+            <span>Start a new inquiry</span>
             <ArrowRight className="w-4 h-4 text-gold-ink" />
           </button>
         </div>
@@ -81,11 +82,11 @@ export const HomeDashboardView: React.FC<HomeDashboardViewProps> = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <GitBranch className="w-4 h-4 text-fg-muted" />
-            <h2 className="font-mono text-xs font-bold text-fg uppercase tracking-wider">
+            <h2 className="font-mono text-xs font-bold text-fg ">
               Your Active Knowledge Graphs ({inquiries.length})
             </h2>
           </div>
-          <span className="font-mono text-[11px] text-fg-muted">
+          <span className="font-mono text-xs text-fg-muted">
             Select an inquiry to enter split-screen workspace
           </span>
         </div>
@@ -121,17 +122,17 @@ export const HomeDashboardView: React.FC<HomeDashboardViewProps> = ({
                 >
                   <div className="space-y-1.5 flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-[10px] text-fg-muted uppercase tracking-wider bg-surface-2 px-2 py-0.5 rounded">
+                      <span className="font-mono text-xs text-fg-muted bg-surface-2 px-2 py-0.5 rounded">
                         {inquiry.title || 'Curated Technical Source'}
                       </span>
                       <span className="text-fg-muted text-xs">·</span>
-                      <span className="font-mono text-[11px] text-fg-muted">
+                      <span className="font-mono text-xs text-fg-muted">
                         {formattedDate}
                       </span>
                       {isConquered && (
                         <>
                           <span className="text-fg-muted text-xs">·</span>
-                          <span className="font-mono text-[10px] text-live uppercase tracking-wider">
+                          <span className="font-mono text-xs text-live ">
                             Conquered
                           </span>
                         </>
@@ -154,7 +155,7 @@ export const HomeDashboardView: React.FC<HomeDashboardViewProps> = ({
                         onClick={(e) => e.stopPropagation()}
                         className="flex items-center gap-2 rounded-xl border border-trap/30 bg-trap-wash px-3 py-1.5"
                       >
-                        <span className="font-mono text-[11px] text-trap">
+                        <span className="font-mono text-xs text-trap">
                           {isDeleting ? 'Deleting…' : 'Delete graph?'}
                         </span>
                         {!isDeleting && (
@@ -162,7 +163,7 @@ export const HomeDashboardView: React.FC<HomeDashboardViewProps> = ({
                             <button
                               type="button"
                               onClick={(e) => handleDelete(e, inquiry.id)}
-                              className="rounded px-2 py-0.5 font-mono text-[11px] font-bold bg-trap text-fg hover:bg-trap/80 transition cursor-pointer"
+                              className="rounded px-2 py-0.5 font-mono text-xs font-bold bg-trap text-fg hover:bg-trap/80 transition cursor-pointer"
                             >
                               Yes
                             </button>
@@ -172,7 +173,7 @@ export const HomeDashboardView: React.FC<HomeDashboardViewProps> = ({
                                 e.stopPropagation();
                                 setConfirmDeleteId(null);
                               }}
-                              className="rounded px-2 py-0.5 font-mono text-[11px] text-fg-muted hover:text-fg transition cursor-pointer"
+                              className="rounded px-2 py-0.5 font-mono text-xs text-fg-muted hover:text-fg transition cursor-pointer"
                             >
                               Cancel
                             </button>

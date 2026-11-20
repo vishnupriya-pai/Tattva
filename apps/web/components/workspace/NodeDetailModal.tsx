@@ -112,7 +112,7 @@ export function NodeDetailModal({
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
           {/* Main Question */}
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-fg-muted mb-1">
+            <p className="text-xs font-semibold text-fg-muted mb-1">
               Inquiry Question
             </p>
             <h3 className="text-lg font-semibold leading-snug text-fg">
@@ -145,7 +145,7 @@ export function NodeDetailModal({
           {/* Pre-generated Follow-up Questions */}
           <div className="space-y-2.5 pt-1">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-fg/50">
+              <span className="text-xs font-semibold text-fg/50">
                 Explore Contextual Follow-Ups
               </span>
               <span className="text-xs text-fg/40">
@@ -169,7 +169,7 @@ export function NodeDetailModal({
                     } ${isUnresolvedTrap ? 'cursor-not-allowed opacity-40' : ''}`}
                   >
                     <span
-                      className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md font-mono text-[10px] font-bold ${
+                      className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md font-mono text-xs font-bold ${
                         isBranched
                           ? 'bg-explored text-gold-ink'
                           : 'bg-surface-2/10 text-fg/70'

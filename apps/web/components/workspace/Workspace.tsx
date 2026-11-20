@@ -169,7 +169,7 @@ export function Workspace({
                   <span className="max-w-[150px] truncate font-medium text-fg">
                     {inquiries.find((i) => i.id === inquiryId)?.title || source.title || 'Inquiry'}
                   </span>
-                  <span className="rounded bg-surface-3 px-1.5 py-0.2 text-[10px] font-mono text-fg-muted font-bold">
+                  <span className="rounded bg-surface-3 px-1.5 py-0.2 text-xs font-mono text-fg-muted font-bold">
                     {inquiries.length}
                   </span>
                   <ChevronDown className="w-3 h-3 text-fg-muted" />
@@ -181,7 +181,7 @@ export function Workspace({
                 type="button"
                 onClick={() => setIsShareModalOpen(true)}
                 title="Share this Knowledge Graph"
-                className="flex items-center gap-1.5 rounded-lg border border-line bg-surface-2/5 px-2.5 py-1 font-mono text-[11px] text-fg-body hover:border-line-strong hover:text-fg transition cursor-pointer"
+                className="flex items-center gap-1.5 rounded-lg border border-line bg-surface-2/5 px-2.5 py-1 font-mono text-xs text-fg-body hover:border-line-strong hover:text-fg transition cursor-pointer"
               >
                 <Share2 className="w-3.5 h-3.5 text-fg-muted" />
                 <span>Share</span>
@@ -189,21 +189,21 @@ export function Workspace({
               {onDeleteInquiry && (
                 confirmDelete ? (
                   <div className="flex items-center gap-1.5 rounded-lg border border-trap/30 bg-trap-wash px-2 py-1 text-xs">
-                    <span className="text-trap text-[10px] font-mono">Delete?</span>
+                    <span className="text-trap text-xs font-mono">Delete?</span>
                     <button
                       type="button"
                       onClick={() => {
                         setConfirmDelete(false);
                         onDeleteInquiry();
                       }}
-                      className="rounded bg-trap px-1.5 py-0.5 text-[10px] font-bold text-fg hover:bg-trap/80 cursor-pointer"
+                      className="rounded bg-trap px-1.5 py-0.5 text-xs font-bold text-fg hover:bg-trap/80 cursor-pointer"
                     >
                       Yes
                     </button>
                     <button
                       type="button"
                       onClick={() => setConfirmDelete(false)}
-                      className="rounded px-1.5 py-0.5 text-[10px] text-fg-muted hover:text-fg cursor-pointer"
+                      className="rounded px-1.5 py-0.5 text-xs text-fg-muted hover:text-fg cursor-pointer"
                     >
                       Cancel
                     </button>
@@ -274,7 +274,7 @@ export function Workspace({
         {/* Dedicated Elevated Composer & Voice Assistant Bar (Always Visible at Bottom) */}
         <div className="shrink-0 border-t border-line bg-surface-1 px-5 py-3.5 shadow-2xl z-20">
           {selectedNode && (
-            <p className="mb-1.5 text-[10px] uppercase tracking-wider font-mono text-fg-muted">
+            <p className="mb-1.5 text-xs font-mono text-fg-muted">
               {selectedNode.isTrap && !selectedNode.trapResolvedAt
                 ? 'Custom questions (blocked by trap)'
                 : 'Ask your own question or use voice assistant'}

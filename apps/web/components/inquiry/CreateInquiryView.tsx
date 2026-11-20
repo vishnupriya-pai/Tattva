@@ -132,7 +132,7 @@ export const CreateInquiryView: React.FC<CreateInquiryViewProps> = ({
           <span>Cancel</span>
         </button>
 
-        <span className="font-mono text-[10px] font-bold text-fg-muted uppercase tracking-wider bg-surface-2 px-2.5 py-0.5 rounded">
+        <span className="font-mono text-xs font-bold text-fg-muted bg-surface-2 px-2.5 py-0.5 rounded">
           PRD §1 &middot; Process of Inquiry
         </span>
       </div>
@@ -149,7 +149,7 @@ export const CreateInquiryView: React.FC<CreateInquiryViewProps> = ({
 
         {/* Step 1: Select Curated Source */}
         <div className="space-y-3">
-          <label className="block font-mono text-xs font-bold text-fg-body uppercase tracking-wider">
+          <label className="block font-mono text-xs font-bold text-fg-body ">
             1. Select Curated Learning Source (&ge; 25 min)
           </label>
 
@@ -169,7 +169,7 @@ export const CreateInquiryView: React.FC<CreateInquiryViewProps> = ({
                   <div className="flex items-start justify-between gap-3">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-[10px] uppercase tracking-wider text-fg-muted bg-surface-2 px-2 py-0.5 rounded">
+                        <span className="font-mono text-xs text-fg-muted bg-surface-2 px-2 py-0.5 rounded">
                           {src.topic}
                         </span>
                         <span className="font-mono text-xs text-fg-muted">
@@ -199,11 +199,11 @@ export const CreateInquiryView: React.FC<CreateInquiryViewProps> = ({
         {/* Step 2: Formulate Root Question */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <label className="block font-mono text-xs font-bold text-fg-body uppercase tracking-wider">
+            <label className="block font-mono text-xs font-bold text-fg-body ">
               2. Formulate Your Root Question / Technical Excerpt
             </label>
             <div className="flex items-center gap-3">
-              <span className={`font-mono text-[11px] ${question.length > 5500 ? 'text-trap font-bold' : 'text-fg-muted'}`}>
+              <span className={`font-mono text-xs ${question.length > 5500 ? 'text-trap font-bold' : 'text-fg-muted'}`}>
                 {question.length.toLocaleString()} / 6,000
               </span>
               {selectedSource?.sampleQuestion && (
@@ -215,7 +215,7 @@ export const CreateInquiryView: React.FC<CreateInquiryViewProps> = ({
                       setInquiryTitle(selectedSource.title);
                     }
                   }}
-                  className="text-[11px] font-mono text-fg-muted hover:text-fg hover:underline cursor-pointer"
+                  className="text-xs font-mono text-fg-muted hover:text-fg hover:underline cursor-pointer"
                 >
                   Use sample prompt
                 </button>
@@ -242,10 +242,10 @@ export const CreateInquiryView: React.FC<CreateInquiryViewProps> = ({
           {/* Inquiry Heading Input */}
           <div className="space-y-1.5 pt-1">
             <div className="flex items-center justify-between">
-              <label className="block font-mono text-[11px] font-bold text-fg-body uppercase tracking-wider">
+              <label className="block font-mono text-xs font-bold text-fg-body ">
                 Inquiry Heading (auto-generated from your question)
               </label>
-              <span className="text-[10px] font-mono text-fg-muted">
+              <span className="text-xs font-mono text-fg-muted">
                 Displayed in Knowledge Graph & Switcher
               </span>
             </div>
@@ -267,11 +267,11 @@ export const CreateInquiryView: React.FC<CreateInquiryViewProps> = ({
         <div className="rounded-xl border border-line bg-surface-1 p-4 flex items-center justify-between gap-4">
           <div className="space-y-0.5">
             <div className="flex items-center gap-2">
-              <span className="font-mono text-xs font-bold text-fg uppercase tracking-wider">
+              <span className="font-mono text-xs font-bold text-fg ">
                 Research Mode
               </span>
               <span
-                className={`font-mono text-[10px] px-2 py-0.5 rounded border ${
+                className={`font-mono text-xs px-2 py-0.5 rounded border ${
                   researchMode
                     ? 'text-gold bg-gold/10 border-gold/30'
                     : 'text-fg-muted bg-surface-2 border-line'
@@ -314,7 +314,7 @@ export const CreateInquiryView: React.FC<CreateInquiryViewProps> = ({
             ) : (
               <>
                 <Sparkles className="w-4 h-4 text-gold-ink" />
-                <span>INITIALIZE KNOWLEDGE GRAPH</span>
+                <span>Initialize knowledge graph</span>
                 <ArrowRight className="w-4 h-4 text-gold-ink" />
               </>
             )}

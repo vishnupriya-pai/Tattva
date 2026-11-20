@@ -225,7 +225,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({
           {/* Article Header */}
           <div className="space-y-4 border-b border-line pb-6">
             <div className="flex items-center gap-2">
-              <span className="rounded font-mono text-[10px] font-bold uppercase tracking-wider text-fg-muted bg-surface-2 px-2.5 py-0.5">
+              <span className="rounded font-mono text-xs font-bold text-fg-muted bg-surface-2 px-2.5 py-0.5">
                 {activeArticle.category}
               </span>
               <span className="text-xs text-fg-muted">·</span>
@@ -237,7 +237,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({
               <span className="text-xs font-mono text-fg-muted">{activeArticle.publishedAt}</span>
             </div>
 
-            <h1 className="font-serif-tattva text-2xl sm:text-4xl font-normal text-fg tracking-tight leading-tight">
+            <h1 className="font-display text-2xl sm:text-4xl font-normal text-fg tracking-tight leading-tight">
               {activeArticle.title}
             </h1>
 
@@ -252,7 +252,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({
               </div>
               <div>
                 <div className="text-xs font-bold text-fg">{activeArticle.authorName}</div>
-                <div className="text-[11px] font-mono text-fg-muted">
+                <div className="text-xs font-mono text-fg-muted">
                   {activeArticle.authorHandle} · {activeArticle.authorRole}
                 </div>
               </div>
@@ -263,7 +263,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({
           <div className="rounded-xl border border-line-strong bg-surface-2 p-5 space-y-2.5">
             <div className="flex items-center gap-2 text-fg-muted">
               <Sparkles className="w-4 h-4 fill-current" />
-              <h3 className="font-mono text-xs font-bold uppercase tracking-wider">
+              <h3 className="font-mono text-xs font-bold ">
                 Key Article Takeaways &amp; Core Invariants
               </h3>
             </div>
@@ -285,7 +285,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({
 
           {/* Article Tags */}
           <div className="flex flex-wrap items-center gap-2 pt-6 border-t border-line">
-            <span className="font-mono text-[11px] font-bold text-fg-muted uppercase tracking-wider">
+            <span className="font-mono text-xs font-bold text-fg-muted ">
               Topics:
             </span>
             {activeArticle.tags.map((tag, i) => (
@@ -334,7 +334,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({
               <div key={i} className="pt-3 first:pt-0 space-y-1">
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-bold text-fg">{c.author}</span>
-                  <span className="font-mono text-[10px] text-fg-muted">{c.time}</span>
+                  <span className="font-mono text-xs text-fg-muted">{c.time}</span>
                 </div>
                 <p className="text-xs text-fg-muted leading-relaxed font-sans">{c.text}</p>
               </div>
@@ -354,7 +354,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-[var(--border-primary)] pb-6">
         <div>
           <div className="flex items-center gap-2">
-            <span className="rounded-full bg-[var(--brand-sage-light)]/40 px-2.5 py-0.5 text-xs font-bold text-[var(--brand-pine)] uppercase tracking-wider">
+            <span className="rounded-full bg-[var(--brand-sage-light)]/40 px-2.5 py-0.5 text-xs font-bold text-[var(--brand-pine)] ">
               Peer Learning Community
             </span>
             <span className="text-xs text-[var(--text-muted)]">·</span>
@@ -429,7 +429,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({
             <div className="space-y-4">
               {/* Header: Domain, Read Time, Date */}
               <div className="flex items-center justify-between gap-2">
-                <span className="rounded font-mono text-[10px] font-bold uppercase tracking-wider text-fg-muted bg-surface-2 px-2.5 py-0.5">
+                <span className="rounded font-mono text-xs font-bold text-fg-muted bg-surface-2 px-2.5 py-0.5">
                   {article.category}
                 </span>
 
@@ -445,7 +445,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({
 
               {/* Title & Subtitle */}
               <div>
-                <h2 className="font-serif-tattva text-xl font-normal text-fg transition line-clamp-2 leading-snug">
+                <h2 className="font-display text-xl font-normal text-fg transition line-clamp-2 leading-snug">
                   {article.title}
                 </h2>
                 <p className="mt-1 text-xs text-fg-muted line-clamp-2 leading-relaxed font-sans">
@@ -457,7 +457,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({
               <div className="rounded-xl border border-line-strong bg-surface-2 p-4 space-y-2">
                 <div className="flex items-center gap-1.5 text-fg-muted">
                   <Sparkles className="w-3.5 h-3.5 fill-current" />
-                  <span className="font-mono text-[10px] font-bold uppercase tracking-wider">
+                  <span className="font-mono text-xs font-bold ">
                     Key Highlights &amp; Discoveries
                   </span>
                 </div>
@@ -477,7 +477,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({
                 {article.tags.slice(0, 3).map((tag, idx) => (
                   <span
                     key={idx}
-                    className="text-[10px] px-2 py-0.5 rounded bg-surface-2/5 border border-line text-fg-muted"
+                    className="text-xs px-2 py-0.5 rounded bg-surface-2/5 border border-line text-fg-muted"
                   >
                     #{tag}
                   </span>
@@ -596,7 +596,7 @@ export const CommunityView: React.FC<CommunityViewProps> = ({
                 <label className="block text-xs font-mono font-bold text-fg-muted">
                   ⚡ 3 Key Highlights (Displayed in front on the card)
                 </label>
-                <p className="text-[11px] text-fg-muted">
+                <p className="text-xs text-fg-muted">
                   Summarize the breakthrough takeaways so readers immediately understand the value.
                 </p>
 

@@ -135,7 +135,7 @@ export function InquiryComposer({
                   ? 'Transcribing speech (up to 60s)…'
                   : 'Listening for Voice Assistant (up to 60s)…'}
               </span>
-              <span className="font-mono text-[11px] text-gold/90 bg-gold/10 px-2 py-0.5 rounded-full border border-gold/20 shrink-0">
+              <span className="font-mono text-xs text-gold/90 bg-gold/10 px-2 py-0.5 rounded-full border border-gold/20 shrink-0">
                 {formatTime(recordingDuration)} / 1:00
               </span>
             </div>
@@ -190,7 +190,7 @@ export function InquiryComposer({
                 : 'Synthesizing voice (saaras:v4 → 105b → bulbul:v4-flash)…'}
             </span>
           </div>
-          <span className="font-mono text-[10px] text-gold bg-gold/10 px-2.5 py-0.5 rounded-full border border-gold/30 shrink-0">
+          <span className="font-mono text-xs text-gold bg-gold/10 px-2.5 py-0.5 rounded-full border border-gold/30 shrink-0">
             Sarvam AI
           </span>
         </div>

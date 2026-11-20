@@ -20,7 +20,7 @@ export function NodeDetailPanel({
   return (
     <div className="space-y-3">
       <div>
-        <p className="mb-1 flex items-center gap-2 text-[11px] uppercase tracking-wide text-fg/40">
+        <p className="mb-1 flex items-center gap-2 text-xs text-fg/40">
           Question
           {node.researchMode && <Badge tone="accent">research mode</Badge>}
         </p>
@@ -28,7 +28,7 @@ export function NodeDetailPanel({
       </div>
 
       <div>
-        <p className="mb-1 text-[11px] uppercase tracking-wide text-fg/40">Explanation</p>
+        <p className="mb-1 text-xs text-fg/40">Explanation</p>
         <p className="text-sm leading-relaxed text-fg/75">{node.aiExplanation}</p>
       </div>
 
@@ -43,7 +43,7 @@ export function NodeDetailPanel({
       )}
 
       <div>
-        <p className="mb-1.5 text-[11px] uppercase tracking-wide text-fg/40">
+        <p className="mb-1.5 text-xs text-fg/40">
           Follow-ups {trapBlocksProgress && '(blocked by trap)'}
         </p>
         <div className="flex flex-wrap gap-2">

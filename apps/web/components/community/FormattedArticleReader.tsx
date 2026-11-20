@@ -93,7 +93,7 @@ function renderTable(lines: string[], key: number): React.ReactNode {
         <thead className="bg-surface-1 border-b border-line text-fg-muted">
           <tr>
             {headers.map((h, i) => (
-              <th key={i} className="px-4 py-2.5 font-bold uppercase tracking-wider text-[11px] font-mono">
+              <th key={i} className="px-4 py-2.5 font-bold text-xs font-mono">
                 {renderInlineFormatting(h)}
               </th>
             ))}
@@ -139,8 +139,8 @@ export const FormattedArticleReader: React.FC<FormattedArticleReaderProps> = ({ 
       const codeText = codeMatch ? (codeMatch[1] ?? '') : block.replace(/^```[a-z]*\n?|```$/g, '');
       renderedElements.push(
         <div key={idx} className="my-5 rounded-2xl bg-surface-1 border border-line p-4 shadow-xl overflow-hidden">
-          <div className="flex items-center justify-between pb-2 mb-2 border-b border-line text-[10px] text-fg-muted font-mono">
-            <span>TERMINAL / INVARIANT ENGINE</span>
+          <div className="flex items-center justify-between pb-2 mb-2 border-b border-line text-xs text-fg-muted font-mono">
+            <span>Terminal / invariant engine</span>
             <span>UTF-8</span>
           </div>
           <pre className="font-mono text-xs sm:text-[13px] text-fg overflow-x-auto leading-relaxed whitespace-pre">
@@ -160,7 +160,7 @@ export const FormattedArticleReader: React.FC<FormattedArticleReaderProps> = ({ 
           key={idx}
           className="my-5 rounded-2xl bg-surface-2 border border-line px-6 py-4 text-center font-mono text-sm sm:text-base text-fg shadow-xl overflow-x-auto"
         >
-          <span className="text-[10px] text-fg-muted font-mono uppercase font-bold tracking-wider block mb-1">
+          <span className="text-xs text-fg-muted font-mono font-bold block mb-1">
             Mathematical Invariant
           </span>
           <code className="text-fg font-bold">{mathText}</code>
@@ -188,7 +188,7 @@ export const FormattedArticleReader: React.FC<FormattedArticleReaderProps> = ({ 
     // 5. Headings (##, ###, #)
     if (block.startsWith('# ')) {
       renderedElements.push(
-        <h1 key={idx} className="font-serif-tattva text-2xl sm:text-3xl font-normal text-fg mt-8 mb-3 tracking-tight">
+        <h1 key={idx} className="font-display text-2xl sm:text-3xl font-normal text-fg mt-8 mb-3 tracking-tight">
           {renderInlineFormatting(block.replace(/^#\s+/, ''))}
         </h1>
       );
@@ -200,7 +200,7 @@ export const FormattedArticleReader: React.FC<FormattedArticleReaderProps> = ({ 
       renderedElements.push(
         <h2
           key={idx}
-          className="font-serif-tattva text-xl sm:text-2xl font-normal text-fg mt-8 mb-3 pb-2 border-b border-line tracking-tight flex items-center gap-2"
+          className="font-display text-xl sm:text-2xl font-normal text-fg mt-8 mb-3 pb-2 border-b border-line tracking-tight flex items-center gap-2"
         >
           <span className="w-1.5 h-4 rounded-full bg-line-strong shrink-0" />
           <span>{renderInlineFormatting(block.replace(/^##\s+/, ''))}</span>
@@ -212,7 +212,7 @@ export const FormattedArticleReader: React.FC<FormattedArticleReaderProps> = ({ 
 
     if (block.startsWith('### ')) {
       renderedElements.push(
-        <h3 key={idx} className="font-serif-tattva text-lg sm:text-xl font-normal text-fg mt-5 mb-2 tracking-tight">
+        <h3 key={idx} className="font-display text-lg sm:text-xl font-normal text-fg mt-5 mb-2 tracking-tight">
           {renderInlineFormatting(block.replace(/^###\s+/, ''))}
         </h3>
       );

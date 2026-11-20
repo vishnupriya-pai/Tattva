@@ -14,7 +14,7 @@ export function ResearchModeToggle({
       className="flex items-center gap-2.5 rounded-sm border border-line-strong px-2.5 py-1.5 transition-colors hover:border-line-strong"
     >
       <span
-        className={`text-xs font-medium uppercase tracking-[0.15em] ${enabled ? 'text-gold' : 'text-fg/50'}`}
+        className={`text-xs font-medium ${enabled ? 'text-gold' : 'text-fg/50'}`}
       >
         Research mode
       </span>

@@ -95,7 +95,7 @@ export function CircularConceptNode({ data, selected }: NodeProps<CircularConcep
 
         {/* Small badge count if multiple children have branched off this node */}
         {metrics.childCount > 0 && (
-          <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-surface-2 px-1 font-mono text-[9px] font-bold text-fg shadow-sm">
+          <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-surface-2 px-1 font-mono text-xs font-bold text-fg shadow-sm">
             {metrics.childCount}
           </span>
         )}
@@ -104,11 +104,11 @@ export function CircularConceptNode({ data, selected }: NodeProps<CircularConcep
       {/* Conceptual Tag Underneath */}
       <div className="mt-2 flex flex-col items-center max-w-[140px] text-center pointer-events-none">
         <span
-          className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase truncate max-w-full shadow-sm backdrop-blur-sm ${tagColor}`}
+          className={`rounded-full border px-2 py-0.5 text-xs font-semibold truncate max-w-full shadow-sm backdrop-blur-sm ${tagColor}`}
         >
           {metrics.conceptTag}
         </span>
-        <span className="mt-0.5 text-[11px] font-medium leading-tight text-fg/75 line-clamp-1 drop-shadow-md">
+        <span className="mt-0.5 text-xs font-medium leading-tight text-fg/75 line-clamp-1 drop-shadow-md">
           {node.userQuestion}
         </span>
       </div>

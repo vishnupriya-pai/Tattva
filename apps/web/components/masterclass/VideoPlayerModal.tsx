@@ -87,7 +87,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
                 <span>•</span>
                 <span>{video.uploadDate}</span>
                 <span>•</span>
-                <span className="inline-flex items-center gap-1 font-mono-ledger bg-[var(--bg-muted)] px-2 py-0.5 rounded text-[var(--text-primary)]">
+                <span className="inline-flex items-center gap-1 font-mono bg-[var(--bg-muted)] px-2 py-0.5 rounded text-[var(--text-primary)]">
                   <Clock className="w-3 h-3 text-[var(--accent-primary)]" />
                   {video.duration} (Between 25m - 1hr)
                 </span>
@@ -114,7 +114,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
 
           {/* Key Concepts */}
           <div className="pt-2 border-t border-[var(--border-primary)]">
-            <div className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-2">
+            <div className="text-xs font-semibold text-[var(--text-muted)] mb-2">
               Key Engineering Concepts Covered
             </div>
             <div className="flex flex-wrap gap-1.5">
@@ -133,7 +133,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
           <div className="rounded-xl border border-[var(--border-strong)] bg-[var(--bg-muted)] p-3.5 flex items-start gap-3">
             <Sparkles className="w-5 h-5 text-[var(--accent-primary)] shrink-0 mt-0.5" />
             <div className="min-w-0 flex-1">
-              <div className="text-xs font-bold uppercase tracking-wider text-[var(--accent-primary)]">
+              <div className="text-xs font-bold text-[var(--accent-primary)]">
                 Recommended Graph Question
               </div>
               <p className="text-sm font-medium text-[var(--text-primary)] mt-0.5 italic">

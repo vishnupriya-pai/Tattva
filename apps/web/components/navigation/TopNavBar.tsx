@@ -107,11 +107,11 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
 
             <div className="leading-tight">
               <div className="flex items-baseline gap-2">
-                <span className="text-base font-extrabold tracking-[0.18em] text-fg font-sans uppercase">
+                <span className="text-lg font-semibold text-fg font-display tracking-[0.12em] uppercase">
                   TATTVA
                 </span>
-                <span className="hidden xl:inline text-[9px] font-mono tracking-widest text-fg-muted uppercase">
-                  INTELLECTUAL EXECUTION PLATFORM
+                <span className="hidden xl:inline text-xs font-mono text-fg-muted">
+                  Intellectual execution platform
                 </span>
               </div>
             </div>
@@ -157,7 +157,7 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                   }
                 }}
                 title="Switch inquiry"
-                className="rounded-full bg-surface-2 border border-line-strong px-1.5 py-0.2 text-[10px] font-mono text-fg-muted font-semibold hover:bg-surface-3 transition"
+                className="rounded-full bg-surface-2 border border-line-strong px-1.5 py-0.2 text-xs font-mono text-fg-muted font-semibold hover:bg-surface-3 transition"
               >
                 {inquiries.length}
               </span>
@@ -212,11 +212,11 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
             <span className="font-mono text-xs font-bold text-gold tabular-nums">
               {staminaScore.toLocaleString()}
             </span>
-            <span className="text-[10px] font-mono tracking-wider text-fg-muted uppercase hidden sm:inline">
-              STAMINA
+            <span className="text-xs font-mono text-fg-muted hidden sm:inline">
+              Stamina
             </span>
             {streakDays > 1 && (
-              <span className="text-[10px] font-mono text-fg-muted border-l border-line pl-2 ml-0.5">
+              <span className="text-xs font-mono text-fg-muted border-l border-line pl-2 ml-0.5">
                 {streakDays}-day streak
               </span>
             )}
@@ -233,12 +233,12 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
             {theme === 'dark' ? (
               <>
                 <Sun className="w-3.5 h-3.5 text-fg-muted" />
-                <span className="hidden xl:inline font-mono text-[11px] font-medium">Light</span>
+                <span className="hidden xl:inline font-mono text-xs font-medium">Light</span>
               </>
             ) : (
               <>
                 <Moon className="w-3.5 h-3.5 text-fg-muted" />
-                <span className="hidden xl:inline font-mono text-[11px] font-medium">Dark</span>
+                <span className="hidden xl:inline font-mono text-xs font-medium">Dark</span>
               </>
             )}
           </button>
@@ -253,7 +253,7 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
               title={`Identity: ${user.id} (${user.isAnonymous ? 'Anonymous' : 'Authenticated'})`}
               className="flex items-center gap-1.5 p-1 rounded-full border border-line-strong bg-surface-2 hover:border-line-strong cursor-pointer transition"
             >
-              <div className="w-6 h-6 rounded-full bg-surface-2 text-fg flex items-center justify-center text-[10px] font-bold font-mono border border-line">
+              <div className="w-6 h-6 rounded-full bg-surface-2 text-fg flex items-center justify-center text-xs font-bold font-mono border border-line">
                 <User className="w-3.5 h-3.5 text-fg-body" />
               </div>
               <ChevronDown
@@ -272,10 +272,10 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                   <div className="text-xs font-bold text-fg truncate font-mono">
                     {user.id}
                   </div>
-                  <div className="font-mono text-[10px] text-fg-muted truncate mt-0.5">
+                  <div className="font-mono text-xs text-fg-muted truncate mt-0.5">
                     {user.isAnonymous ? 'Anonymous Session' : 'Verified Learner'}
                   </div>
-                  <div className="text-[10px] text-fg-muted truncate mt-0.5 font-mono">
+                  <div className="text-xs text-fg-muted truncate mt-0.5 font-mono">
                     System: Active &middot; {staminaScore} Stamina
                   </div>
                 </div>
@@ -317,7 +317,7 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                       )}
                       <span>Appearance</span>
                     </div>
-                    <span className="font-mono text-[10px] font-bold text-fg-muted px-2 py-0.5 rounded bg-surface-2/5 border border-line uppercase">
+                    <span className="font-mono text-xs font-bold text-fg-muted px-2 py-0.5 rounded bg-surface-2/5 border border-line ">
                       {theme === 'dark' ? 'Dark Mode' : 'Light Mode'}
                     </span>
                   </button>

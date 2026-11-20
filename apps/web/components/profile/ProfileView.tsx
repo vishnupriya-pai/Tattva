@@ -91,26 +91,26 @@ export function ProfileView({ userId = 'anonymous', staminaBalance = 0, streakDa
             <User className="h-6 w-6 text-fg-body" />
           </div>
           <div>
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-fg-muted">Learner Profile</p>
+            <p className="font-mono text-xs text-fg-muted">Learner Profile</p>
             <h1 className="text-lg font-semibold text-fg">{userId}</h1>
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-xl border border-line bg-surface-1 p-3">
-            <p className="font-mono text-[10px] uppercase tracking-wider text-fg-muted">Domains</p>
+            <p className="font-mono text-xs text-fg-muted">Domains</p>
             <p className="font-mono text-xl font-bold text-fg">{profileDomainSummaries.length}</p>
           </div>
           <div className="rounded-xl border border-line bg-surface-1 p-3">
-            <p className="font-mono text-[10px] uppercase tracking-wider text-fg-muted">Nodes</p>
+            <p className="font-mono text-xs text-fg-muted">Nodes</p>
             <p className="font-mono text-xl font-bold text-fg">{profileTotalNodes}</p>
           </div>
           <div className="rounded-xl border border-line bg-surface-1 p-3">
-            <p className="font-mono text-[10px] uppercase tracking-wider text-fg-muted">Stamina</p>
+            <p className="font-mono text-xs text-fg-muted">Stamina</p>
             <p className="font-mono text-xl font-bold text-gold">{staminaBalance.toLocaleString()}</p>
           </div>
           <div className="rounded-xl border border-line bg-surface-1 p-3">
-            <p className="font-mono text-[10px] uppercase tracking-wider text-fg-muted">Streak</p>
+            <p className="font-mono text-xs text-fg-muted">Streak</p>
             <p className="font-mono text-xl font-bold text-fg">{streakDays > 1 ? `${streakDays}d` : '—'}</p>
           </div>
         </div>
@@ -118,7 +118,7 @@ export function ProfileView({ userId = 'anonymous', staminaBalance = 0, streakDa
         <div>
           <div className="mb-2 flex items-center gap-1.5">
             <GitBranch className="h-3.5 w-3.5 text-fg-muted" />
-            <span className="font-mono text-[11px] uppercase tracking-wider text-fg-muted">Since day one</span>
+            <span className="font-mono text-xs text-fg-muted">Since day one</span>
           </div>
           <div className="flex flex-col gap-1.5">
             {profileDomainSummaries.map((domain) => (
@@ -126,15 +126,15 @@ export function ProfileView({ userId = 'anonymous', staminaBalance = 0, streakDa
                 key={domain.rootNodeId}
                 className="flex items-center justify-between rounded-lg border border-line bg-surface-1 px-2.5 py-1.5"
               >
-                <span className="font-mono text-[11px] text-fg-body">{domain.label}</span>
-                <span className="font-mono text-[10px] text-fg-muted">{domain.nodeCount} nodes</span>
+                <span className="font-mono text-xs text-fg-body">{domain.label}</span>
+                <span className="font-mono text-xs text-fg-muted">{domain.nodeCount} nodes</span>
               </div>
             ))}
           </div>
         </div>
 
         <div>
-          <p className="mb-2 font-mono text-[11px] uppercase tracking-wider text-fg-muted">Badges</p>
+          <p className="mb-2 font-mono text-xs text-fg-muted">Badges</p>
           <div className="grid grid-cols-2 gap-2">
             {badges.map((badge) => {
               const Icon = badge.icon;
@@ -147,8 +147,8 @@ export function ProfileView({ userId = 'anonymous', staminaBalance = 0, streakDa
                   }`}
                 >
                   <Icon className="h-4 w-4" />
-                  <span className="text-[11px] font-semibold leading-tight">{badge.label}</span>
-                  <span className="text-[9px] leading-tight opacity-80">{badge.detail}</span>
+                  <span className="text-xs font-semibold leading-tight">{badge.label}</span>
+                  <span className="text-xs leading-tight opacity-80">{badge.detail}</span>
                 </div>
               );
             })}

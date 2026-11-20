@@ -144,7 +144,7 @@ export const ShareGraphModal: React.FC<ShareGraphModalProps> = ({
               <Share2 className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-base font-semibold text-fg tracking-wide">
+              <h2 className="text-base font-semibold text-fg ">
                 Share Knowledge Graph
               </h2>
               <p className="text-xs text-fg-muted font-sans line-clamp-1">
@@ -183,7 +183,7 @@ export const ShareGraphModal: React.FC<ShareGraphModalProps> = ({
 
         {/* Share Link Field */}
         <div className="space-y-2">
-          <label className="block font-mono text-[11px] uppercase tracking-wider text-fg-muted">
+          <label className="block font-mono text-xs text-fg-muted">
             Direct Shareable URL
           </label>
           <div className="flex items-center gap-2">
@@ -207,12 +207,12 @@ export const ShareGraphModal: React.FC<ShareGraphModalProps> = ({
               {copiedLink ? (
                 <>
                   <Check className="h-3.5 w-3.5 stroke-[2.5]" />
-                  <span>COPIED!</span>
+                  <span>Copied!</span>
                 </>
               ) : (
                 <>
                   <Copy className="h-3.5 w-3.5" />
-                  <span>COPY LINK</span>
+                  <span>Copy link</span>
                 </>
               )}
             </button>
@@ -271,7 +271,7 @@ export const ShareGraphModal: React.FC<ShareGraphModalProps> = ({
         </div>
 
         {/* Footer info */}
-        <div className="border-t border-line pt-3 flex items-center justify-between text-[11px] font-mono text-fg-muted">
+        <div className="border-t border-line pt-3 flex items-center justify-between text-xs font-mono text-fg-muted">
           <span>Anyone with this link can view this Knowledge Graph</span>
           <button
             type="button"

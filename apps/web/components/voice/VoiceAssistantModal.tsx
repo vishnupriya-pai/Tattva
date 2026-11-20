@@ -83,7 +83,7 @@ export function VoiceAssistantModal({
             </div>
             <div>
               <h2 className="text-sm font-semibold text-fg">Sarvam Multilingual Voice Tutor</h2>
-              <div className="flex items-center gap-2 text-[10px] text-fg-muted font-mono">
+              <div className="flex items-center gap-2 text-xs text-fg-muted font-mono">
                 <Languages className="w-3 h-3 text-fg-muted" />
                 <span>Detected: {exchange.languageCode.toUpperCase()}</span>
                 <span>·</span>
@@ -103,7 +103,7 @@ export function VoiceAssistantModal({
 
         {/* Spoken Question Transcript */}
         <div className="space-y-1.5">
-          <span className="font-mono text-[10px] uppercase tracking-wider text-fg-muted">
+          <span className="font-mono text-xs text-fg-muted">
             You Spoke
           </span>
           <div className="rounded-xl border border-line bg-surface-2/5 p-3.5 text-sm font-medium text-fg leading-relaxed">
@@ -114,7 +114,7 @@ export function VoiceAssistantModal({
         {/* Spoken Answer & Audio Controls */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="font-mono text-[10px] uppercase tracking-wider text-fg-muted flex items-center gap-1.5">
+            <span className="font-mono text-xs text-fg-muted flex items-center gap-1.5">
               <Sparkles className="w-3 h-3 text-fg-muted" />
               Sarvam AI Voice Answer
             </span>

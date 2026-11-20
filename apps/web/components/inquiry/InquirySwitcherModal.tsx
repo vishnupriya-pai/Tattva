@@ -48,10 +48,10 @@ export const InquirySwitcherModal: React.FC<InquirySwitcherModalProps> = ({
               <GitBranch className="w-4 h-4 text-fg-muted" />
             </div>
             <div>
-              <h2 className="text-sm font-semibold text-fg tracking-wide">
+              <h2 className="text-sm font-semibold text-fg ">
                 Your Knowledge Inquiries
               </h2>
-              <p className="text-[11px] font-mono text-fg-muted">
+              <p className="text-xs font-mono text-fg-muted">
                 {inquiries.length} active knowledge graph{inquiries.length === 1 ? '' : 's'} available
               </p>
             </div>
@@ -114,13 +114,13 @@ export const InquirySwitcherModal: React.FC<InquirySwitcherModalProps> = ({
                         {inq.title || 'Curated Technical Source'}
                       </span>
                       {isCurrent && (
-                        <span className="text-[10px] font-mono uppercase tracking-wider text-fg bg-surface-3 px-1.5 py-0.2 rounded font-bold shrink-0 flex items-center gap-1">
+                        <span className="text-xs font-mono text-fg bg-surface-3 px-1.5 py-0.2 rounded font-bold shrink-0 flex items-center gap-1">
                           <Check className="w-2.5 h-2.5" />
                           Active
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center gap-2 text-[11px] font-mono text-fg-muted">
+                    <div className="flex items-center gap-2 text-xs font-mono text-fg-muted">
                       <span>{formattedDate}</span>
                       <span>·</span>
                       <span className="truncate">ID: {inq.id.slice(0, 8)}…</span>

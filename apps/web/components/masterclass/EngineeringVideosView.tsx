@@ -73,11 +73,11 @@ export const EngineeringVideosView: React.FC<EngineeringVideosViewProps> = ({
       <div className="rounded-2xl border border-line bg-surface-2 p-6 sm:p-8 shadow-2xl">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded font-mono text-[10px] font-bold text-fg-muted bg-surface-2 uppercase tracking-wider">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded font-mono text-xs font-bold text-fg-muted bg-surface-2 ">
               <YoutubeIcon className="w-3.5 h-3.5 text-trap" />
               <span>TATTVA Masterclass Archive · 25m to 1hr Lectures</span>
             </div>
-            <h1 className="font-serif-tattva text-2xl sm:text-4xl font-normal text-fg tracking-tight">
+            <h1 className="font-display text-2xl sm:text-4xl font-normal text-fg tracking-tight">
               Watch. Master. Inquire.
             </h1>
             <p className="text-xs sm:text-sm text-fg-muted max-w-2xl leading-relaxed font-sans">
@@ -162,27 +162,27 @@ export const EngineeringVideosView: React.FC<EngineeringVideosViewProps> = ({
                   </div>
 
                   {/* Duration Badge */}
-                  <span className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-bg/85 text-fg backdrop-blur-xs flex items-center gap-1 border border-line">
+                  <span className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded text-xs font-mono font-bold bg-bg/85 text-fg backdrop-blur-xs flex items-center gap-1 border border-line">
                     <Clock className="w-3 h-3 text-fg-muted" />
                     {video.duration}
                   </span>
 
                   {/* Category Pill in Top Right */}
-                  <span className="absolute top-2 right-2 px-2 py-0.5 rounded font-mono text-[9px] font-bold bg-bg/80 text-fg-muted border border-line-strong">
+                  <span className="absolute top-2 right-2 px-2 py-0.5 rounded font-mono text-xs font-bold bg-bg/80 text-fg-muted border border-line-strong">
                     {video.category}
                   </span>
                 </div>
 
                 {/* Video Info */}
                 <div className="p-4 space-y-2">
-                  <div className="flex items-start justify-between gap-2 font-mono text-[10px] text-fg-muted">
+                  <div className="flex items-start justify-between gap-2 font-mono text-xs text-fg-muted">
                     <span className="text-fg-muted">{video.channelName}</span>
                     <span>{video.views}</span>
                   </div>
 
                   <h3
                     onClick={() => onSelectVideo(video)}
-                    className="font-serif-tattva text-base font-normal text-fg line-clamp-2 cursor-pointer transition leading-snug"
+                    className="font-display text-base font-normal text-fg line-clamp-2 cursor-pointer transition leading-snug"
                   >
                     {video.title}
                   </h3>
@@ -196,7 +196,7 @@ export const EngineeringVideosView: React.FC<EngineeringVideosViewProps> = ({
                     {video.keyConcepts.slice(0, 3).map((tag, idx) => (
                       <span
                         key={idx}
-                        className="text-[9px] px-2 py-0.5 rounded bg-surface-2/5 text-fg-muted border border-line"
+                        className="text-xs px-2 py-0.5 rounded bg-surface-2/5 text-fg-muted border border-line"
                       >
                         #{tag}
                       </span>

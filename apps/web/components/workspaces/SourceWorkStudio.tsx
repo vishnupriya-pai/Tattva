@@ -303,7 +303,7 @@ export const SourceWorkStudio: React.FC<SourceWorkStudioProps> = ({
 
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-mono text-[10px] font-bold tracking-wider text-fg-muted uppercase bg-surface-2 px-2 py-0.5 rounded">
+                <span className="font-mono text-xs font-bold text-fg-muted bg-surface-2 px-2 py-0.5 rounded">
                   {source.category}
                 </span>
                 <span className="text-xs text-fg-muted">·</span>
@@ -311,7 +311,7 @@ export const SourceWorkStudio: React.FC<SourceWorkStudioProps> = ({
                   {source.sourceTypeLabel}
                 </span>
               </div>
-              <h1 className="font-serif-tattva text-base sm:text-lg font-normal text-fg mt-0.5 line-clamp-1">
+              <h1 className="font-display text-base sm:text-lg font-normal text-fg mt-0.5 line-clamp-1">
                 {source.title}
               </h1>
             </div>
@@ -334,15 +334,15 @@ export const SourceWorkStudio: React.FC<SourceWorkStudioProps> = ({
                   researchMode ? 'bg-gold' : 'bg-surface-3'
                 }`}
               />
-              <span>RESEARCH MODE: {researchMode ? 'ACTIVE (3x)' : 'OFF'}</span>
+              <span>Research mode: {researchMode ? 'Active (3×)' : 'Off'}</span>
             </button>
 
             {/* Mastery Indicator Box */}
             <div className="flex items-center gap-4 bg-surface-2 border border-line rounded-xl px-4 py-2 shadow-sm">
               <div>
                 <div className="flex items-center justify-between gap-4">
-                  <span className="text-[10px] font-mono tracking-widest text-fg-muted uppercase">
-                    TOPIC IN-AND-OUT MASTERY
+                  <span className="text-xs font-mono text-fg-muted ">
+                    Topic in-and-out mastery
                   </span>
                   <span className="font-mono text-xs font-bold text-fg">
                     {masteryStats.compositeScore}% · {masteryStats.level}
@@ -363,17 +363,17 @@ export const SourceWorkStudio: React.FC<SourceWorkStudioProps> = ({
               <div className="flex items-center gap-3 text-xs font-mono">
                 <div className="text-center">
                   <div className="font-bold text-fg">{masteryStats.masteredNodes}</div>
-                  <div className="text-[9px] text-fg-muted">Mastered</div>
+                  <div className="text-xs text-fg-muted">Mastered</div>
                 </div>
                 <div className="text-center">
                   <div className="font-bold text-fg">{masteryStats.inProgressNodes}</div>
-                  <div className="text-[9px] text-fg-muted">In Progress</div>
+                  <div className="text-xs text-fg-muted">In Progress</div>
                 </div>
                 <div className="text-center">
                   <div className="font-bold text-fg">
                     {masteryStats.passedQuizzes}/{masteryStats.totalQuizzes}
                   </div>
-                  <div className="text-[9px] text-fg-muted">Quiz Passed</div>
+                  <div className="text-xs text-fg-muted">Quiz Passed</div>
                 </div>
               </div>
             </div>
@@ -411,7 +411,7 @@ export const SourceWorkStudio: React.FC<SourceWorkStudioProps> = ({
               >
                 <HelpCircle className="w-3.5 h-3.5" />
                 <span>Active Quizzes</span>
-                <span className="font-mono text-[10px] text-fg-faint px-1">
+                <span className="font-mono text-xs text-fg-faint px-1">
                   {masteryStats.passedQuizzes}/{masteryStats.totalQuizzes}
                 </span>
               </button>
@@ -474,7 +474,7 @@ export const SourceWorkStudio: React.FC<SourceWorkStudioProps> = ({
                 type="button"
                 onClick={handleResetQuiz}
                 title="Retake all quizzes"
-                className="inline-flex items-center gap-1 text-[11px] font-mono text-fg-muted hover:text-fg transition cursor-pointer"
+                className="inline-flex items-center gap-1 text-xs font-mono text-fg-muted hover:text-fg transition cursor-pointer"
               >
                 <RotateCcw className="w-3 h-3" />
                 <span>Retake</span>
@@ -488,12 +488,12 @@ export const SourceWorkStudio: React.FC<SourceWorkStudioProps> = ({
             {activeTab === 'transcript' && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="font-serif-tattva text-2xl sm:text-3xl text-fg font-normal leading-snug">
+                  <h2 className="font-display text-2xl sm:text-3xl text-fg font-normal leading-snug">
                     {source.title}
                   </h2>
                   <div className="mt-2 font-mono text-xs text-fg-muted flex items-center gap-4">
-                    <span>RUNTIME {source.duration || '38 min'}</span>
-                    <span>REFERENCE seed/{source.id}.txt</span>
+                    <span>Runtime {source.duration || '38 min'}</span>
+                    <span>Reference seed/{source.id}.txt</span>
                   </div>
                 </div>
 
@@ -535,7 +535,7 @@ export const SourceWorkStudio: React.FC<SourceWorkStudioProps> = ({
                   )}
 
                   <div className="rounded-xl border border-line bg-surface-2 p-4 space-y-2 mt-4">
-                    <div className="font-mono text-xs text-fg-muted font-bold uppercase">
+                    <div className="font-mono text-xs text-fg-muted font-bold ">
                       Architectural Mechanics &amp; Invariants:
                     </div>
                     <ul className="list-disc pl-5 space-y-1 text-xs text-fg-body">
@@ -570,7 +570,7 @@ export const SourceWorkStudio: React.FC<SourceWorkStudioProps> = ({
                     <span className="font-mono text-xl font-bold text-fg">
                       {Math.round((masteryStats.passedQuizzes / (source.quizzes.length || 1)) * 100)}%
                     </span>
-                    <span className="block text-[10px] text-fg-muted font-mono uppercase">Accuracy</span>
+                    <span className="block text-xs text-fg-muted font-mono ">Accuracy</span>
                   </div>
                 </div>
 
@@ -622,7 +622,7 @@ export const SourceWorkStudio: React.FC<SourceWorkStudioProps> = ({
                                 onClick={() => handleSelectQuizOption(quiz.id, optIdx)}
                                 className={`w-full text-left rounded-xl p-3 text-xs leading-relaxed transition flex items-start gap-3 cursor-pointer ${optClasses}`}
                               >
-                                <span className="font-mono font-bold text-[11px] mt-0.5 text-fg-muted">
+                                <span className="font-mono font-bold text-xs mt-0.5 text-fg-muted">
                                   {String.fromCharCode(65 + optIdx)}.
                                 </span>
                                 <span className="flex-1">{option}</span>
@@ -677,7 +677,7 @@ export const SourceWorkStudio: React.FC<SourceWorkStudioProps> = ({
                     className="rounded-2xl border border-line-strong bg-surface-2 p-4 space-y-3"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-mono text-xs font-bold text-fg-muted uppercase">
+                      <span className="font-mono text-xs font-bold text-fg-muted ">
                         Add Note or Formula
                       </span>
                       <button
@@ -738,10 +738,10 @@ export const SourceWorkStudio: React.FC<SourceWorkStudioProps> = ({
                     className="rounded-2xl border border-line bg-surface-2 p-5 space-y-2 shadow-sm"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="rounded font-mono text-[10px] font-bold text-fg-muted bg-surface-2 px-2 py-0.5 uppercase">
+                      <span className="rounded font-mono text-xs font-bold text-fg-muted bg-surface-2 px-2 py-0.5 ">
                         {note.category}
                       </span>
-                      <span className="text-[11px] font-mono text-fg-muted">{note.updatedAt}</span>
+                      <span className="text-xs font-mono text-fg-muted">{note.updatedAt}</span>
                     </div>
 
                     <h4 className="text-sm font-bold text-fg">{note.title}</h4>
@@ -760,10 +760,10 @@ export const SourceWorkStudio: React.FC<SourceWorkStudioProps> = ({
                 <div className="rounded-2xl border border-line bg-surface-2 p-5 space-y-3">
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <span className="rounded font-mono text-[10px] font-bold uppercase tracking-wider text-fg-muted bg-surface-2 px-2 py-0.5">
+                      <span className="rounded font-mono text-xs font-bold text-fg-muted bg-surface-2 px-2 py-0.5">
                         {source.researchPaper.conference} ({source.researchPaper.year})
                       </span>
-                      <h3 className="mt-2 font-serif-tattva text-xl font-normal text-fg">
+                      <h3 className="mt-2 font-display text-xl font-normal text-fg">
                         {source.researchPaper.title}
                       </h3>
                       <p className="mt-1 font-mono text-xs text-fg-muted">
@@ -784,7 +784,7 @@ export const SourceWorkStudio: React.FC<SourceWorkStudioProps> = ({
                 </div>
 
                 <div className="rounded-2xl border border-line bg-surface-2 p-5 space-y-2">
-                  <h4 className="text-xs font-mono font-bold uppercase text-fg-muted tracking-wider">
+                  <h4 className="text-xs font-mono font-bold text-fg-muted ">
                     Paper Abstract
                   </h4>
                   <p className="text-xs leading-relaxed text-fg-body italic border-l-2 border-line-strong pl-3">
@@ -817,15 +817,15 @@ export const SourceWorkStudio: React.FC<SourceWorkStudioProps> = ({
           <div className="border-b border-line bg-surface-1 px-5 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Layers className="w-4 h-4 text-fg-muted" />
-              <span className="font-mono text-xs font-bold uppercase tracking-widest text-fg-body">
-                KNOWLEDGE GRAPH
+              <span className="font-mono text-xs font-bold text-fg-body">
+                Knowledge graph
               </span>
             </div>
 
             <div className="flex items-center gap-4">
               {/* STAMINA 410 Badge from Screenshot 2 */}
               <div className="flex items-center gap-2 font-mono text-xs">
-                <span className="text-fg-muted uppercase">STAMINA</span>
+                <span className="text-fg-muted ">Stamina</span>
                 <span className="font-bold text-gold text-sm">410</span>
               </div>
 
@@ -842,7 +842,7 @@ export const SourceWorkStudio: React.FC<SourceWorkStudioProps> = ({
                 <button
                   type="button"
                   onClick={() => setGraphZoom(1.0)}
-                  className="px-1.5 py-0.5 text-[10px] font-mono text-fg-body hover:text-fg"
+                  className="px-1.5 py-0.5 text-xs font-mono text-fg-body hover:text-fg"
                 >
                   {Math.round(graphZoom * 100)}%
                 </button>
@@ -861,7 +861,7 @@ export const SourceWorkStudio: React.FC<SourceWorkStudioProps> = ({
                 type="button"
                 onClick={() => setIsShareModalOpen(true)}
                 title="Share this Knowledge Graph"
-                className="flex items-center gap-1.5 rounded-lg border border-line bg-surface-2 px-2.5 py-1 font-mono text-[11px] text-fg-body hover:border-line-strong hover:text-fg transition cursor-pointer"
+                className="flex items-center gap-1.5 rounded-lg border border-line bg-surface-2 px-2.5 py-1 font-mono text-xs text-fg-body hover:border-line-strong hover:text-fg transition cursor-pointer"
               >
                 <Share2 className="w-3.5 h-3.5 text-fg-muted" />
                 <span>Share</span>
@@ -1035,7 +1035,7 @@ export const SourceWorkStudio: React.FC<SourceWorkStudioProps> = ({
                         <div className="text-xs font-bold text-fg leading-snug line-clamp-2">
                           {node.label}
                         </div>
-                        <div className="mt-0.5 text-[10px] text-fg-muted font-medium leading-tight line-clamp-1">
+                        <div className="mt-0.5 text-xs text-fg-muted font-medium leading-tight line-clamp-1">
                           {node.shortLine || node.summary}
                         </div>
                       </div>
@@ -1050,10 +1050,10 @@ export const SourceWorkStudio: React.FC<SourceWorkStudioProps> = ({
               <div className="absolute inset-x-4 bottom-28 top-auto max-h-[70%] overflow-y-auto rounded-2xl border border-line-strong bg-surface-2/98 backdrop-blur-md p-5 shadow-2xl z-40 animate-fadeIn space-y-3">
                 <div className="flex items-start justify-between gap-3 border-b border-line pb-2.5">
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-[9px] font-bold text-fg-muted uppercase bg-surface-2 px-2 py-0.5 rounded">
+                    <span className="font-mono text-xs font-bold text-fg-muted bg-surface-2 px-2 py-0.5 rounded">
                       {selectedNode.category}
                     </span>
-                    <span className="font-mono text-[10px] text-fg-muted">
+                    <span className="font-mono text-xs text-fg-muted">
                       ● {selectedNode.status.replace('_', ' ')}
                     </span>
                   </div>
@@ -1068,7 +1068,7 @@ export const SourceWorkStudio: React.FC<SourceWorkStudioProps> = ({
                 </div>
 
                 <div>
-                  <h3 className="font-serif-tattva text-lg text-fg font-normal">{selectedNode.label}</h3>
+                  <h3 className="font-display text-lg text-fg font-normal">{selectedNode.label}</h3>
                   <p className="text-xs text-fg-muted italic">
                     &ldquo;{selectedNode.shortLine || selectedNode.summary}&rdquo;
                   </p>
@@ -1094,11 +1094,11 @@ export const SourceWorkStudio: React.FC<SourceWorkStudioProps> = ({
                 {/* Interactive Node Quizzes (4-5 quizzes belonging to this node) */}
                 <div className="pt-3 border-t border-line space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs font-bold text-fg-muted uppercase flex items-center gap-1.5">
+                    <span className="font-mono text-xs font-bold text-fg-muted flex items-center gap-1.5">
                       <Award className="w-3.5 h-3.5" />
                       Concept Mastery Quizzes ({nodeQuizzes.filter(q => q.isAnsweredCorrectly).length} / {nodeQuizzes.length} Passed)
                     </span>
-                    <span className="text-[10px] font-mono text-fg-muted">
+                    <span className="text-xs font-mono text-fg-muted">
                       Tap an option for instant verification
                     </span>
                   </div>
@@ -1127,7 +1127,7 @@ export const SourceWorkStudio: React.FC<SourceWorkStudioProps> = ({
                                   onClick={() => handleSelectQuizOption(quiz.id, optIdx)}
                                   className={`w-full text-left text-xs p-2.5 rounded-lg border transition flex items-start gap-2.5 cursor-pointer ${btnClass}`}
                                 >
-                                  <span className="font-mono text-[10px] text-fg-muted font-bold shrink-0 mt-0.5">
+                                  <span className="font-mono text-xs text-fg-muted font-bold shrink-0 mt-0.5">
                                     {String.fromCharCode(65 + optIdx)}.
                                   </span>
                                   <span className="leading-relaxed">{opt}</span>
@@ -1137,7 +1137,7 @@ export const SourceWorkStudio: React.FC<SourceWorkStudioProps> = ({
                           </div>
                           {quiz.userSelectedIndex !== null && quiz.userSelectedIndex !== undefined && (
                             <div
-                              className={`p-2.5 rounded-lg bg-bg/60 text-[11px] text-fg-body border-l-2 leading-relaxed ${
+                              className={`p-2.5 rounded-lg bg-bg/60 text-xs text-fg-body border-l-2 leading-relaxed ${
                                 quiz.isAnsweredCorrectly ? 'border-explored' : 'border-trap'
                               }`}
                             >
@@ -1189,12 +1189,12 @@ export const SourceWorkStudio: React.FC<SourceWorkStudioProps> = ({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <ShieldAlert className="w-4 h-4 text-trap" />
-                    <span className="font-mono text-xs font-bold text-trap uppercase tracking-wider">
-                      BE CAREFUL HERE!! (PRD §5 Adversarial Trap)
+                    <span className="font-mono text-xs font-bold text-trap ">
+                      ⚠ Be careful here
                     </span>
                   </div>
-                  <span className="font-mono text-[9px] font-bold uppercase text-trap bg-trap/60 px-2 py-0.5 rounded border border-trap/40">
-                    Input Locked
+                  <span className="font-mono text-xs font-bold text-trap bg-trap/60 px-2 py-0.5 rounded border border-trap/40">
+                    Input locked
                   </span>
                 </div>
 
@@ -1203,7 +1203,7 @@ export const SourceWorkStudio: React.FC<SourceWorkStudioProps> = ({
                 </p>
 
                 <div className="pt-2 border-t border-trap/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <span className="text-[11px] font-mono text-trap">
+                  <span className="text-xs font-mono text-trap">
                     Invariant: {activeTrap.resolution}
                   </span>
                   <button
@@ -1211,7 +1211,7 @@ export const SourceWorkStudio: React.FC<SourceWorkStudioProps> = ({
                     onClick={() => setActiveTrap(null)}
                     className="rounded-lg bg-trap px-3.5 py-1.5 font-mono text-xs font-bold text-fg hover:bg-trap/80 transition cursor-pointer shrink-0"
                   >
-                    OVERCOME TRAP &amp; UNLOCK →
+                    Overcome trap &amp; unlock →
                   </button>
                 </div>
               </div>
@@ -1220,16 +1220,16 @@ export const SourceWorkStudio: React.FC<SourceWorkStudioProps> = ({
             {/* Socratic Scaffolding Prompt for selected node */}
             <div className="text-xs text-fg-body leading-relaxed font-sans space-y-1">
               <div className="flex items-center gap-2">
-                <span className="font-mono text-[9px] font-bold text-fg-muted uppercase bg-surface-2 px-2 py-0.5 rounded">
+                <span className="font-mono text-xs font-bold text-fg-muted bg-surface-2 px-2 py-0.5 rounded">
                   {selectedNode?.category || source.category}
                 </span>
-                <span className="font-mono text-[10px] text-fg-muted">
+                <span className="font-mono text-xs text-fg-muted">
                   Concept: {selectedNode?.label || source.title}
                 </span>
               </div>
               {researchMode && (
-                <span className="text-gold font-mono text-[10px] block">
-                  [ RESEARCH MODE ENGAGED: Socratic Scaffolding &bull; Direct Answers Forbidden ]
+                <span className="text-gold font-mono text-xs block">
+                  Research mode engaged: Socratic scaffolding &bull; direct answers forbidden
                 </span>
               )}
               <p className="text-fg-body">
@@ -1239,8 +1239,8 @@ export const SourceWorkStudio: React.FC<SourceWorkStudioProps> = ({
 
             {/* Socratic Follow-up Chips tailored to this node */}
             <div className="space-y-1">
-              <span className="font-mono text-[9px] tracking-widest text-fg-muted uppercase">
-                ADAPTIVE FOLLOW-UPS (SOCRATIC INVARIANTS)
+              <span className="font-mono text-xs text-fg-muted ">
+                Adaptive follow-ups (Socratic invariants)
               </span>
               <div className="flex flex-wrap gap-2">
                 {nodeFollowUps.map((chip, i) => (
@@ -1248,7 +1248,7 @@ export const SourceWorkStudio: React.FC<SourceWorkStudioProps> = ({
                     key={i}
                     type="button"
                     onClick={() => handleAskInquiryQuestion(chip)}
-                    className="rounded border border-line bg-surface-2 px-2.5 py-1 text-[11px] font-mono text-fg-body hover:border-line-strong hover:text-fg transition cursor-pointer text-left"
+                    className="rounded border border-line bg-surface-2 px-2.5 py-1 text-xs font-mono text-fg-body hover:border-line-strong hover:text-fg transition cursor-pointer text-left"
                   >
                     {chip}
                   </button>
@@ -1268,7 +1268,7 @@ export const SourceWorkStudio: React.FC<SourceWorkStudioProps> = ({
                         : 'bg-surface-1 border border-line-strong text-fg'
                     }`}
                   >
-                    <div className="flex items-center justify-between text-[10px] font-mono text-fg-muted mb-1">
+                    <div className="flex items-center justify-between text-xs font-mono text-fg-muted mb-1">
                       <span>{item.role === 'user' ? 'You' : 'Sarvam Reasoning Model'}</span>
                       <span>{item.time}</span>
                     </div>

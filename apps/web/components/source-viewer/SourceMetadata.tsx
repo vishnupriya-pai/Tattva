@@ -4,11 +4,11 @@ export function SourceMetadata({ source }: { source: LearningSource }) {
   return (
     <dl className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-fg/45">
       <div className="flex gap-1.5">
-        <dt className="uppercase tracking-wide">Runtime</dt>
+        <dt className=" ">Runtime</dt>
         <dd className="text-fg/70">{source.durationMinutes} min</dd>
       </div>
       <div className="flex gap-1.5">
-        <dt className="uppercase tracking-wide">Reference</dt>
+        <dt className=" ">Reference</dt>
         <dd className="font-mono text-fg/70">{source.sourceReference}</dd>
       </div>
     </dl>
