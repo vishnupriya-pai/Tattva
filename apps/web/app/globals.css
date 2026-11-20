@@ -58,6 +58,12 @@
   box-shadow: inset 0 0 0 1px var(--color-gold-line);
 }
 
+/* Research Mode in light theme gets its own shift, not the dark one above */
+[data-theme='light'][data-mode='research'] {
+  --color-bg: #efe9dd;
+  --color-fg: #0f0d0a;
+}
+
 /* Light theme — paper & ink */
 [data-theme='light'] {
   --color-bg: #f6f2ea;

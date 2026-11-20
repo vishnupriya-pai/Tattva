@@ -8,6 +8,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { DEMO_LEARNING_SOURCE_ID } from '../../lib/workspace-bootstrap';
+import { useResearchModeAttribute } from '../../lib/useResearchModeAttribute';
 
 export const GENERAL_LEARNING_SOURCE_ID = '33333333-3333-4333-8333-333333333333';
 export const ATTENTION_LEARNING_SOURCE_ID = '22222222-2222-4222-8222-222222222222';
@@ -84,6 +85,7 @@ export const CreateInquiryView: React.FC<CreateInquiryViewProps> = ({
   const [inquiryTitle, setInquiryTitle] = useState<string>(() => deriveTitleFromQuestion(initialQuestion));
   const [userEditedTitle, setUserEditedTitle] = useState<boolean>(false);
   const [researchMode, setResearchMode] = useState<boolean>(false);
+  useResearchModeAttribute(researchMode);
 
   const selectedSource = CURATED_SOURCES.find((s) => s.id === selectedSourceId) ?? CURATED_SOURCES[0];
 

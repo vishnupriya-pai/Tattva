@@ -24,6 +24,7 @@ import {
 import type { StudySource, SourceNote } from '../../types/thinkforge';
 import { InquiryComposer } from '../inquiry/InquiryComposer';
 import { ShareGraphModal } from '../knowledge-graph/ShareGraphModal';
+import { useResearchModeAttribute } from '../../lib/useResearchModeAttribute';
 
 interface SourceWorkStudioProps {
   source: StudySource;
@@ -53,6 +54,7 @@ export const SourceWorkStudio: React.FC<SourceWorkStudioProps> = ({
   const [newNoteContent, setNewNoteContent] = useState('');
   const [socraticInput, setSocraticInput] = useState('');
   const [researchMode, setResearchMode] = useState<boolean>(true);
+  useResearchModeAttribute(researchMode);
   const [activeTrap, setActiveTrap] = useState<{
     scenario: string;
     resolution: string;

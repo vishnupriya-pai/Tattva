@@ -15,6 +15,7 @@ import { Panel } from '../shared/Panel';
 import { NodeDetailPanel } from './NodeDetailPanel';
 import { NodeDetailModal } from './NodeDetailModal';
 import { ShareGraphModal } from '../knowledge-graph/ShareGraphModal';
+import { useResearchModeAttribute } from '../../lib/useResearchModeAttribute';
 
 function sanitizeNodeExplanation(question: string, exp: string): string {
   if (!exp) return `Technical synthesis answering: "${question}".`;
@@ -68,6 +69,7 @@ export function Workspace({
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(initialNodes[0]?.id ?? null);
   const [modalNodeId, setModalNodeId] = useState<string | null>(null);
   const [researchMode, setResearchMode] = useState(false);
+  useResearchModeAttribute(researchMode);
   const [stamina, setStamina] = useState<StaminaState>(initialStamina);
   const [graphStatus, setGraphStatus] = useState<GraphStatus>('ready');
   const [pendingMessage, setPendingMessage] = useState<string | null>(null);

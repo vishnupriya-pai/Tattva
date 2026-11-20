@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useSyncExternalStore } from 'react';
 
 export type Theme = 'dark' | 'light';
 
@@ -12,41 +12,59 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+const STORAGE_KEY = 'tattva_theme';
+const listeners = new Set<() => void>();
+
+function readPersistedTheme(): Theme {
+  try {
+    return localStorage.getItem(STORAGE_KEY) === 'light' ? 'light' : 'dark';
+  } catch {
+    return 'dark';
+  }
+}
+
+function writePersistedTheme(theme: Theme) {
+  try {
+    localStorage.setItem(STORAGE_KEY, theme);
+  } catch {
+    // ignore storage errors
+  }
+  listeners.forEach((listener) => listener());
+}
+
+function subscribe(onStoreChange: () => void) {
+  listeners.add(onStoreChange);
+  return () => listeners.delete(onStoreChange);
+}
+
+// Server (and the client's very first render, to match it and avoid a
+// hydration mismatch) always sees 'dark'; useSyncExternalStore then
+// transparently re-syncs to the real persisted value right after mount.
+function getServerSnapshot(): Theme {
+  return 'dark';
+}
+
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [theme, setThemeState] = useState<Theme>('dark');
+  const theme = useSyncExternalStore(subscribe, readPersistedTheme, getServerSnapshot);
 
   useEffect(() => {
-    // Sync DOM with state on change
-    document.documentElement.setAttribute('data-theme', theme);
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-      document.documentElement.classList.remove('light');
+    // Sync DOM with state on change (pure side effect, no setState here)
+    if (theme === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
     } else {
-      document.documentElement.classList.add('light');
-      document.documentElement.classList.remove('dark');
+      document.documentElement.removeAttribute('data-theme');
     }
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+    document.documentElement.classList.toggle('light', theme === 'light');
   }, [theme]);
 
-  const toggleTheme = () => {
-    setThemeState((prev) => {
-      const next = prev === 'dark' ? 'light' : 'dark';
-      try {
-        localStorage.setItem('tattva_theme', next);
-      } catch {
-        // ignore storage errors
-      }
-      return next;
-    });
-  };
+  const toggleTheme = useCallback(() => {
+    writePersistedTheme(theme === 'dark' ? 'light' : 'dark');
+  }, [theme]);
 
-  const setTheme = (t: Theme) => {
-    setThemeState(t);
-    try {
-      localStorage.setItem('tattva_theme', t);
-    } catch {
-      // ignore storage errors
-    }
-  };
+  const setTheme = useCallback((t: Theme) => {
+    writePersistedTheme(t);
+  }, []);
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>

@@ -34,6 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html
       lang="en"
       className={`dark ${newsreader.variable} ${inter.variable} ${jetbrainsMono.variable}`}
+      suppressHydrationWarning
     >
       <body className="h-screen overflow-hidden antialiased bg-bg text-fg">
         <ThemeProvider>{children}</ThemeProvider>
