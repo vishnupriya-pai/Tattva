@@ -292,13 +292,13 @@ export const CreateInquiryView: React.FC<CreateInquiryViewProps> = ({
             role="switch"
             aria-checked={researchMode}
             onClick={() => setResearchMode((prev) => !prev)}
-            className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border transition-colors cursor-pointer ${
-              researchMode ? 'border-gold/50 bg-gold/20' : 'border-line-strong bg-surface-2/10'
+            className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors cursor-pointer ${
+              researchMode ? 'bg-gold' : 'bg-surface-3'
             }`}
           >
             <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-surface-2 transition-transform ${
-                researchMode ? 'translate-x-6' : 'translate-x-1'
+              className={`inline-block h-5 w-5 transform rounded-full bg-fg shadow transition-transform ${
+                researchMode ? 'translate-x-[22px]' : 'translate-x-[2px]'
               }`}
             />
           </button>

@@ -127,14 +127,14 @@ export function KnowledgeGraphCanvas({
           position="top-right"
           pannable
           zoomable
-          className="!h-20 !w-28 !rounded-lg !border !border-line !bg-surface-1/90 backdrop-blur-sm"
-          maskColor="rgba(0,0,0,0.65)"
+          className="!h-20 !w-28 !rounded-[10px] !border !border-line !bg-surface-1/90 backdrop-blur-sm max-[1024px]:!hidden"
+          maskColor="rgb(18 17 15 / 0.7)"
           nodeColor={(n) => {
             const data = n.data as CircularConceptNodeType['data'];
-            if (data?.metrics?.tier === 'deep') return '#10b981';
-            if (data?.metrics?.tier === 'divergent') return '#f43f5e';
-            if (data?.metrics?.tier === 'moderate') return '#f59e0b';
-            return 'rgba(255,255,255,0.3)';
+            if (data?.metrics?.tier === 'deep') return 'var(--color-explored)';
+            if (data?.metrics?.tier === 'divergent') return 'var(--color-trap)';
+            if (data?.metrics?.tier === 'moderate') return 'var(--color-fg-muted)';
+            return 'var(--color-line-strong)';
           }}
         />
 

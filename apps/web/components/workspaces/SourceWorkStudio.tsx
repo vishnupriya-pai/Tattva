@@ -320,23 +320,32 @@ export const SourceWorkStudio: React.FC<SourceWorkStudioProps> = ({
           </div>
 
           <div className="flex items-center gap-3">
-            {/* PRD §7: Physical [Research Mode] Switch */}
+            {/* PRD §7: Physical Research Mode switch (uiRefactor.md §8.3) */}
             <button
               type="button"
+              role="switch"
+              aria-checked={researchMode}
               onClick={() => setResearchMode((prev) => !prev)}
               title="PRD §7: The Training Weights. Direct answers forbidden; awards 3x Cognitive Stamina."
-              className={`flex items-center gap-2 rounded-xl border px-3 py-2 font-mono text-xs font-bold transition cursor-pointer ${
-                researchMode
-                  ? 'border-gold/60 bg-gold/15 text-gold'
-                  : 'border-line bg-surface-2 text-fg-muted hover:text-fg'
-              }`}
+              className="flex items-center gap-2.5 rounded-[10px] border border-line bg-surface-2 px-3 py-2 cursor-pointer"
             >
-              <div
-                className={`w-2 h-2 rounded-full ${
+              <span
+                className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
                   researchMode ? 'bg-gold' : 'bg-surface-3'
                 }`}
-              />
-              <span>Research mode: {researchMode ? 'Active (3×)' : 'Off'}</span>
+              >
+                <span
+                  className={`inline-block h-5 w-5 transform rounded-full bg-fg shadow transition-transform ${
+                    researchMode ? 'translate-x-[22px]' : 'translate-x-[2px]'
+                  }`}
+                />
+              </span>
+              <span className="flex flex-col items-start leading-tight">
+                <span className="text-xs font-medium text-fg">Research mode</span>
+                <span className={`text-[11px] font-mono ${researchMode ? 'text-gold' : 'text-fg-muted'}`}>
+                  3× stamina
+                </span>
+              </span>
             </button>
 
             {/* Mastery Indicator Box */}

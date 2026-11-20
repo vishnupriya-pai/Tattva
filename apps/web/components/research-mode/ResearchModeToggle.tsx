@@ -11,25 +11,24 @@ export function ResearchModeToggle({
       role="switch"
       aria-checked={enabled}
       onClick={() => onChange(!enabled)}
-      className="flex items-center gap-2.5 rounded-sm border border-line-strong px-2.5 py-1.5 transition-colors hover:border-line-strong"
+      className="flex items-center gap-2.5 rounded-[10px] border border-line-strong px-2.5 py-1.5 transition-colors cursor-pointer"
     >
       <span
-        className={`text-xs font-medium ${enabled ? 'text-gold' : 'text-fg/50'}`}
-      >
-        Research mode
-      </span>
-      <span
-        className={[
-          'relative inline-flex h-5 w-9 shrink-0 items-center rounded-full border transition-colors',
-          enabled ? 'border-gold/50 bg-gold/20' : 'border-line-strong bg-surface-2/10',
-        ].join(' ')}
+        className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
+          enabled ? 'bg-gold' : 'bg-surface-3'
+        }`}
       >
         <span
-          className={[
-            'inline-block h-3.5 w-3.5 transform rounded-full bg-surface-2 shadow transition-transform',
-            enabled ? 'translate-x-[18px]' : 'translate-x-[3px]',
-          ].join(' ')}
+          className={`inline-block h-5 w-5 transform rounded-full bg-fg shadow transition-transform ${
+            enabled ? 'translate-x-[22px]' : 'translate-x-[2px]'
+          }`}
         />
+      </span>
+      <span className="flex flex-col items-start leading-tight">
+        <span className="text-xs font-medium text-fg">Research mode</span>
+        <span className={`text-[11px] font-mono ${enabled ? 'text-gold' : 'text-fg-muted'}`}>
+          3× stamina
+        </span>
       </span>
     </button>
   );

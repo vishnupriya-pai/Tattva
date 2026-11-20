@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { GitBranch } from 'lucide-react';
 import {
   createInquiry,
   createQuestionNode,
@@ -53,6 +54,31 @@ export function WorkspaceEntry() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSubmittingNew, setIsSubmittingNew] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorToastMessage, setErrorToastMessage] = useState<string | null>(null);
+
+  // Per uiRefactor.md §8.11: auto-dismiss, and don't re-show an identical
+  // message the user has already seen once this session.
+  useEffect(() => {
+    if (!errorMessage) {
+      setErrorToastMessage(null);
+      return;
+    }
+    const storageKey = `tattva_seen_error:${errorMessage}`;
+    let alreadySeen = false;
+    try {
+      alreadySeen = sessionStorage.getItem(storageKey) === '1';
+      sessionStorage.setItem(storageKey, '1');
+    } catch {
+      // ignore storage errors
+    }
+    if (alreadySeen) {
+      setErrorToastMessage(null);
+      return;
+    }
+    setErrorToastMessage(errorMessage);
+    const timer = setTimeout(() => setErrorToastMessage(null), 6000);
+    return () => clearTimeout(timer);
+  }, [errorMessage]);
   const [isInquiryModalOpen, setIsInquiryModalOpen] = useState<boolean>(false);
 
   // Curated Workspaces & Masterclass state
@@ -529,9 +555,9 @@ Every scalable software architecture and algorithm is governed by fundamental in
 
       {/* Main View Area */}
       <main className="flex-1 min-h-0 overflow-hidden relative">
-        {errorMessage && (
-          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50 rounded-xl border border-trap/30 bg-trap-wash px-4 py-2 text-xs text-trap backdrop-blur-md shadow-xl">
-            {errorMessage}
+        {errorToastMessage && (
+          <div className="absolute bottom-4 right-4 z-50 max-w-sm rounded-[10px] border-l-[3px] border-trap bg-surface-2 px-4 py-2.5 text-xs text-fg shadow-xl">
+            {errorToastMessage}
           </div>
         )}
 
@@ -615,8 +641,24 @@ Every scalable software architecture and algorithm is governed by fundamental in
             }}
           />
         ) : (
-          <div className="grid h-full place-items-center bg-bg px-6 text-center text-sm text-fg/70">
-            <p>No active inquiry selected.</p>
+          <div className="grid h-full place-items-center bg-bg px-6 text-center">
+            <div className="flex flex-col items-center gap-3">
+              <GitBranch className="h-6 w-6 text-fg-faint" />
+              <p className="text-[15px] font-medium text-fg">No active inquiry selected</p>
+              <p className="max-w-xs text-sm text-fg-muted">
+                Select an inquiry to enter its split-screen workspace, or start a new one.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setCreatePrefill({});
+                  setActiveView('create');
+                }}
+                className="mt-1 rounded-[6px] bg-surface-2 px-4 py-2 text-xs font-medium text-fg hover:bg-surface-3 transition cursor-pointer"
+              >
+                Start a new inquiry
+              </button>
+            </div>
           </div>
         )}
       </main>
