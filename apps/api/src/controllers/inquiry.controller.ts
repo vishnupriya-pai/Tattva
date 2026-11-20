@@ -11,13 +11,20 @@ import {
   type CreateQuestionNodeResponse,
   trapAttemptRequestSchema,
   type TrapAttemptResponse,
+  prerequisiteProbeRequestSchema,
+  type PrerequisiteProbeResponse,
+  ingestDocumentRequestSchema,
+  type IngestDocumentResponse,
 } from '@tattva/contracts';
 import { ApiError } from '../types/api';
+import { createRequestScopedClient } from '../integrations/supabase/client';
+import { ingestDocumentAndBuildDAG } from '../services/sourceIngestion/ingestionService';
 import {
   createInquiryForUser,
   createQuestionNodeForUser,
   deleteInquiryForUser,
   getInquiryDetail,
+  getPrerequisiteProbeForInquiry,
   listInquiries,
   submitTrapAttempt,
 } from '../services/inquiryService';
@@ -75,6 +82,29 @@ export async function postTrapAttempt(req: Request, res: Response<TrapAttemptRes
   if (!req.auth) throw new ApiError(401, 'missing_token', 'Authentication required');
   const { nodeId } = z.object({ nodeId: z.string().uuid() }).parse(req.params);
   const body = trapAttemptRequestSchema.parse(req.body);
-  const result = await submitTrapAttempt(req.auth.accessToken, req.auth.userId, nodeId, body.response);
+  const submission = 'response' in body ? body.response : body;
+  const result = await submitTrapAttempt(req.auth.accessToken, req.auth.userId, nodeId, submission);
   res.status(200).json({ data: result });
+}
+
+export async function postPrerequisiteProbe(req: Request, res: Response<PrerequisiteProbeResponse>): Promise<void> {
+  if (!req.auth) throw new ApiError(401, 'missing_token', 'Authentication required');
+  const { inquiryId } = inquiryIdParamsSchema.parse(req.params);
+  const body = prerequisiteProbeRequestSchema.parse({ ...req.body, inquiryId });
+  const result = await getPrerequisiteProbeForInquiry(
+    req.auth.accessToken,
+    req.auth.userId,
+    inquiryId,
+    body.conceptTopic,
+    body.researchMode,
+  );
+  res.status(200).json({ data: result });
+}
+
+export async function postIngestDocument(req: Request, res: Response<IngestDocumentResponse>): Promise<void> {
+  if (!req.auth) throw new ApiError(401, 'missing_token', 'Authentication required');
+  const body = ingestDocumentRequestSchema.parse(req.body);
+  const client = createRequestScopedClient(req.auth.accessToken);
+  const result = await ingestDocumentAndBuildDAG(client, req.auth.userId, body);
+  res.status(201).json({ data: result });
 }

@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { X } from 'lucide-react';
 import {
   ReactFlow,
   Background,
@@ -39,6 +40,7 @@ export function KnowledgeGraphCanvas({
   errorMessage?: string;
   onRetry?: () => void;
 }) {
+  const [showGuidance, setShowGuidance] = useState(true);
   const { positions } = useMemo(
     () => computeConceptGraphLayout(nodes),
     [nodes]
@@ -61,11 +63,12 @@ export function KnowledgeGraphCanvas({
             relevanceScore: 1,
             conceptTag: 'Concept',
           },
+          onOpenDetails: onSelectNode,
         },
         position: positions[node.id] ?? { x: 0, y: 0 },
         selected: node.id === selectedNodeId,
       })),
-    [nodes, positions, selectedNodeId, metricsMap]
+    [nodes, positions, selectedNodeId, metricsMap, onSelectNode]
   );
 
   const flowEdges: Edge[] = useMemo(
@@ -74,21 +77,33 @@ export function KnowledgeGraphCanvas({
         .filter((node) => node.parentNodeId !== null)
         .map((node) => {
           const metrics = metricsMap.get(node.id);
+          const isConquered = node.masteryStatus === 'conquered' || Boolean(node.trapResolvedAt);
+          const isChallenged = node.masteryStatus === 'challenged' || (node.isTrap && !node.trapResolvedAt);
           const isDeep = metrics?.tier === 'deep';
-          const isDivergent = metrics?.tier === 'divergent';
 
-          let strokeColor = 'rgba(255, 255, 255, 0.2)';
-          if (isDeep) strokeColor = 'rgba(16, 185, 129, 0.6)'; // emerald
-          else if (isDivergent) strokeColor = 'rgba(244, 63, 94, 0.5)'; // rose
+          let strokeColor = 'rgba(255, 255, 255, 0.25)';
+          let strokeDasharray: string | undefined = undefined;
+
+          if (isConquered) {
+            strokeColor = 'rgba(197, 154, 103, 0.85)'; // Radiant Gold
+          } else if (isChallenged) {
+            strokeColor = 'rgba(245, 158, 11, 0.75)'; // Amber
+            strokeDasharray = '5 3';
+          } else if (isDeep) {
+            strokeColor = 'rgba(16, 185, 129, 0.6)'; // emerald
+          } else {
+            strokeDasharray = '4 4'; // tentative dotted curve
+          }
 
           return {
             id: `${node.parentNodeId}-${node.id}`,
             source: node.parentNodeId as string,
             target: node.id,
-            animated: isDeep,
+            animated: isConquered || isChallenged,
             style: {
               stroke: strokeColor,
-              strokeWidth: isDeep ? 2 : 1.5,
+              strokeWidth: isConquered ? 2.5 : isChallenged ? 2 : 1.5,
+              strokeDasharray,
             },
           };
         }),
@@ -109,6 +124,22 @@ export function KnowledgeGraphCanvas({
 
   return (
     <div className="relative h-full w-full">
+      {/* Subtle First-Time User Orientation Ribbon */}
+      {showGuidance && (
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2.5 rounded-full border border-white/10 bg-[#12141a]/90 px-3.5 py-1 text-[11px] text-slate-300 backdrop-blur-md shadow-lg font-mono pointer-events-auto">
+          <span className="text-[#c59a67] font-bold">✦</span>
+          <span>Select any node to inspect synthesis &middot; Conquer traps to branch downstream</span>
+          <button
+            type="button"
+            onClick={() => setShowGuidance(false)}
+            className="ml-1 text-slate-500 hover:text-white transition cursor-pointer"
+            title="Dismiss guide"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
       <ReactFlow
         nodes={flowNodes}
         edges={flowEdges}
@@ -120,6 +151,7 @@ export function KnowledgeGraphCanvas({
         nodesDraggable={true}
         nodesConnectable={false}
         edgesReconnectable={false}
+        proOptions={{ hideAttribution: true }}
       >
         <Background color="rgba(255,255,255,0.05)" gap={28} size={1} />
         <Controls showInteractive={false} className="!border-white/10 !bg-[#141417] !fill-white" />

@@ -44,3 +44,34 @@ export async function findLearningSourceById(
 
   return data ? mapRow(data) : null;
 }
+
+export async function createLearningSourceRecord(
+  adminClient: SupabaseClient,
+  input: {
+    title: string;
+    description: string;
+    content: string;
+    sourceType: 'video' | 'document' | 'transcript';
+    sourceReference: string;
+    durationMinutes: number;
+  },
+): Promise<LearningSourceSummary> {
+  const { data, error } = await adminClient
+    .from('learning_sources')
+    .insert({
+      title: input.title,
+      description: input.description,
+      content: input.content,
+      source_type: input.sourceType,
+      source_reference: input.sourceReference,
+      duration_minutes: input.durationMinutes,
+    })
+    .select('id, title, description, content, source_type, source_reference, duration_minutes')
+    .single();
+
+  if (error || !data) {
+    throw new Error(`Failed to create learning source: ${error?.message ?? 'unknown'}`);
+  }
+
+  return mapRow(data as unknown as LearningSourceRow);
+}

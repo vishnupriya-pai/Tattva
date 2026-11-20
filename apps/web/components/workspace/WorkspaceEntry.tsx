@@ -9,6 +9,7 @@ import {
   getMe,
   getStamina,
   listInquiries,
+  ingestTechnicalDocument,
 } from '../../lib/api-client';
 import { AuthNotConfiguredError } from '../../lib/auth';
 import { ensureDemoInquiry } from '../../lib/workspace-bootstrap';
@@ -508,6 +509,30 @@ Every scalable software architecture and algorithm is governed by fundamental in
     }
   };
 
+  const handleIngestDocument = async (payload: {
+    title: string;
+    content: string;
+    sourceType: 'document' | 'video' | 'transcript';
+  }) => {
+    setIsSubmittingNew(true);
+    setErrorMessage(null);
+    try {
+      const res = await ingestTechnicalDocument({
+        title: payload.title,
+        content: payload.content,
+        sourceType: payload.sourceType,
+      });
+      const newInquiryId = res.data.inquiry.id;
+      await refreshInquiriesList();
+      setActiveView('workspace');
+      await loadInquiryWorkspace(newInquiryId);
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : 'Failed to ingest document and construct Concept DAG.');
+    } finally {
+      setIsSubmittingNew(false);
+    }
+  };
+
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-[#0b0d0f] text-slate-100">
       {/* Top Navigation Bar from BhoomikaContributions */}
@@ -558,6 +583,7 @@ Every scalable software architecture and algorithm is governed by fundamental in
               initialQuestion={createPrefill.question}
               initialSourceId={createPrefill.sourceId}
               onCreateInquiry={handleCreateInquiry}
+              onIngestDocument={handleIngestDocument}
               onCancel={() => setActiveView('workspace')}
               isSubmitting={isSubmittingNew}
             />

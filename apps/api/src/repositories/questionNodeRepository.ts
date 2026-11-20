@@ -1,5 +1,12 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { FollowUpQuestion, QuestionNode, TrapMetadata } from '@tattva/contracts';
+import type {
+  CodeChallenge,
+  ContrastiveOption,
+  FollowUpQuestion,
+  MasteryStatus,
+  QuestionNode,
+  TrapMetadata,
+} from '@tattva/contracts';
 import { ApiError } from '../types/api';
 import { getAdminClient, isSupabaseAdminConfigured } from '../integrations/supabase/client';
 
@@ -22,6 +29,12 @@ interface QuestionNodeRow {
   trap_resolved_at: string | null;
   created_at: string;
   follow_up_questions: FollowUpRow[];
+  learner_hypothesis?: string | null;
+  hypothesis_submitted_at?: string | null;
+  time_to_formulation_ms?: number | null;
+  mastery_status?: MasteryStatus | null;
+  contrastive_options?: ContrastiveOption[] | null;
+  code_challenge?: CodeChallenge | null;
 }
 
 function mapFollowUp(row: FollowUpRow): FollowUpQuestion {
@@ -35,6 +48,9 @@ function mapFollowUp(row: FollowUpRow): FollowUpQuestion {
 }
 
 function mapNode(row: QuestionNodeRow): QuestionNode {
+  const derivedStatus: MasteryStatus =
+    row.mastery_status ?? (row.is_trap ? (row.trap_resolved_at ? 'conquered' : 'challenged') : 'tentative');
+
   return {
     id: row.id,
     parentNodeId: row.parent_node_id,
@@ -49,6 +65,12 @@ function mapNode(row: QuestionNodeRow): QuestionNode {
       .sort((a, b) => a.position - b.position)
       .map(mapFollowUp),
     createdAt: row.created_at,
+    learnerHypothesis: row.learner_hypothesis ?? null,
+    hypothesisSubmittedAt: row.hypothesis_submitted_at ?? null,
+    timeToFormulationMs: row.time_to_formulation_ms ?? null,
+    masteryStatus: derivedStatus,
+    contrastiveOptions: row.contrastive_options ?? null,
+    codeChallenge: row.code_challenge ?? null,
   };
 }
 
@@ -60,19 +82,34 @@ function mapNode(row: QuestionNodeRow): QuestionNode {
  */
 export async function listNodesForInquiry(client: SupabaseClient, inquiryId: string): Promise<QuestionNode[]> {
   const queryClient = isSupabaseAdminConfigured() ? getAdminClient() : client;
-  const { data, error } = await queryClient
+  let { data, error } = await queryClient
     .from('question_nodes')
     .select(
       // follow_up_questions has two FKs into question_nodes (question_node_id
       // and child_node_id); the !question_node_id hint tells PostgREST which
       // one to embed here — without it, the query 500s with "more than one
       // relationship was found" (caught live against the real database).
-      'id, parent_node_id, user_question, ai_explanation, research_mode, is_trap, trap_metadata, trap_resolved_at, created_at, follow_up_questions!question_node_id(id, position, question_text, is_selected, child_node_id)',
+      'id, parent_node_id, user_question, ai_explanation, research_mode, is_trap, trap_metadata, trap_resolved_at, created_at, learner_hypothesis, hypothesis_submitted_at, time_to_formulation_ms, mastery_status, contrastive_options, code_challenge, follow_up_questions!question_node_id(id, position, question_text, is_selected, child_node_id)',
     )
     .eq('inquiry_id', inquiryId)
     .order('created_at', { ascending: true });
 
-  if (error) {
+  // If the remote database has not yet run the Socratic crucible migration,
+  // gracefully fall back to base columns so existing inquiries load seamlessly.
+  if (error && (error.message?.includes('learner_hypothesis') || error.message?.includes('does not exist'))) {
+    const fallback = await queryClient
+      .from('question_nodes')
+      .select(
+        'id, parent_node_id, user_question, ai_explanation, research_mode, is_trap, trap_metadata, trap_resolved_at, created_at, follow_up_questions!question_node_id(id, position, question_text, is_selected, child_node_id)',
+      )
+      .eq('inquiry_id', inquiryId)
+      .order('created_at', { ascending: true });
+
+    if (fallback.error) {
+      throw new Error(`Failed to load nodes for inquiry ${inquiryId}: ${fallback.error.message}`);
+    }
+    data = fallback.data as unknown as typeof data;
+  } else if (error) {
     throw new Error(`Failed to load nodes for inquiry ${inquiryId}: ${error.message}`);
   }
 
@@ -83,14 +120,38 @@ export async function createNodeAtomically(client: SupabaseClient, input: {
   userId: string; inquiryId: string; parentNodeId: string | null; selectedFollowUpId: string | null;
   question: string; explanation: string; researchMode: boolean; isTrap: boolean;
   trapMetadata: TrapMetadata | null; followUps: string[];
+  learnerHypothesis?: string | null;
+  timeToFormulationMs?: number | null;
+  masteryStatus?: MasteryStatus | null;
+  contrastiveOptions?: ContrastiveOption[] | null;
+  codeChallenge?: CodeChallenge | null;
 }): Promise<string> {
-  const { data, error } = await client.rpc('create_question_node', {
+  let { data, error } = await client.rpc('create_question_node', {
     p_user_id: input.userId, p_inquiry_id: input.inquiryId, p_parent_node_id: input.parentNodeId,
     p_selected_follow_up_id: input.selectedFollowUpId, p_user_question: input.question,
     p_ai_explanation: input.explanation, p_research_mode: input.researchMode,
     p_is_trap: input.isTrap, p_trap_metadata: input.trapMetadata,
     p_follow_ups: input.followUps,
+    p_learner_hypothesis: input.learnerHypothesis ?? null,
+    p_time_to_formulation_ms: input.timeToFormulationMs ?? null,
+    p_mastery_status: input.masteryStatus ?? null,
+    p_contrastive_options: input.contrastiveOptions ?? null,
+    p_code_challenge: input.codeChallenge ?? null,
   });
+
+  // Fallback if remote DB hasn't been migrated to 15-param function yet
+  if (error && (error.message?.includes('could not find function') || error.message?.includes('does not exist'))) {
+    const legacy = await client.rpc('create_question_node', {
+      p_user_id: input.userId, p_inquiry_id: input.inquiryId, p_parent_node_id: input.parentNodeId,
+      p_selected_follow_up_id: input.selectedFollowUpId, p_user_question: input.question,
+      p_ai_explanation: input.explanation, p_research_mode: input.researchMode,
+      p_is_trap: input.isTrap, p_trap_metadata: input.trapMetadata,
+      p_follow_ups: input.followUps,
+    });
+    data = legacy.data;
+    error = legacy.error;
+  }
+
   if (error?.code === '23505') throw new ApiError(409, 'graph_conflict', 'That root question or follow-up was already submitted. Refresh and try again.');
   if (error?.code === '23514') throw new ApiError(409, 'graph_progress_blocked', 'Resolve the parent trap before continuing.');
   if (error || typeof data !== 'string') throw new Error(`Failed to persist generated node: ${error?.message ?? 'missing node id'}`);
@@ -106,18 +167,46 @@ export async function resolveTrapForUser(client: SupabaseClient, userId: string,
 
 export async function readStamina(client: SupabaseClient): Promise<{
   balance: number;
-  recentTransactions: Array<{ id: string; eventType: string; basePoints: number; multiplier: number; finalPoints: number; createdAt: string }>;
+  recentTransactions: Array<{
+    id: string;
+    eventType: string;
+    basePoints: number;
+    multiplier: number;
+    finalPoints: number;
+    createdAt: string;
+    proofOfStruggleMetadata?: any;
+    transactionSignature?: string | null;
+  }>;
 }> {
-  const { data, error } = await client.from('wallet_transactions')
-    .select('id, event_type, base_points, multiplier, final_points, created_at')
+  let { data, error } = await client
+    .from('wallet_transactions')
+    .select('id, event_type, base_points, multiplier, final_points, created_at, proof_of_struggle_metadata, transaction_signature')
     .order('created_at', { ascending: false });
-  if (error) throw new Error(`Failed to load Stamina ledger: ${error.message}`);
+
+  if (error && (error.message?.includes('proof_of_struggle_metadata') || error.message?.includes('does not exist'))) {
+    const fallback = await client
+      .from('wallet_transactions')
+      .select('id, event_type, base_points, multiplier, final_points, created_at')
+      .order('created_at', { ascending: false });
+
+    if (fallback.error) throw new Error(`Failed to load Stamina ledger: ${fallback.error.message}`);
+    data = fallback.data as unknown as typeof data;
+  } else if (error) {
+    throw new Error(`Failed to load Stamina ledger: ${error.message}`);
+  }
+
   const rows = data ?? [];
   return {
-    balance: rows.reduce((total, row) => total + Number(row.final_points), 0),
-    recentTransactions: rows.slice(0, 20).map((row) => ({
-      id: row.id, eventType: row.event_type, basePoints: Number(row.base_points),
-      multiplier: Number(row.multiplier), finalPoints: Number(row.final_points), createdAt: row.created_at,
+    balance: rows.reduce((total, row: any) => total + Number(row.final_points), 0),
+    recentTransactions: rows.slice(0, 20).map((row: any) => ({
+      id: row.id,
+      eventType: row.event_type,
+      basePoints: Number(row.base_points),
+      multiplier: Number(row.multiplier),
+      finalPoints: Number(row.final_points),
+      createdAt: row.created_at,
+      proofOfStruggleMetadata: row.proof_of_struggle_metadata ?? null,
+      transactionSignature: row.transaction_signature ?? null,
     })),
   };
 }

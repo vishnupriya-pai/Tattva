@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import { learningSourceSummarySchema } from './learning-source';
+import {
+  learningSourceSummarySchema,
+  conceptDagSchema,
+  type LearningSourceSummary,
+  type ConceptDAG,
+} from './learning-source';
 import { questionNodeSchema } from './question-node';
 
 /**
@@ -63,3 +68,14 @@ export const deleteInquiryResponseSchema = z.object({
 });
 
 export type DeleteInquiryResponse = z.infer<typeof deleteInquiryResponseSchema>;
+
+export const ingestDocumentResponseSchema = z.object({
+  data: z.object({
+    inquiry: inquirySchema,
+    learningSource: learningSourceSummarySchema,
+    dag: conceptDagSchema,
+    nodes: z.array(questionNodeSchema),
+  }),
+});
+
+export type IngestDocumentResponse = z.infer<typeof ingestDocumentResponseSchema>;

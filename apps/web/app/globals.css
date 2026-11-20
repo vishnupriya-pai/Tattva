@@ -1,12 +1,40 @@
 @import 'tailwindcss';
 
 :root {
-  --color-bg: #0b0b0d;
+  --color-bg: #090a0d;
+  --color-surface: #111317;
   --color-fg: #f5f5f0;
-  --color-accent: #d4a017;
+  --color-accent: #c59a67;
+  --color-accent-subdued: #a88254;
 }
 
 body {
   background-color: var(--color-bg);
   color: var(--color-fg);
+  overflow-x: hidden;
+}
+
+/* Custom subtle dark scrollbars for sleek Obsidian look */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(197, 154, 103, 0.45);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
 }

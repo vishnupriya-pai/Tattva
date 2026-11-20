@@ -14,6 +14,9 @@ export interface NodeForStamina {
   isTrap: boolean;
   trapResolvedAt: string | null;
   createdAt: string;
+  learnerHypothesis?: string | null;
+  timeToFormulationMs?: number | null;
+  masteryStatus?: string | null;
 }
 
 interface NodeForStaminaRow {
@@ -24,6 +27,9 @@ interface NodeForStaminaRow {
   is_trap: boolean;
   trap_resolved_at: string | null;
   created_at: string;
+  learner_hypothesis?: string | null;
+  time_to_formulation_ms?: number | null;
+  mastery_status?: string | null;
 }
 
 /**
@@ -34,12 +40,23 @@ interface NodeForStaminaRow {
  * inquiryService.ts).
  */
 export async function listAllNodesForUser(client: SupabaseClient, userId: string): Promise<NodeForStamina[]> {
-  const { data, error } = await client
+  let { data, error } = await client
     .from('question_nodes')
-    .select('id, inquiry_id, parent_node_id, research_mode, is_trap, trap_resolved_at, created_at, inquiries!inner(user_id)')
+    .select('id, inquiry_id, parent_node_id, research_mode, is_trap, trap_resolved_at, created_at, learner_hypothesis, time_to_formulation_ms, mastery_status, inquiries!inner(user_id)')
     .eq('inquiries.user_id', userId);
 
-  if (error) {
+  // Fallback to base columns if Socratic Crucible columns haven't been applied to remote DB
+  if (error && (error.message?.includes('learner_hypothesis') || error.message?.includes('does not exist'))) {
+    const fallback = await client
+      .from('question_nodes')
+      .select('id, inquiry_id, parent_node_id, research_mode, is_trap, trap_resolved_at, created_at, inquiries!inner(user_id)')
+      .eq('inquiries.user_id', userId);
+
+    if (fallback.error) {
+      throw new Error(`Failed to load nodes for Stamina sync: ${fallback.error.message}`);
+    }
+    data = fallback.data as unknown as typeof data;
+  } else if (error) {
     throw new Error(`Failed to load nodes for Stamina sync: ${error.message}`);
   }
 
@@ -53,6 +70,9 @@ export async function listAllNodesForUser(client: SupabaseClient, userId: string
       isTrap: r.is_trap,
       trapResolvedAt: r.trap_resolved_at,
       createdAt: r.created_at,
+      learnerHypothesis: r.learner_hypothesis ?? null,
+      timeToFormulationMs: r.time_to_formulation_ms ?? null,
+      masteryStatus: r.mastery_status ?? null,
     };
   });
 }
@@ -66,6 +86,8 @@ export interface LedgerEntryInput {
   multiplier: number;
   finalPoints: number;
   idempotencyKey: string;
+  proofOfStruggleMetadata?: Record<string, unknown>;
+  transactionSignature?: string | null;
 }
 
 /**
@@ -73,18 +95,12 @@ export interface LedgerEntryInput {
  * `wallet_transactions` has no insert policy for the `authenticated` role —
  * this must be called with the admin (service-role) client, from inside a
  * trusted service method that has already verified ownership of every node
- * being credited (here: `listAllNodesForUser` already scoped the nodes to
- * `userId` via RLS, so there is nothing further to check).
- *
- * Safe to call repeatedly with entries that were already written: the
- * unique `idempotency_key` constraint plus `ignoreDuplicates` makes this a
- * no-op for anything already ledgered, so a user's whole node history can be
- * re-synced on every Stamina read without double-crediting.
+ * being credited.
  */
 export async function upsertLedgerEntriesIfMissing(adminClient: SupabaseClient, entries: LedgerEntryInput[]): Promise<void> {
   if (entries.length === 0) return;
 
-  const rows = entries.map((entry) => ({
+  const rowsWithProof = entries.map((entry) => ({
     user_id: entry.userId,
     inquiry_id: entry.inquiryId,
     question_node_id: entry.questionNodeId,
@@ -93,11 +109,36 @@ export async function upsertLedgerEntriesIfMissing(adminClient: SupabaseClient, 
     multiplier: entry.multiplier,
     final_points: entry.finalPoints,
     idempotency_key: entry.idempotencyKey,
+    proof_of_struggle_metadata: entry.proofOfStruggleMetadata ?? {},
+    transaction_signature: entry.transactionSignature ?? null,
   }));
 
   const { error } = await adminClient
     .from('wallet_transactions')
-    .upsert(rows, { onConflict: 'idempotency_key', ignoreDuplicates: true });
+    .upsert(rowsWithProof, { onConflict: 'idempotency_key', ignoreDuplicates: true });
+
+  // If proof_of_struggle_metadata doesn't exist on remote DB yet, fall back to base columns
+  if (error && (error.message?.includes('proof_of_struggle_metadata') || error.message?.includes('does not exist'))) {
+    const legacyRows = entries.map((entry) => ({
+      user_id: entry.userId,
+      inquiry_id: entry.inquiryId,
+      question_node_id: entry.questionNodeId,
+      event_type: entry.eventType,
+      base_points: entry.basePoints,
+      multiplier: entry.multiplier,
+      final_points: entry.finalPoints,
+      idempotency_key: entry.idempotencyKey,
+    }));
+
+    const fallbackRes = await adminClient
+      .from('wallet_transactions')
+      .upsert(legacyRows, { onConflict: 'idempotency_key', ignoreDuplicates: true });
+
+    if (fallbackRes.error) {
+      throw new Error(`Failed to write Stamina ledger entries: ${fallbackRes.error.message}`);
+    }
+    return;
+  }
 
   if (error) {
     throw new Error(`Failed to write Stamina ledger entries: ${error.message}`);

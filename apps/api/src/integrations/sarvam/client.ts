@@ -1,6 +1,7 @@
 import { generatedQuestionNodeSchema } from '@tattva/contracts';
 import { env } from '../../config/env';
 import { ApiError } from '../../types/api';
+import { logger } from '../../utils/logger';
 
 const endpoint = 'https://api.sarvam.ai/v1/chat/completions';
 const model = 'sarvam-105b';
@@ -41,16 +42,61 @@ async function completion(system: string, user: string): Promise<string> {
   return content;
 }
 
+export async function generatePrerequisiteProbe(input: {
+  conceptTopic: string;
+  sourceTitle: string;
+  sourceContent: string;
+  researchMode: boolean;
+}): Promise<{ probePrompt: string; targetConcept: string; prerequisiteContext?: string }> {
+  const system = `You are the Socratic Interrogator for Tattva, an advanced intellectual execution and capability verification platform.
+CRITICAL MANDATES:
+1. Do NOT explain the concept "${input.conceptTopic}" or provide the direct answer.
+2. Formulate a single, direct, intellectually demanding probing question ("Prerequisite Probe") that forces the learner to mentally commit to a hypothesis before receiving the proof.
+3. Challenge the learner to predict the core mathematical necessity, failure mode, architectural trade-off, or invariant of "${input.conceptTopic}".
+4. Return ONLY a JSON object with:
+   - "probePrompt": "Your direct probing question to the learner",
+   - "targetConcept": "${input.conceptTopic}",
+   - "prerequisiteContext": "A 1-sentence prompt of which foundational axiom or mechanism they should consider"`;
+
+  try {
+    const content = await completion(
+      system,
+      `Source / Context: ${input.sourceTitle}\nExcerpt:\n${input.sourceContent.slice(0, 6000)}\n\nTarget Concept: ${input.conceptTopic}`,
+    );
+    const parsed = JSON.parse(content) as { probePrompt?: string; targetConcept?: string; prerequisiteContext?: string };
+    if (parsed && typeof parsed.probePrompt === 'string' && parsed.probePrompt.trim()) {
+      return {
+        probePrompt: parsed.probePrompt.trim(),
+        targetConcept: parsed.targetConcept?.trim() || input.conceptTopic,
+        prerequisiteContext: parsed.prerequisiteContext?.trim(),
+      };
+    }
+  } catch {
+    /* fallback if provider fails or formats unexpectedly */
+  }
+
+  return {
+    probePrompt: `Before evaluating the formal proof for "${input.conceptTopic}": what fundamental constraint or failure mode does this mechanism solve, and what architectural trade-off does it introduce? Formulate your hypothesis in 1-3 sentences.`,
+    targetConcept: input.conceptTopic,
+    prerequisiteContext: `Consider first-principles invariants and mathematical scaling properties.`,
+  };
+}
+
 export async function generateQuestionNode(input: {
   question: string;
   sourceTitle: string;
   sourceDescription: string;
   sourceContent: string;
   researchMode: boolean;
+  learnerHypothesis?: string;
 }): Promise<ReturnType<typeof generatedQuestionNodeSchema.parse>> {
   const modeInstruction = input.researchMode
     ? 'Research mode: use a rigorous Socratic approach, distinguish evidence from inference, point to official documentation or primary sources (such as Vaswani et al. 2017 for Transformers, architectural papers, or systems specifications) when appropriate, and avoid simply giving a final answer. Still provide a concise explanation and exactly three probing follow-up questions.'
     : 'Teach clearly and precisely, explaining the core mechanisms, trade-offs, and architectural reasoning before giving a concise answer.';
+
+  const hypothesisInstruction = input.learnerHypothesis
+    ? `\nLEARNER PRELIMINARY HYPOTHESIS: "${input.learnerHypothesis}"\nMANDATORY SYNTHESIS: In your "explanation", deliver a two-stage response: (1) Conceptual Delta: critically analyze the learner's hypothesis above, noting what intuition was correct and what invariant or mechanism was missing. (2) First-Principles Proof: provide the complete technical proof answering "${input.question}".`
+    : '';
 
   const system = `You are the learning engine for Tattva, an advanced intellectual execution and CS/AI learning platform.
 CRITICAL MANDATES:
@@ -64,7 +110,8 @@ Return only a JSON object with keys:
   - "followUps": an array of exactly 3 distinct, intellectually challenging probing follow-up questions STRICTLY relevant to the question asked.
   - "isTrap": boolean indicating whether this concept has a subtle adversarial trap/misconception.
   - "trapMetadata": null or { "misconceptionType": string, "scenario": string, "resolutionRequired": true } if isTrap is true.
-${modeInstruction}`;
+  - "contrastiveOptions": null or array of exactly 2 options if isTrap is true: [ { "id": "claim-a", "text": "...", "isFlawed": boolean, "axiomViolated": "..." }, { "id": "claim-b", "text": "...", "isFlawed": boolean, "axiomViolated": "..." } ] where exactly ONE claim is flawed.
+${modeInstruction}${hypothesisInstruction}`;
 
   for (let attempt = 0; attempt < 2; attempt += 1) {
     const content = await completion(
@@ -74,7 +121,31 @@ ${modeInstruction}`;
     try {
       const decoded: unknown = JSON.parse(content);
       const parsed = generatedQuestionNodeSchema.safeParse(decoded);
+      if (!parsed.success) {
+        logger.warn(
+          { attempt, issues: parsed.error.issues, raw: content.slice(0, 1000) },
+          'generateQuestionNode: schema validation failed',
+        );
+      } else if (parsed.data.isTrap && !parsed.data.trapMetadata) {
+        logger.warn({ attempt, raw: content.slice(0, 1000) }, 'generateQuestionNode: isTrap=true but trapMetadata missing');
+      }
       if (parsed.success && (!parsed.data.isTrap || parsed.data.trapMetadata)) {
+        if (parsed.data.isTrap && (!parsed.data.contrastiveOptions || parsed.data.contrastiveOptions.length < 2)) {
+          parsed.data.contrastiveOptions = [
+            {
+              id: 'claim-a',
+              text: parsed.data.trapMetadata?.scenario || 'The operational complexity or memory bounds are unaffected by scale.',
+              isFlawed: true,
+              axiomViolated: parsed.data.trapMetadata?.misconceptionType || 'Fundamental algorithmic invariant',
+            },
+            {
+              id: 'claim-b',
+              text: parsed.data.explanation.slice(0, 180) + '...',
+              isFlawed: false,
+              axiomViolated: undefined,
+            },
+          ];
+        }
         const expLower = parsed.data.explanation.toLowerCase();
         const isRefusal =
           expLower.includes('the provided source material discusses') ||
@@ -100,7 +171,9 @@ ${modeInstruction}`;
         }
         return parsed.data;
       }
-    } catch { /* retry once on malformed model JSON */ }
+    } catch (cause) {
+      logger.warn({ attempt, cause: String(cause), raw: content.slice(0, 1000) }, 'generateQuestionNode: raw content was not valid JSON');
+    }
   }
   throw new ApiError(422, 'sarvam_invalid_output', 'The generated answer did not meet Tattva’s response requirements. Please retry.');
 }
@@ -117,6 +190,63 @@ export async function evaluateTrap(response: string, scenario: string): Promise<
     }
   } catch { /* surface provider contract failures clearly */ }
   throw new ApiError(422, 'sarvam_invalid_output', 'Trap evaluation returned an invalid result. Please retry.');
+}
+
+export async function evaluateContrastiveTrap(input: {
+  selectedOptionId: string;
+  citationSpan: string;
+  justification: string;
+  options: Array<{ id: string; text: string; isFlawed: boolean; axiomViolated?: string }>;
+  sourceContent: string;
+}): Promise<{ survived: boolean; feedback: string }> {
+  // 1. Verify choice
+  const chosen = input.options.find((opt) => opt.id === input.selectedOptionId);
+  if (!chosen) {
+    return { survived: false, feedback: 'Invalid option selected. Please choose either Claim A or Claim B.' };
+  }
+  if (!chosen.isFlawed) {
+    return {
+      survived: false,
+      feedback: 'Incorrect claim selected. The option you selected is actually mathematically and systemically sound. Spot the premise containing the subtle flaw.',
+    };
+  }
+
+  // 2. Citation check against source content
+  const citationClean = input.citationSpan.trim().toLowerCase();
+  const sourceLower = input.sourceContent.toLowerCase();
+  const citationWords = citationClean.split(/\s+/).filter((w) => w.length > 3);
+  const matchingWords = citationWords.filter((w) => sourceLower.includes(w));
+  const isGrounded =
+    sourceLower.includes(citationClean.slice(0, 30)) ||
+    (citationWords.length > 0 && matchingWords.length / citationWords.length >= 0.4);
+
+  if (!isGrounded && citationWords.length > 3) {
+    return {
+      survived: false,
+      feedback: 'Citation could not be grounded in the source material. Please cite an actual passage, equation, or mechanism described in the source reader.',
+    };
+  }
+
+  // 3. Justification check
+  const axiom = chosen.axiomViolated || 'the core architectural invariant';
+  try {
+    const content = await completion(
+      'You are the verification engine for Tattva. Evaluate whether the learner justification correctly identifies why the flawed premise fails based on the violated axiom. Return JSON {"survived": boolean, "feedback": string}. Keep feedback concise and objective.',
+      `Violated Axiom: ${axiom}\nFlawed Claim: ${chosen.text}\nLearner Justification: ${input.justification}\nCited Span: ${input.citationSpan}`,
+    );
+    const value = JSON.parse(content) as { survived?: unknown; feedback?: unknown };
+    if (typeof value.survived === 'boolean' && typeof value.feedback === 'string' && value.feedback.trim()) {
+      return { survived: value.survived, feedback: value.feedback.trim() };
+    }
+  } catch {
+    /* fallback to length and grounding */
+  }
+
+  const wordCount = input.justification.trim().split(/\s+/).length;
+  if (wordCount >= 8) {
+    return { survived: true, feedback: 'Correctly identified the flawed premise with grounded citation.' };
+  }
+  return { survived: false, feedback: 'Justification is too brief. Explain the specific mathematical or systemic mechanism violated.' };
 }
 
 /**
@@ -455,5 +585,121 @@ ${sourceContext.content.slice(0, 4000)}` : ''}`;
     responseText,
     audioBase64: voiceAudio,
     languageCode,
+  };
+}
+
+export interface ConceptDAGResult {
+  rootConceptId: string;
+  concepts: Array<{
+    id: string;
+    conceptName: string;
+    prerequisiteIds: string[];
+    summary: string;
+    coreQuestion: string;
+    sourceSpan?: string;
+    isLocked: boolean;
+  }>;
+}
+
+/**
+ * Uses Sarvam AI to analyze an ingested technical paper or RFC and construct a
+ * topologically sorted Directed Acyclic Graph (DAG) of prerequisite concepts.
+ */
+export async function extractConceptDAG(
+  documentTitle: string,
+  documentContent: string,
+): Promise<ConceptDAGResult> {
+  const systemPrompt = `You are the Lead Epistemologist for Tattva, an intellectual capability verification platform.
+Your task is to analyze technical papers, engineering RFCs, or documentation and construct a strictly topological Directed Acyclic Graph (DAG) of prerequisite concepts.
+
+PREREQUISITE DAG RULES:
+1. Extract between 3 and 5 core concepts needed to understand the paper.
+2. Order them strictly from foundational precursor -> intermediate mechanism -> advanced paper contribution.
+3. The root concept must have "prerequisiteIds": [] and "isLocked": false.
+4. Each subsequent concept must declare the "id" of the preceding concept(s) that it strictly depends upon ("prerequisiteIds": [...]) and set "isLocked": true.
+5. Provide a "coreQuestion" for each concept that serves as a Socratic crucible question forcing the learner to deduce the mechanism.
+6. Provide an exact "sourceSpan" from the text referencing the mechanism.
+
+Return ONLY a JSON object with this exact shape:
+{
+  "rootConceptId": "slug-of-foundational-concept",
+  "concepts": [
+    {
+      "id": "concept-slug-1",
+      "conceptName": "Name of foundational concept",
+      "prerequisiteIds": [],
+      "summary": "1-2 sentence core technical invariant",
+      "coreQuestion": "Why does ... require ...?",
+      "sourceSpan": "exact quotation from document",
+      "isLocked": false
+    }
+  ]
+}`;
+
+  const userPrompt = `Document Title: ${documentTitle}
+
+Document Content (Excerpt):
+${documentContent.slice(0, 5000)}
+
+Construct the prerequisite Concept DAG for this technical document.`;
+
+  try {
+    const raw = await completion(systemPrompt, userPrompt);
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed.concepts) && parsed.concepts.length > 0) {
+      return {
+        rootConceptId: parsed.rootConceptId || parsed.concepts[0].id,
+        concepts: parsed.concepts.map((c: any, index: number) => ({
+          id: String(c.id || `concept-${index}`),
+          conceptName: String(c.conceptName || `Concept ${index + 1}`),
+          prerequisiteIds: Array.isArray(c.prerequisiteIds)
+            ? c.prerequisiteIds.map(String)
+            : index === 0
+              ? []
+              : [parsed.concepts[index - 1]?.id || `concept-${index - 1}`],
+          summary: String(c.summary || ''),
+          coreQuestion: String(c.coreQuestion || `What fundamental principle governs ${c.conceptName}?`),
+          sourceSpan: c.sourceSpan ? String(c.sourceSpan) : undefined,
+          isLocked: index > 0,
+        })),
+      };
+    }
+  } catch {
+    // Graceful heuristic fallback if Sarvam is momentarily unreachable or parsing fails
+  }
+
+  // Heuristic fallback DAG based on document title
+  const rootSlug = 'foundational-axioms';
+  const midSlug = 'core-mechanism';
+  const advSlug = 'system-optimization';
+
+  return {
+    rootConceptId: rootSlug,
+    concepts: [
+      {
+        id: rootSlug,
+        conceptName: `${documentTitle}: Foundational Constraints`,
+        prerequisiteIds: [],
+        summary: `Underlying algorithmic and mathematical invariants of ${documentTitle}.`,
+        coreQuestion: `What fundamental mathematical or systemic constraint does ${documentTitle} seek to overcome?`,
+        isLocked: false,
+      },
+      {
+        id: midSlug,
+        conceptName: `${documentTitle}: Architectural Mechanism`,
+        prerequisiteIds: [rootSlug],
+        summary: 'The primary algorithmic mechanism introduced in this specification.',
+        coreQuestion: `How does the primary architecture of ${documentTitle} guarantee correctness and bounded complexity?`,
+        isLocked: true,
+      },
+      {
+        id: advSlug,
+        conceptName: `${documentTitle}: Performance & Memory Tiling`,
+        prerequisiteIds: [midSlug],
+        summary: 'Hardware-level memory locality and scaling limits.',
+        coreQuestion: `Under extreme workload scale, what hardware bottlenecks dictate the efficiency limits of this design?`,
+        isLocked: true,
+      },
+    ],
   };
 }

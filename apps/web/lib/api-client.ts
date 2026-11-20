@@ -15,11 +15,17 @@ import {
   trapAttemptResponseSchema,
   staminaResponseSchema,
   voiceQueryResponseSchema,
+  prerequisiteProbeResponseSchema,
+  ingestDocumentResponseSchema,
   type CreateQuestionNodeResponse,
   type TrapAttemptResponse,
   type StaminaResponse,
   type VoiceQueryRequest,
   type VoiceQueryResponse,
+  type PrerequisiteProbeResponse,
+  type CognitiveTelemetry,
+  type IngestDocumentRequest,
+  type IngestDocumentResponse,
 } from '@tattva/contracts';
 import { getAccessToken } from './auth';
 
@@ -136,16 +142,40 @@ export function deleteInquiry(inquiryId: string): Promise<DeleteInquiryResponse>
 }
 
 export function createQuestionNode(inquiryId: string, input: {
-  question: string; parentNodeId: string | null; selectedFollowUpId: string | null; researchMode: boolean;
+  question: string;
+  parentNodeId: string | null;
+  selectedFollowUpId: string | null;
+  researchMode: boolean;
+  learnerHypothesis?: string;
+  timeToFormulationMs?: number;
+  telemetry?: CognitiveTelemetry;
 }): Promise<CreateQuestionNodeResponse> {
   return authedRequest(`/api/v1/inquiries/${inquiryId}/nodes`, createQuestionNodeResponseSchema, {
     method: 'POST', body: JSON.stringify(input),
   });
 }
 
-export function submitTrapAttempt(nodeId: string, response: string): Promise<TrapAttemptResponse> {
+export function getPrerequisiteProbe(
+  inquiryId: string,
+  conceptTopic: string,
+  researchMode: boolean = false,
+): Promise<PrerequisiteProbeResponse> {
+  return authedRequest(`/api/v1/inquiries/${inquiryId}/probe`, prerequisiteProbeResponseSchema, {
+    method: 'POST',
+    body: JSON.stringify({ conceptTopic, inquiryId, researchMode }),
+  });
+}
+
+export function submitTrapAttempt(
+  nodeId: string,
+  submission: string | { selectedOptionId: string; citationSpan: string; justification: string },
+  telemetry?: CognitiveTelemetry,
+): Promise<TrapAttemptResponse> {
+  const payload = typeof submission === 'string'
+    ? { response: submission, ...(telemetry ? { telemetry } : {}) }
+    : { ...submission, ...(telemetry ? { telemetry } : {}) };
   return authedRequest(`/api/v1/question-nodes/${nodeId}/trap-attempts`, trapAttemptResponseSchema, {
-    method: 'POST', body: JSON.stringify({ response }),
+    method: 'POST', body: JSON.stringify(payload),
   });
 }
 
@@ -155,6 +185,13 @@ export function getStamina(): Promise<StaminaResponse> {
 
 export function sendVoiceQuery(payload: VoiceQueryRequest): Promise<VoiceQueryResponse> {
   return authedRequest('/api/v1/voice/ask', voiceQueryResponseSchema, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export function ingestTechnicalDocument(payload: IngestDocumentRequest): Promise<IngestDocumentResponse> {
+  return authedRequest('/api/v1/inquiries/ingest', ingestDocumentResponseSchema, {
     method: 'POST',
     body: JSON.stringify(payload),
   });

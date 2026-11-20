@@ -9,52 +9,67 @@ import {
   type NodeForStamina,
 } from '../repositories/staminaLedgerRepository';
 
-/**
- * Cognitive Stamina point values (Tattva PRD §10: session start, selecting a
- * deep-dive meta-question, and surviving a "Be Careful Here!!" trap each
- * award points; Research Mode applies the PRD's 3x multiplier). These are a
- * reasonable, reversible default — not yet a product-reviewed decision — and
- * can be retuned without any schema or ledger-shape change.
- */
-const POINTS = {
-  sessionStarted: 10,
-  followupSelected: 15,
-  trapSurvived: 50,
-} as const;
-
-function multiplierFor(node: NodeForStamina): number {
-  return node.researchMode ? 3 : 1;
-}
+import { calculateStaminaMinting } from './staminaLedger';
 
 function buildLedgerEntries(userId: string, nodes: NodeForStamina[]): LedgerEntryInput[] {
   const entries: LedgerEntryInput[] = [];
 
   for (const node of nodes) {
-    const multiplier = multiplierFor(node);
     const isRoot = node.parentNodeId === null;
-    const basePoints = isRoot ? POINTS.sessionStarted : POINTS.followupSelected;
+    const mint = calculateStaminaMinting({
+      userId,
+      inquiryId: node.inquiryId,
+      nodeId: node.id,
+      eventType: 'hypothesis_formulated',
+      researchMode: node.researchMode,
+      learnerHypothesis: node.learnerHypothesis,
+      timeToFormulationMs: node.timeToFormulationMs,
+      isTrap: node.isTrap,
+    });
+
+    const combinedMultiplier = Number(
+      (mint.trapMultiplier * mint.revisionMultiplier * mint.telemetryMultiplier).toFixed(2),
+    );
 
     entries.push({
       userId,
       inquiryId: node.inquiryId,
       questionNodeId: node.id,
       eventType: isRoot ? 'session_started' : 'followup_selected',
-      basePoints,
-      multiplier,
-      finalPoints: Math.round(basePoints * multiplier),
+      basePoints: mint.basePoints,
+      multiplier: combinedMultiplier,
+      finalPoints: mint.finalPoints,
       idempotencyKey: `node_created:${node.id}`,
+      proofOfStruggleMetadata: mint.metadata as unknown as Record<string, unknown>,
+      transactionSignature: mint.signature,
     });
 
     if (node.isTrap && node.trapResolvedAt) {
+      const trapMint = calculateStaminaMinting({
+        userId,
+        inquiryId: node.inquiryId,
+        nodeId: node.id,
+        eventType: 'trap_survived',
+        researchMode: node.researchMode,
+        isTrap: true,
+        timeToFormulationMs: node.timeToFormulationMs,
+      });
+
+      const trapCombinedMultiplier = Number(
+        (trapMint.trapMultiplier * trapMint.revisionMultiplier * trapMint.telemetryMultiplier).toFixed(2),
+      );
+
       entries.push({
         userId,
         inquiryId: node.inquiryId,
         questionNodeId: node.id,
         eventType: 'trap_survived',
-        basePoints: POINTS.trapSurvived,
-        multiplier,
-        finalPoints: Math.round(POINTS.trapSurvived * multiplier),
+        basePoints: trapMint.basePoints,
+        multiplier: trapCombinedMultiplier,
+        finalPoints: trapMint.finalPoints,
         idempotencyKey: `trap_survived:${node.id}`,
+        proofOfStruggleMetadata: trapMint.metadata as unknown as Record<string, unknown>,
+        transactionSignature: trapMint.signature,
       });
     }
   }

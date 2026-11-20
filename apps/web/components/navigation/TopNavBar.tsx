@@ -7,6 +7,7 @@ import {
   PlusCircle,
   Sun,
   User,
+  ShieldCheck,
 } from 'lucide-react';
 import type { Inquiry } from '@tattva/contracts';
 import { useTheme } from '../../context/ThemeContext';
@@ -173,36 +174,38 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            Workspaces
+            Source Papers & Ingestion
           </button>
 
           <button
             type="button"
-            onClick={() => onChangeView('masterclass')}
+            onClick={() => onChangeView('profile')}
             className={`py-1 transition relative cursor-pointer ${
-              activeView === 'masterclass'
+              activeView === 'profile'
                 ? 'text-white font-semibold after:absolute after:bottom-[-20px] after:left-0 after:right-0 after:h-[2px] after:bg-[#c59a67]'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            Masterclass
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onChangeView('community')}
-            className={`py-1 transition relative cursor-pointer ${
-              activeView === 'community'
-                ? 'text-white font-semibold after:absolute after:bottom-[-20px] after:left-0 after:right-0 after:h-[2px] after:bg-[#c59a67]'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            Community
+            Proof Ledger & Replay
           </button>
         </nav>
 
         {/* Right: Cognitive Stamina, Theme Toggle & User Capsule */}
         <div className="flex items-center gap-3 shrink-0">
+          {/* Verified Replay Link */}
+          {activeInquiryId && (
+            <a
+              href={`/verify/${activeInquiryId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Open cryptographic Proof-of-Struggle replay for this inquiry"
+              className="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-[#c59a67]/40 bg-[#c59a67]/10 hover:bg-[#c59a67]/20 text-[#c59a67] transition cursor-pointer text-xs font-mono font-medium shadow-[0_0_12px_rgba(197,154,103,0.15)]"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-[#c59a67]" />
+              <span>Verified Replay</span>
+            </a>
+          )}
+
           {/* Cognitive Stamina Badge */}
           <div
             title="Cognitive Stamina: Verified intellectual activity"

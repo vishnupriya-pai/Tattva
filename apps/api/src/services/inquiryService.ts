@@ -9,7 +9,7 @@ import {
   listInquiriesForUser,
 } from '../repositories/inquiryRepository';
 import { createNodeAtomically, listNodesForInquiry, readStamina, resolveTrapForUser } from '../repositories/questionNodeRepository';
-import { generateQuestionNode, evaluateTrap } from '../integrations/sarvam/client';
+import { generateQuestionNode, evaluateTrap, generatePrerequisiteProbe, evaluateContrastiveTrap } from '../integrations/sarvam/client';
 
 /**
  * Inquiry service (docs/ARCHITECTURE.md §3). Owns ownership checks and
@@ -117,6 +117,7 @@ All follow-up questions must be strictly, uniquely focused on ${topicHeading}.`;
     sourceDescription: effectiveDescription,
     sourceContent: effectiveContent,
     researchMode: input.researchMode,
+    learnerHypothesis: input.learnerHypothesis,
   });
   const id = await createNodeAtomically(getAdminClient(), {
     userId, inquiryId, parentNodeId: input.parentNodeId ?? null,
@@ -124,24 +125,77 @@ All follow-up questions must be strictly, uniquely focused on ${topicHeading}.`;
     explanation: generated.explanation, researchMode: input.researchMode,
     isTrap: generated.isTrap, trapMetadata: generated.trapMetadata,
     followUps: generated.followUps,
+    learnerHypothesis: input.learnerHypothesis ?? null,
+    timeToFormulationMs: input.timeToFormulationMs ?? null,
+    masteryStatus: generated.isTrap ? 'challenged' : 'tentative',
+    contrastiveOptions: generated.contrastiveOptions ?? null,
   });
   const created = (await listNodesForInquiry(client, inquiryId)).find((node) => node.id === id);
   if (!created) throw new Error('Created node could not be reloaded');
   return created;
 }
 
-export async function submitTrapAttempt(accessToken: string, userId: string, nodeId: string, response: string) {
+export async function getPrerequisiteProbeForInquiry(
+  accessToken: string,
+  userId: string,
+  inquiryId: string,
+  conceptTopic: string,
+  researchMode: boolean = false,
+): Promise<{ probePrompt: string; targetConcept: string; prerequisiteContext?: string }> {
+  const client = createRequestScopedClient(accessToken);
+  const inquiry = await findInquiryByIdForUser(client, inquiryId, userId);
+  if (!inquiry) throw new ApiError(404, 'inquiry_not_found', 'Inquiry not found');
+
+  const source = await findLearningSourceById(client, inquiry.learningSourceId);
+  const effectiveTitle = inquiry.title || source?.title || conceptTopic;
+  const effectiveContent = source?.content || `Domain: Systems, Algorithms & AI. Topic: ${conceptTopic}`;
+
+  return generatePrerequisiteProbe({
+    conceptTopic,
+    sourceTitle: effectiveTitle,
+    sourceContent: effectiveContent,
+    researchMode,
+  });
+}
+
+export async function submitTrapAttempt(
+  accessToken: string,
+  userId: string,
+  nodeId: string,
+  submission: string | { selectedOptionId: string; citationSpan: string; justification: string },
+) {
   const client = createRequestScopedClient(accessToken);
   const { data, error } = await client.from('question_nodes')
-    .select('id, inquiry_id, is_trap, trap_metadata, trap_resolved_at, inquiries!inner(user_id)')
+    .select('id, inquiry_id, is_trap, trap_metadata, trap_resolved_at, contrastive_options, inquiries!inner(user_id, learning_source_id)')
     .eq('id', nodeId).eq('inquiries.user_id', userId).maybeSingle();
   if (error) throw new Error(`Failed to load trap: ${error.message}`);
   if (!data || !data.is_trap || !data.trap_metadata) throw new ApiError(404, 'trap_not_found', 'Trap not found');
   if (data.trap_resolved_at) throw new ApiError(409, 'trap_already_resolved', 'This trap has already been resolved.');
-  const metadata = data.trap_metadata as { scenario?: unknown };
-  if (typeof metadata.scenario !== 'string') throw new ApiError(422, 'invalid_trap_data', 'Trap metadata is incomplete.');
   if (!isSupabaseAdminConfigured()) throw new ApiError(503, 'admin_database_not_configured', 'Set SUPABASE_SERVICE_ROLE_KEY in apps/api/.env.local to resolve traps.');
-  const evaluation = await evaluateTrap(response, metadata.scenario);
+
+  let evaluation: { survived: boolean; feedback: string };
+
+  if (typeof submission === 'object' && submission.selectedOptionId && data.contrastive_options) {
+    const inquiryData = data.inquiries as unknown as { learning_source_id?: string };
+    const learningSource = inquiryData?.learning_source_id
+      ? await findLearningSourceById(client, inquiryData.learning_source_id)
+      : null;
+    const sourceContent = learningSource?.content || '';
+
+    evaluation = await evaluateContrastiveTrap({
+      selectedOptionId: submission.selectedOptionId,
+      citationSpan: submission.citationSpan,
+      justification: submission.justification,
+      options: data.contrastive_options as Array<{ id: string; text: string; isFlawed: boolean; axiomViolated?: string }>,
+      sourceContent,
+    });
+  } else {
+    const metadata = data.trap_metadata as { scenario?: unknown };
+    if (typeof metadata.scenario !== 'string') throw new ApiError(422, 'invalid_trap_data', 'Trap metadata is incomplete.');
+    const textResponse = typeof submission === 'string' ? submission : submission.justification;
+    evaluation = await evaluateTrap(textResponse, metadata.scenario);
+  }
+
   if (!evaluation.survived) return { result: 'retry' as const, feedback: evaluation.feedback };
   const trapResolvedAt = await resolveTrapForUser(getAdminClient(), userId, nodeId);
   return { result: 'survived' as const, trapResolvedAt, staminaAwarded: null };

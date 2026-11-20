@@ -6,11 +6,22 @@ const { isSupabaseConfigured, createAnonVerificationClient } = vi.hoisted(() => 
   isSupabaseConfigured: vi.fn().mockReturnValue(true),
   createAnonVerificationClient: vi.fn(),
 }));
-const { createInquiryForUser, listInquiries, getInquiryDetail, deleteInquiryForUser } = vi.hoisted(() => ({
+const {
+  createInquiryForUser,
+  listInquiries,
+  getInquiryDetail,
+  deleteInquiryForUser,
+  getPrerequisiteProbeForInquiry,
+  createQuestionNodeForUser,
+  submitTrapAttempt,
+} = vi.hoisted(() => ({
   createInquiryForUser: vi.fn(),
   listInquiries: vi.fn(),
   getInquiryDetail: vi.fn(),
   deleteInquiryForUser: vi.fn(),
+  getPrerequisiteProbeForInquiry: vi.fn(),
+  createQuestionNodeForUser: vi.fn(),
+  submitTrapAttempt: vi.fn(),
 }));
 
 const { processVoiceQueryForUser } = vi.hoisted(() => ({
@@ -22,7 +33,15 @@ vi.mock('../integrations/supabase/client', () => ({
   createAnonVerificationClient,
   createRequestScopedClient: vi.fn(),
 }));
-vi.mock('../services/inquiryService', () => ({ createInquiryForUser, listInquiries, getInquiryDetail, deleteInquiryForUser }));
+vi.mock('../services/inquiryService', () => ({
+  createInquiryForUser,
+  listInquiries,
+  getInquiryDetail,
+  deleteInquiryForUser,
+  getPrerequisiteProbeForInquiry,
+  createQuestionNodeForUser,
+  submitTrapAttempt,
+}));
 vi.mock('../services/voiceService', () => ({ processVoiceQueryForUser }));
 
 import { createApp } from '../app';
@@ -202,6 +221,118 @@ describe('POST /api/v1/voice/ask', () => {
       'audio/webm',
       undefined,
       undefined,
+    );
+  });
+});
+
+describe('POST /api/v1/inquiries/:inquiryId/probe (Socratic Inversion)', () => {
+  const app = createApp();
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    isSupabaseConfigured.mockReturnValue(true);
+    authorizedGetUser();
+  });
+
+  it('rejects unauthenticated requests with 401', async () => {
+    const res = await request(app)
+      .post('/api/v1/inquiries/c0c0c0c0-0000-4000-8000-000000000003/probe')
+      .send({ conceptTopic: 'Multi-Head Attention' });
+    expect(res.status).toBe(401);
+  });
+
+  it('returns a prerequisite probe for a valid concept topic', async () => {
+    getPrerequisiteProbeForInquiry.mockResolvedValue({
+      probePrompt: 'Why does inner product affinity grow large as dimensionality increases?',
+      targetConcept: 'Multi-Head Attention',
+      prerequisiteContext: 'Consider dot product variance scaling.',
+    });
+
+    const res = await request(app)
+      .post('/api/v1/inquiries/c0c0c0c0-0000-4000-8000-000000000003/probe')
+      .set('Authorization', 'Bearer good-token')
+      .send({
+        conceptTopic: 'Multi-Head Attention',
+        researchMode: false,
+      });
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.probePrompt).toBe('Why does inner product affinity grow large as dimensionality increases?');
+    expect(res.body.data.targetConcept).toBe('Multi-Head Attention');
+    expect(getPrerequisiteProbeForInquiry).toHaveBeenCalledWith(
+      'good-token',
+      VERIFIED_USER.id,
+      'c0c0c0c0-0000-4000-8000-000000000003',
+      'Multi-Head Attention',
+      false,
+    );
+  });
+});
+
+describe('POST /api/v1/question-nodes/:nodeId/trap-attempts (Contrastive Falsification)', () => {
+  const app = createApp();
+  const testNodeId = 'd0d0d0d0-0000-4000-8000-000000000004';
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    isSupabaseConfigured.mockReturnValue(true);
+    authorizedGetUser();
+  });
+
+  it('rejects unauthenticated requests with 401', async () => {
+    const res = await request(app)
+      .post(`/api/v1/question-nodes/${testNodeId}/trap-attempts`)
+      .send({ response: 'Valid explanation' });
+    expect(res.status).toBe(401);
+  });
+
+  it('accepts legacy open-ended response submissions', async () => {
+    submitTrapAttempt.mockResolvedValue({
+      result: 'survived',
+      trapResolvedAt: '2026-11-17T12:00:00.000Z',
+      staminaAwarded: null,
+    });
+
+    const res = await request(app)
+      .post(`/api/v1/question-nodes/${testNodeId}/trap-attempts`)
+      .set('Authorization', 'Bearer good-token')
+      .send({ response: 'Explaining why gradient saturation happens' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.result).toBe('survived');
+    expect(submitTrapAttempt).toHaveBeenCalledWith(
+      'good-token',
+      VERIFIED_USER.id,
+      testNodeId,
+      'Explaining why gradient saturation happens',
+    );
+  });
+
+  it('accepts contrastive falsification submissions with option, citation, and justification', async () => {
+    submitTrapAttempt.mockResolvedValue({
+      result: 'survived',
+      trapResolvedAt: '2026-11-17T12:00:00.000Z',
+      staminaAwarded: null,
+    });
+
+    const submission = {
+      selectedOptionId: 'claim-a',
+      citationSpan: 'Vaswani et al. Section 3.2.1',
+      justification: 'The claim ignores the scaling factor of 1/sqrt(d_k).',
+    };
+
+    const res = await request(app)
+      .post(`/api/v1/question-nodes/${testNodeId}/trap-attempts`)
+      .set('Authorization', 'Bearer good-token')
+      .send(submission);
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.result).toBe('survived');
+    expect(submitTrapAttempt).toHaveBeenCalledWith(
+      'good-token',
+      VERIFIED_USER.id,
+      testNodeId,
+      submission,
     );
   });
 });

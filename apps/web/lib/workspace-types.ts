@@ -46,6 +46,14 @@ export interface QuestionNode {
   followUps: FollowUpQuestion[];
   createdAt: string;
   status: NodeRenderStatus;
+  learnerHypothesis?: string | null;
+  hypothesisSubmittedAt?: string | null;
+  timeToFormulationMs?: number | null;
+  masteryStatus?: 'tentative' | 'challenged' | 'conquered';
+  contrastiveOptions?: Array<{ id: string; text: string; isFlawed: boolean; axiomViolated?: string }> | null;
+  codeChallenge?: { prompt: string; starterCode: string; testCode: string; language: 'python' | 'javascript' } | null;
+  isPrerequisiteLocked?: boolean;
+  prerequisiteNames?: string[];
 }
 
 export type StaminaEventType = string;
@@ -57,6 +65,18 @@ export interface StaminaTransaction {
   multiplier: number;
   finalPoints: number;
   createdAt: string;
+  proofOfStruggleMetadata?: {
+    basePoints: number;
+    trapMultiplier: number;
+    revisionMultiplier: number;
+    telemetryMultiplier: number;
+    finalPoints: number;
+    keystrokes?: number;
+    formulationMs?: number;
+    penaltiesApplied?: string[];
+    verifiedAt?: string;
+  } | null;
+  transactionSignature?: string | null;
 }
 
 export interface StaminaState {
