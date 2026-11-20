@@ -1,6 +1,28 @@
 import type { Metadata } from 'next';
+import { Newsreader, Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '../context/ThemeContext';
+
+const newsreader = Newsreader({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  variable: '--font-newsreader-loader',
+  display: 'swap',
+});
+
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  variable: '--font-inter-loader',
+  display: 'swap',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500'],
+  variable: '--font-jbmono-loader',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: 'Tattva',
@@ -9,7 +31,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark">
+    <html
+      lang="en"
+      className={`dark ${newsreader.variable} ${inter.variable} ${jetbrainsMono.variable}`}
+    >
       <body className="h-screen overflow-hidden antialiased bg-[#0b0d0f] text-slate-100">
         <ThemeProvider>{children}</ThemeProvider>
       </body>
