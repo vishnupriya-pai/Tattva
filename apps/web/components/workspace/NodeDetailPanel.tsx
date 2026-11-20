@@ -55,7 +55,7 @@ export function NodeDetailPanel({
               onClick={() => onSelectFollowUp(followUp.id)}
               className={[
                 'rounded-sm border px-2.5 py-1.5 text-left text-xs leading-snug transition-colors',
-                followUp.isSelected ? 'border-gold/40 bg-gold/10 text-gold' : 'border-line-strong text-fg/70 hover:border-line-strong',
+                followUp.isSelected ? 'border-explored/40 bg-explored/10 text-explored' : 'border-line-strong text-fg/70 hover:border-line-strong',
                 trapBlocksProgress ? 'cursor-not-allowed opacity-40' : '',
               ].join(' ')}
             >

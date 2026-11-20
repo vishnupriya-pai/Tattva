@@ -45,7 +45,7 @@ export const HomeDashboardView: React.FC<HomeDashboardViewProps> = ({
       {/* 1. Hero Block: Serif + Gold Visual Identity */}
       <div className="space-y-4 text-left border-b border-line pb-8">
         <div className="flex items-center gap-2">
-          <span className="font-mono text-[10px] font-bold text-gold uppercase tracking-wider bg-gold/10 px-2.5 py-0.5 rounded border border-gold/30">
+          <span className="font-mono text-[10px] font-bold text-fg-muted uppercase tracking-wider bg-surface-2 px-2.5 py-0.5 rounded">
             INTELLECTUAL EXECUTION PLATFORM
           </span>
           <span className="text-xs text-fg-muted">·</span>
@@ -80,7 +80,7 @@ export const HomeDashboardView: React.FC<HomeDashboardViewProps> = ({
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <GitBranch className="w-4 h-4 text-gold" />
+            <GitBranch className="w-4 h-4 text-fg-muted" />
             <h2 className="font-mono text-xs font-bold text-fg uppercase tracking-wider">
               Your Active Knowledge Graphs ({inquiries.length})
             </h2>
@@ -93,7 +93,7 @@ export const HomeDashboardView: React.FC<HomeDashboardViewProps> = ({
         {inquiries.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-line bg-surface-1/50 p-10 text-center space-y-3">
             <div className="w-10 h-10 rounded-full bg-surface-2/5 flex items-center justify-center text-fg-muted mx-auto">
-              <Sparkles className="w-5 h-5 text-gold" />
+              <Sparkles className="w-5 h-5 text-fg-faint" />
             </div>
             <p className="text-sm text-fg-body font-medium">No inquiries initiated yet.</p>
             <p className="text-xs text-fg-muted max-w-md mx-auto">
@@ -117,11 +117,11 @@ export const HomeDashboardView: React.FC<HomeDashboardViewProps> = ({
                 <div
                   key={inquiry.id}
                   onClick={() => onSelectInquiry(inquiry.id)}
-                  className="rounded-2xl border border-line bg-surface-1 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-gold/60 transition-all duration-200 cursor-pointer shadow-md group"
+                  className="rounded-2xl border border-line bg-surface-1 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-line-strong transition-all duration-200 cursor-pointer shadow-md group"
                 >
                   <div className="space-y-1.5 flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-[10px] text-gold uppercase tracking-wider bg-gold/10 px-2 py-0.5 rounded border border-gold/20">
+                      <span className="font-mono text-[10px] text-fg-muted uppercase tracking-wider bg-surface-2 px-2 py-0.5 rounded">
                         {inquiry.title || 'Curated Technical Source'}
                       </span>
                       <span className="text-fg-muted text-xs">·</span>
@@ -138,7 +138,7 @@ export const HomeDashboardView: React.FC<HomeDashboardViewProps> = ({
                       )}
                     </div>
 
-                    <h3 className="text-base font-semibold text-fg group-hover:text-gold transition truncate">
+                    <h3 className="text-base font-semibold text-fg truncate">
                       {inquiry.title || 'Technical Inquiry Workspace'}
                     </h3>
 
@@ -199,7 +199,7 @@ export const HomeDashboardView: React.FC<HomeDashboardViewProps> = ({
                       <span className="font-mono text-xs text-fg-muted group-hover:text-fg transition">
                         Open Graph
                       </span>
-                      <ArrowRight className="w-4 h-4 text-gold group-hover:translate-x-1 transition-transform" />
+                      <ArrowRight className="w-4 h-4 text-fg-muted group-hover:text-fg group-hover:translate-x-1 transition-transform" />
                     </div>
                   </div>
                 </div>

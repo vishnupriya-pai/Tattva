@@ -13,7 +13,7 @@ export function QuestionGraphNode({ data, selected }: NodeProps<QuestionGraphNod
     <div
       className={[
         'w-64 rounded-md border bg-surface-1 px-3.5 py-3 text-left shadow-sm transition-colors',
-        selected ? 'border-gold/60 ring-1 ring-gold/30' : 'border-line/12',
+        selected ? 'border-line-strong ring-1 ring-line-strong' : 'border-line/12',
         isUnresolvedTrap ? 'border-trap/50' : '',
         node.status === 'pending' ? 'opacity-60' : '',
       ].join(' ')}

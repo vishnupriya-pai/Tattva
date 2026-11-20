@@ -140,7 +140,7 @@ export const ShareGraphModal: React.FC<ShareGraphModalProps> = ({
         {/* Header */}
         <div className="flex items-start justify-between border-b border-line pb-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-gold/40 bg-gold/10 text-gold">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-line-strong bg-surface-2 text-fg">
               <Share2 className="h-5 w-5" />
             </div>
             <div>
@@ -166,7 +166,7 @@ export const ShareGraphModal: React.FC<ShareGraphModalProps> = ({
         {/* Graph Quick Stats Badge */}
         <div className="flex items-center gap-3 rounded-xl border border-line bg-surface-2 p-3 text-xs">
           <div className="flex items-center gap-1.5 text-fg-body">
-            <Layers className="h-3.5 w-3.5 text-gold" />
+            <Layers className="h-3.5 w-3.5 text-fg-muted" />
             <span>{nodeCount} Nodes</span>
           </div>
           <span className="text-fg/20">|</span>
@@ -175,8 +175,8 @@ export const ShareGraphModal: React.FC<ShareGraphModalProps> = ({
             <span>Interactive Multi-Tier</span>
           </div>
           <span className="text-fg/20">|</span>
-          <div className="flex items-center gap-1.5 text-gold">
-            <Sparkles className="h-3.5 w-3.5 text-gold" />
+          <div className="flex items-center gap-1.5 text-fg-body">
+            <Sparkles className="h-3.5 w-3.5 text-fg-muted" />
             <span>Live Exploration</span>
           </div>
         </div>
@@ -192,7 +192,7 @@ export const ShareGraphModal: React.FC<ShareGraphModalProps> = ({
                 type="text"
                 readOnly
                 value={shareUrl}
-                className="w-full rounded-xl border border-line-strong bg-bg/40 px-3.5 py-2.5 font-mono text-xs text-fg selection:bg-gold/30 focus:border-gold focus:outline-none"
+                className="w-full rounded-xl border border-line-strong bg-bg/40 px-3.5 py-2.5 font-mono text-xs text-fg selection:bg-surface-3 focus:border-gold focus:outline-none"
               />
             </div>
             <button
@@ -227,7 +227,7 @@ export const ShareGraphModal: React.FC<ShareGraphModalProps> = ({
               onClick={handleNativeShare}
               className="flex items-center justify-center gap-2 rounded-xl border border-line bg-surface-2/5 px-3 py-2 text-xs font-medium text-fg-body hover:border-line-strong hover:bg-surface-2/10 hover:text-fg transition cursor-pointer"
             >
-              <Share2 className="h-3.5 w-3.5 text-gold" />
+              <Share2 className="h-3.5 w-3.5 text-fg-muted" />
               <span>Share via Apps...</span>
             </button>
           )}
@@ -244,7 +244,7 @@ export const ShareGraphModal: React.FC<ShareGraphModalProps> = ({
               </>
             ) : (
               <>
-                <FileText className="h-3.5 w-3.5 text-gold" />
+                <FileText className="h-3.5 w-3.5 text-fg-muted" />
                 <span>Copy Markdown Brief</span>
               </>
             )}
@@ -255,7 +255,7 @@ export const ShareGraphModal: React.FC<ShareGraphModalProps> = ({
             onClick={handleDownloadJSON}
             className="flex items-center justify-center gap-2 rounded-xl border border-line bg-surface-2/5 px-3 py-2 text-xs font-medium text-fg-body hover:border-line-strong hover:bg-surface-2/10 hover:text-fg transition cursor-pointer"
           >
-            <Download className="h-3.5 w-3.5 text-gold" />
+            <Download className="h-3.5 w-3.5 text-fg-muted" />
             <span>Export Graph JSON</span>
           </button>
 
@@ -265,7 +265,7 @@ export const ShareGraphModal: React.FC<ShareGraphModalProps> = ({
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-2 rounded-xl border border-line bg-surface-2/5 px-3 py-2 text-xs font-medium text-fg-body hover:border-line-strong hover:bg-surface-2/10 hover:text-fg transition cursor-pointer"
           >
-            <ExternalLink className="h-3.5 w-3.5 text-gold" />
+            <ExternalLink className="h-3.5 w-3.5 text-fg-muted" />
             <span>Open Link in Tab</span>
           </a>
         </div>

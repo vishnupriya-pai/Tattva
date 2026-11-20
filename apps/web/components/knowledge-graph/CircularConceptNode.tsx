@@ -45,10 +45,10 @@ export function CircularConceptNode({ data, selected }: NodeProps<CircularConcep
     iconColor = 'text-explored';
     tagColor = 'text-explored border-explored/30 bg-explored/40';
   } else if (tier === 'moderate') {
-    circleStyles = 'border-gold bg-gold/80 text-gold';
-    glowStyles = 'ring-3 ring-gold/25';
-    iconColor = 'text-gold';
-    tagColor = 'text-gold border-gold/30 bg-gold/40';
+    circleStyles = 'border-fg-muted/60 bg-surface-2 text-fg-muted';
+    glowStyles = 'ring-3 ring-fg-muted/20';
+    iconColor = 'text-fg-muted';
+    tagColor = 'text-fg-muted border-fg-muted/20 bg-surface-2/60';
   } else if (tier === 'divergent') {
     circleStyles = 'border-trap/80 bg-trap/60 text-trap';
     glowStyles = 'ring-3 ring-trap/20';
@@ -95,7 +95,7 @@ export function CircularConceptNode({ data, selected }: NodeProps<CircularConcep
 
         {/* Small badge count if multiple children have branched off this node */}
         {metrics.childCount > 0 && (
-          <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-surface-2 px-1 font-mono text-[9px] font-bold text-gold-ink shadow-sm">
+          <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-surface-2 px-1 font-mono text-[9px] font-bold text-fg shadow-sm">
             {metrics.childCount}
           </span>
         )}

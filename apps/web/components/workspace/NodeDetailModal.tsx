@@ -112,7 +112,7 @@ export function NodeDetailModal({
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
           {/* Main Question */}
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-gold/90 mb-1">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-fg-muted mb-1">
               Inquiry Question
             </p>
             <h3 className="text-lg font-semibold leading-snug text-fg">
@@ -123,7 +123,7 @@ export function NodeDetailModal({
           {/* AI Explanation Box */}
           <div className="rounded-xl border border-line bg-surface-2/[0.03] p-4.5 space-y-2">
             <div className="flex items-center gap-2 text-xs font-medium text-fg/50">
-              <BookOpen className="h-4 w-4 text-gold/80" />
+              <BookOpen className="h-4 w-4 text-fg-muted" />
               <span>Technical Synthesis & Trade-offs</span>
             </div>
             <p className="text-sm leading-relaxed text-fg/80 whitespace-pre-line">
@@ -165,7 +165,7 @@ export function NodeDetailModal({
                     className={`flex w-full items-start gap-3 rounded-xl border p-3 text-left transition ${
                       isBranched
                         ? 'border-explored/30 bg-explored/20 text-explored hover:bg-explored/30'
-                        : 'border-line bg-surface-2/[0.02] text-fg/80 hover:border-gold/50 hover:bg-surface-2/[0.05] hover:text-fg'
+                        : 'border-line bg-surface-2/[0.02] text-fg/80 hover:border-line-strong hover:bg-surface-2/[0.05] hover:text-fg'
                     } ${isUnresolvedTrap ? 'cursor-not-allowed opacity-40' : ''}`}
                   >
                     <span
@@ -208,7 +208,7 @@ export function NodeDetailModal({
             <button
               type="submit"
               disabled={isUnresolvedTrap || isAskingCustom || !customInput.trim()}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-gold/40 bg-gold/10 px-4 py-2.5 text-xs font-medium text-gold hover:bg-gold/20 disabled:cursor-not-allowed disabled:opacity-40 transition"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-line-strong bg-surface-2 px-4 py-2.5 text-xs font-medium text-fg hover:bg-surface-3 disabled:cursor-not-allowed disabled:opacity-40 transition"
             >
               {isAskingCustom ? (
                 <span>Thinking…</span>

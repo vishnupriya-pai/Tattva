@@ -126,13 +126,13 @@ export const CreateInquiryView: React.FC<CreateInquiryViewProps> = ({
           type="button"
           onClick={onCancel}
           disabled={isSubmitting}
-          className="inline-flex items-center gap-2 rounded-lg border border-line bg-surface-1 px-3 py-1.5 font-mono text-xs text-fg-muted hover:text-fg hover:border-gold/60 transition cursor-pointer disabled:opacity-50"
+          className="inline-flex items-center gap-2 rounded-lg border border-line bg-surface-1 px-3 py-1.5 font-mono text-xs text-fg-muted hover:text-fg hover:border-line-strong transition cursor-pointer disabled:opacity-50"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Cancel</span>
         </button>
 
-        <span className="font-mono text-[10px] font-bold text-gold uppercase tracking-wider bg-gold/10 px-2.5 py-0.5 rounded border border-gold/30">
+        <span className="font-mono text-[10px] font-bold text-fg-muted uppercase tracking-wider bg-surface-2 px-2.5 py-0.5 rounded">
           PRD §1 &middot; Process of Inquiry
         </span>
       </div>
@@ -162,14 +162,14 @@ export const CreateInquiryView: React.FC<CreateInquiryViewProps> = ({
                   onClick={() => setSelectedSourceId(src.id)}
                   className={`rounded-xl border p-4 cursor-pointer transition ${
                     isSelected
-                      ? 'border-gold bg-gold/5 shadow-md shadow-black/40'
+                      ? 'border-fg bg-surface-2 shadow-md shadow-black/40'
                       : 'border-line bg-surface-1 hover:border-line-strong'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-[10px] uppercase tracking-wider text-gold bg-gold/10 px-2 py-0.5 rounded border border-gold/30">
+                        <span className="font-mono text-[10px] uppercase tracking-wider text-fg-muted bg-surface-2 px-2 py-0.5 rounded">
                           {src.topic}
                         </span>
                         <span className="font-mono text-xs text-fg-muted">
@@ -186,7 +186,7 @@ export const CreateInquiryView: React.FC<CreateInquiryViewProps> = ({
 
                     <BookOpen
                       className={`w-5 h-5 shrink-0 ${
-                        isSelected ? 'text-gold' : 'text-fg-muted'
+                        isSelected ? 'text-fg' : 'text-fg-muted'
                       }`}
                     />
                   </div>
@@ -203,7 +203,7 @@ export const CreateInquiryView: React.FC<CreateInquiryViewProps> = ({
               2. Formulate Your Root Question / Technical Excerpt
             </label>
             <div className="flex items-center gap-3">
-              <span className={`font-mono text-[11px] ${question.length > 5500 ? 'text-gold font-bold' : 'text-fg-muted'}`}>
+              <span className={`font-mono text-[11px] ${question.length > 5500 ? 'text-trap font-bold' : 'text-fg-muted'}`}>
                 {question.length.toLocaleString()} / 6,000
               </span>
               {selectedSource?.sampleQuestion && (
@@ -215,7 +215,7 @@ export const CreateInquiryView: React.FC<CreateInquiryViewProps> = ({
                       setInquiryTitle(selectedSource.title);
                     }
                   }}
-                  className="text-[11px] font-mono text-gold hover:underline cursor-pointer"
+                  className="text-[11px] font-mono text-fg-muted hover:text-fg hover:underline cursor-pointer"
                 >
                   Use sample prompt
                 </button>
@@ -270,7 +270,13 @@ export const CreateInquiryView: React.FC<CreateInquiryViewProps> = ({
               <span className="font-mono text-xs font-bold text-fg uppercase tracking-wider">
                 Research Mode
               </span>
-              <span className="font-mono text-[10px] text-gold bg-gold/10 px-2 py-0.5 rounded border border-gold/30">
+              <span
+                className={`font-mono text-[10px] px-2 py-0.5 rounded border ${
+                  researchMode
+                    ? 'text-gold bg-gold/10 border-gold/30'
+                    : 'text-fg-muted bg-surface-2 border-line'
+                }`}
+              >
                 3× Cognitive Stamina
               </span>
             </div>

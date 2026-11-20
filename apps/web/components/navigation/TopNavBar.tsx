@@ -90,9 +90,9 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
             className="flex items-center gap-2.5 text-left cursor-pointer group"
           >
             {/* Sacred Geometry Emblem */}
-            <div className="w-8 h-8 rounded-lg bg-surface-1 border border-line-strong flex items-center justify-center shadow-inner group-hover:border-gold/60 transition">
+            <div className="w-8 h-8 rounded-lg bg-surface-1 border border-line-strong flex items-center justify-center shadow-inner group-hover:border-line-strong transition">
               <svg
-                className="w-4.5 h-4.5 text-gold"
+                className="w-4.5 h-4.5 text-fg"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -157,7 +157,7 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                   }
                 }}
                 title="Switch inquiry"
-                className="rounded-full bg-gold/20 border border-gold/30 px-1.5 py-0.2 text-[10px] font-mono text-gold font-semibold hover:bg-gold/40 transition"
+                className="rounded-full bg-surface-2 border border-line-strong px-1.5 py-0.2 text-[10px] font-mono text-fg-muted font-semibold hover:bg-surface-3 transition"
               >
                 {inquiries.length}
               </span>
@@ -209,14 +209,14 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
             className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg border border-line bg-surface-1"
           >
             <div className="w-1.5 h-1.5 rounded-full bg-live" />
-            <span className="font-mono text-xs font-bold text-fg tabular-nums">
+            <span className="font-mono text-xs font-bold text-gold tabular-nums">
               {staminaScore.toLocaleString()}
             </span>
             <span className="text-[10px] font-mono tracking-wider text-fg-muted uppercase hidden sm:inline">
               STAMINA
             </span>
             {streakDays > 1 && (
-              <span className="text-[10px] font-mono text-gold border-l border-line pl-2 ml-0.5">
+              <span className="text-[10px] font-mono text-fg-muted border-l border-line pl-2 ml-0.5">
                 {streakDays}-day streak
               </span>
             )}
@@ -232,7 +232,7 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
           >
             {theme === 'dark' ? (
               <>
-                <Sun className="w-3.5 h-3.5 text-gold" />
+                <Sun className="w-3.5 h-3.5 text-fg-muted" />
                 <span className="hidden xl:inline font-mono text-[11px] font-medium">Light</span>
               </>
             ) : (
@@ -251,7 +251,7 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
               aria-expanded={accountMenuOpen}
               aria-haspopup="menu"
               title={`Identity: ${user.id} (${user.isAnonymous ? 'Anonymous' : 'Authenticated'})`}
-              className="flex items-center gap-1.5 p-1 rounded-full border border-line-strong bg-surface-2 hover:border-gold/60 cursor-pointer transition"
+              className="flex items-center gap-1.5 p-1 rounded-full border border-line-strong bg-surface-2 hover:border-line-strong cursor-pointer transition"
             >
               <div className="w-6 h-6 rounded-full bg-surface-2 text-fg flex items-center justify-center text-[10px] font-bold font-mono border border-line">
                 <User className="w-3.5 h-3.5 text-fg-body" />
@@ -272,7 +272,7 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                   <div className="text-xs font-bold text-fg truncate font-mono">
                     {user.id}
                   </div>
-                  <div className="font-mono text-[10px] text-gold truncate mt-0.5">
+                  <div className="font-mono text-[10px] text-fg-muted truncate mt-0.5">
                     {user.isAnonymous ? 'Anonymous Session' : 'Verified Learner'}
                   </div>
                   <div className="text-[10px] text-fg-muted truncate mt-0.5 font-mono">
@@ -289,7 +289,7 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                     }}
                     className="w-full flex items-center gap-2 px-2.5 py-1.5 font-medium text-fg-body hover:text-fg hover:bg-surface-2/5 rounded-lg text-left cursor-pointer"
                   >
-                    <User className="w-3.5 h-3.5 text-gold" />
+                    <User className="w-3.5 h-3.5 text-fg-muted" />
                     <span>View Profile</span>
                   </button>
 
@@ -298,7 +298,7 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                     onClick={handleStartInquiry}
                     className="w-full flex items-center gap-2 px-2.5 py-1.5 font-medium text-fg-body hover:text-fg hover:bg-surface-2/5 rounded-lg text-left cursor-pointer"
                   >
-                    <PlusCircle className="w-3.5 h-3.5 text-gold" />
+                    <PlusCircle className="w-3.5 h-3.5 text-fg-muted" />
                     <span>Launch New Inquiry</span>
                   </button>
 
@@ -311,13 +311,13 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                   >
                     <div className="flex items-center gap-2">
                       {theme === 'dark' ? (
-                        <Sun className="w-3.5 h-3.5 text-gold" />
+                        <Sun className="w-3.5 h-3.5 text-fg-muted" />
                       ) : (
                         <Moon className="w-3.5 h-3.5 text-fg-muted" />
                       )}
                       <span>Appearance</span>
                     </div>
-                    <span className="font-mono text-[10px] font-bold text-gold px-2 py-0.5 rounded bg-surface-2/5 border border-line uppercase">
+                    <span className="font-mono text-[10px] font-bold text-fg-muted px-2 py-0.5 rounded bg-surface-2/5 border border-line uppercase">
                       {theme === 'dark' ? 'Dark Mode' : 'Light Mode'}
                     </span>
                   </button>

@@ -145,9 +145,9 @@ export function KnowledgeGraphCanvas({
             <span className="h-2 w-2 rounded-full border border-line-strong bg-surface-2" />
             B&W (Initial)
           </span>
-          <span className="flex items-center gap-1.5 text-gold">
-            <span className="h-2 w-2 rounded-full bg-gold" />
-            Yellow (Moderate)
+          <span className="flex items-center gap-1.5 text-fg-muted">
+            <span className="h-2 w-2 rounded-full bg-fg-muted" />
+            Gray (Moderate)
           </span>
           <span className="flex items-center gap-1.5 text-explored">
             <span className="h-2 w-2 rounded-full bg-explored" />
