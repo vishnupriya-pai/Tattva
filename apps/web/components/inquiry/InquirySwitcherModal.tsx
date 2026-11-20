@@ -114,7 +114,7 @@ export const InquirySwitcherModal: React.FC<InquirySwitcherModalProps> = ({
                         {inq.title || 'Curated Technical Source'}
                       </span>
                       {isCurrent && (
-                        <span className="text-xs font-mono text-fg bg-surface-3 px-1.5 py-0.2 rounded font-bold shrink-0 flex items-center gap-1">
+                        <span className="text-xs font-mono text-fg bg-surface-3 px-1.5 py-0.2 rounded-[6px] font-bold shrink-0 flex items-center gap-1">
                           <Check className="w-2.5 h-2.5" />
                           Active
                         </span>

@@ -97,19 +97,19 @@ export function ProfileView({ userId = 'anonymous', staminaBalance = 0, streakDa
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-xl border border-line bg-surface-1 p-3">
+          <div className="rounded-[10px] bg-surface-1 p-3">
             <p className="font-mono text-xs text-fg-muted">Domains</p>
             <p className="font-mono text-xl font-bold text-fg">{profileDomainSummaries.length}</p>
           </div>
-          <div className="rounded-xl border border-line bg-surface-1 p-3">
+          <div className="rounded-[10px] bg-surface-1 p-3">
             <p className="font-mono text-xs text-fg-muted">Nodes</p>
             <p className="font-mono text-xl font-bold text-fg">{profileTotalNodes}</p>
           </div>
-          <div className="rounded-xl border border-line bg-surface-1 p-3">
+          <div className="rounded-[10px] bg-surface-1 p-3">
             <p className="font-mono text-xs text-fg-muted">Stamina</p>
             <p className="font-mono text-xl font-bold text-gold">{staminaBalance.toLocaleString()}</p>
           </div>
-          <div className="rounded-xl border border-line bg-surface-1 p-3">
+          <div className="rounded-[10px] bg-surface-1 p-3">
             <p className="font-mono text-xs text-fg-muted">Streak</p>
             <p className="font-mono text-xl font-bold text-fg">{streakDays > 1 ? `${streakDays}d` : '—'}</p>
           </div>
@@ -124,10 +124,10 @@ export function ProfileView({ userId = 'anonymous', staminaBalance = 0, streakDa
             {profileDomainSummaries.map((domain) => (
               <div
                 key={domain.rootNodeId}
-                className="flex items-center justify-between rounded-lg border border-line bg-surface-1 px-2.5 py-1.5"
+                className="flex items-center justify-between rounded-[6px] px-2.5 py-2 hover:bg-surface-2 transition"
               >
                 <span className="font-mono text-xs text-fg-body">{domain.label}</span>
-                <span className="font-mono text-xs text-fg-muted">{domain.nodeCount} nodes</span>
+                <span className="font-mono text-xs text-fg-faint">{domain.nodeCount} nodes</span>
               </div>
             ))}
           </div>
@@ -142,7 +142,7 @@ export function ProfileView({ userId = 'anonymous', staminaBalance = 0, streakDa
                 <div
                   key={badge.id}
                   title={badge.detail}
-                  className={`flex flex-col items-start gap-1.5 rounded-xl border p-2.5 transition ${
+                  className={`flex flex-col items-start gap-1.5 rounded-[10px] border p-2.5 transition ${
                     badge.earned ? badge.accent : 'border-line bg-surface-1 text-fg-faint opacity-50'
                   }`}
                 >

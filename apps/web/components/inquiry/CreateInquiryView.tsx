@@ -132,7 +132,7 @@ export const CreateInquiryView: React.FC<CreateInquiryViewProps> = ({
           <span>Cancel</span>
         </button>
 
-        <span className="font-mono text-xs font-bold text-fg-muted bg-surface-2 px-2.5 py-0.5 rounded">
+        <span className="font-mono text-xs font-bold text-fg-muted bg-surface-2 px-2.5 py-0.5 rounded-[6px]">
           PRD §1 &middot; Process of Inquiry
         </span>
       </div>
@@ -169,7 +169,7 @@ export const CreateInquiryView: React.FC<CreateInquiryViewProps> = ({
                   <div className="flex items-start justify-between gap-3">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs text-fg-muted bg-surface-2 px-2 py-0.5 rounded">
+                        <span className="font-mono text-xs text-fg-muted bg-surface-2 px-2 py-0.5 rounded-[6px]">
                           {src.topic}
                         </span>
                         <span className="font-mono text-xs text-fg-muted">

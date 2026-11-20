@@ -303,7 +303,7 @@ export const SourceWorkStudio: React.FC<SourceWorkStudioProps> = ({
 
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-mono text-xs font-bold text-fg-muted bg-surface-2 px-2 py-0.5 rounded">
+                <span className="font-mono text-xs font-bold text-fg-muted bg-surface-2 px-2 py-0.5 rounded-[6px]">
                   {source.category}
                 </span>
                 <span className="text-xs text-fg-muted">·</span>
@@ -338,7 +338,7 @@ export const SourceWorkStudio: React.FC<SourceWorkStudioProps> = ({
             </button>
 
             {/* Mastery Indicator Box */}
-            <div className="flex items-center gap-4 bg-surface-2 border border-line rounded-xl px-4 py-2 shadow-sm">
+            <div className="flex items-center gap-4 bg-surface-2 border border-line rounded-[10px] px-4 py-2 shadow-sm">
               <div>
                 <div className="flex items-center justify-between gap-4">
                   <span className="text-xs font-mono text-fg-muted ">
@@ -1050,7 +1050,7 @@ export const SourceWorkStudio: React.FC<SourceWorkStudioProps> = ({
               <div className="absolute inset-x-4 bottom-28 top-auto max-h-[70%] overflow-y-auto rounded-2xl border border-line-strong bg-surface-2/98 backdrop-blur-md p-5 shadow-2xl z-40 animate-fadeIn space-y-3">
                 <div className="flex items-start justify-between gap-3 border-b border-line pb-2.5">
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs font-bold text-fg-muted bg-surface-2 px-2 py-0.5 rounded">
+                    <span className="font-mono text-xs font-bold text-fg-muted bg-surface-2 px-2 py-0.5 rounded-[6px]">
                       {selectedNode.category}
                     </span>
                     <span className="font-mono text-xs text-fg-muted">
@@ -1220,7 +1220,7 @@ export const SourceWorkStudio: React.FC<SourceWorkStudioProps> = ({
             {/* Socratic Scaffolding Prompt for selected node */}
             <div className="text-xs text-fg-body leading-relaxed font-sans space-y-1">
               <div className="flex items-center gap-2">
-                <span className="font-mono text-xs font-bold text-fg-muted bg-surface-2 px-2 py-0.5 rounded">
+                <span className="font-mono text-xs font-bold text-fg-muted bg-surface-2 px-2 py-0.5 rounded-[6px]">
                   {selectedNode?.category || source.category}
                 </span>
                 <span className="font-mono text-xs text-fg-muted">

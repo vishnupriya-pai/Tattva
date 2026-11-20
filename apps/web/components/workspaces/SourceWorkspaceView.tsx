@@ -82,7 +82,7 @@ export const SourceWorkspaceView: React.FC<SourceWorkspaceViewProps> = ({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-line pb-6">
         <div>
           <div className="flex items-center gap-2">
-            <span className="font-mono text-xs font-bold text-fg-muted bg-surface-2 px-2.5 py-0.5 rounded">
+            <span className="font-mono text-xs font-bold text-fg-muted bg-surface-2 px-2.5 py-0.5 rounded-[6px]">
               Personal Crucible Desk
             </span>
             <span className="text-xs text-fg-muted">·</span>

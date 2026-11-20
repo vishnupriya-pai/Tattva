@@ -45,7 +45,7 @@ export const HomeDashboardView: React.FC<HomeDashboardViewProps> = ({
       {/* 1. Hero Block: Serif + Gold Visual Identity */}
       <div className="space-y-4 text-left border-b border-line pb-8">
         <div className="flex items-center gap-2">
-          <span className="font-mono text-xs font-bold text-fg-muted bg-surface-2 px-2.5 py-0.5 rounded">
+          <span className="font-mono text-xs font-bold text-fg-muted bg-surface-2 px-2.5 py-0.5 rounded-[6px]">
             Intellectual execution platform
           </span>
           <span className="text-xs text-fg-muted">·</span>
@@ -122,7 +122,7 @@ export const HomeDashboardView: React.FC<HomeDashboardViewProps> = ({
                 >
                   <div className="space-y-1.5 flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs text-fg-muted bg-surface-2 px-2 py-0.5 rounded">
+                      <span className="font-mono text-xs text-fg-muted bg-surface-2 px-2 py-0.5 rounded-[6px]">
                         {inquiry.title || 'Curated Technical Source'}
                       </span>
                       <span className="text-fg-muted text-xs">·</span>

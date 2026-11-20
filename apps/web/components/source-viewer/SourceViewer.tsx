@@ -76,7 +76,7 @@ export function SourceViewer({
           <div className="flex-1 space-y-6 px-6 py-5">
             <div className="space-y-3 border-b border-line pb-5">
               <div className="flex items-center gap-2">
-                <span className="font-mono text-xs font-bold text-fg-muted bg-surface-2 px-2.5 py-0.5 rounded">
+                <span className="font-mono text-xs font-bold text-fg-muted bg-surface-2 px-2.5 py-0.5 rounded-[6px]">
                   {activeNode.parentNodeId ? 'Branching Node' : 'Root Question'}
                 </span>
                 {activeNode.researchMode && (
