@@ -26,7 +26,7 @@ export function ResearchModeToggle({
       </span>
       <span className="flex flex-col items-start leading-tight">
         <span className="text-xs font-medium text-fg">Research mode</span>
-        <span className={`text-[11px] font-mono ${enabled ? 'text-gold' : 'text-fg-muted'}`}>
+        <span className={`text-xs font-mono ${enabled ? 'text-gold' : 'text-fg-muted'}`}>
           3× stamina
         </span>
       </span>
