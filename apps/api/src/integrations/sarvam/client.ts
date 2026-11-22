@@ -47,6 +47,8 @@ export async function generateQuestionNode(input: {
   sourceDescription: string;
   sourceContent: string;
   researchMode: boolean;
+  /** Bounded ancestry block from services/graphContext.ts; '' for a root question. */
+  learningPath?: string;
 }): Promise<ReturnType<typeof generatedQuestionNodeSchema.parse>> {
   const modeInstruction = input.researchMode
     ? 'Research mode: use a rigorous Socratic approach, distinguish evidence from inference, point to official documentation or primary sources (such as Vaswani et al. 2017 for Transformers, architectural papers, or systems specifications) when appropriate, and avoid simply giving a final answer. Still provide a concise explanation and exactly three probing follow-up questions.'
@@ -58,7 +60,8 @@ CRITICAL MANDATES:
 2. All 3 probing follow-up questions in "followUps" MUST be strictly, uniquely, and directly relevant to the specific topic and concept asked in this question ("${input.question}") and topic ("${input.sourceTitle}"). NEVER generate follow-up questions about unrelated topics (e.g. do NOT mention Transformers or Memory Arenas unless the question is explicitly about them).
 3. If the question relates to the provided source material, seamlessly incorporate and ground your explanation in it.
 4. If the question asks about another computer science, AI, systems, or technical topic (e.g. databases, operating systems, networking, distributed systems, algorithms, compilers), draw upon your comprehensive technical knowledge to answer the question in full technical depth.
-5. NEVER refuse to answer, and NEVER output disclaimers saying "The provided source material discusses X, not Y" or "This topic is outside the provided material". Always deliver a substantive, high-level technical explanation answering the exact question asked.
+5. When a LEARNING PATH is provided, build on it: treat the parent explanation as already understood, do not repeat it, and resolve references like "that" or "it" against the parent question.
+6. NEVER refuse to answer, and NEVER output disclaimers saying "The provided source material discusses X, not Y" or "This topic is outside the provided material". Always deliver a substantive, high-level technical explanation answering the exact question asked.
 Return only a JSON object with keys:
   - "explanation": a detailed, rigorous technical explanation answering the question directly.
   - "followUps": an array of exactly 3 distinct, intellectually challenging probing follow-up questions STRICTLY relevant to the question asked.
@@ -69,7 +72,9 @@ ${modeInstruction}`;
   for (let attempt = 0; attempt < 2; attempt += 1) {
     const content = await completion(
       system,
-      `Primary topic / reference: ${input.sourceTitle}\nContext material:\n${input.sourceContent.slice(0, 12000)}\n\nLearner question: ${input.question}`,
+      `Primary topic / reference: ${input.sourceTitle}\nContext material:\n${input.sourceContent.slice(0, 12000)}\n\n${
+        input.learningPath ? `LEARNING PATH (how the learner reached this question):\n${input.learningPath}\n\n` : ''
+      }Learner question: ${input.question}`,
     );
     try {
       const decoded: unknown = JSON.parse(content);
