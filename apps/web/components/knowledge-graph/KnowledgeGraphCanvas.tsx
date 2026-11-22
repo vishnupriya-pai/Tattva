@@ -17,6 +17,7 @@ import {
   type CircularConceptNodeType,
 } from './CircularConceptNode';
 import { EmptyGraphState, ErrorGraphState, LoadingGraphState } from './GraphStates';
+import { useTheme } from '../../context/ThemeContext';
 
 const nodeTypes = {
   conceptNode: CircularConceptNode,
@@ -39,6 +40,7 @@ export function KnowledgeGraphCanvas({
   errorMessage?: string;
   onRetry?: () => void;
 }) {
+  const { theme } = useTheme();
   const { positions } = useMemo(
     () => computeConceptGraphLayout(nodes),
     [nodes]
@@ -77,7 +79,7 @@ export function KnowledgeGraphCanvas({
           const isDeep = metrics?.tier === 'deep';
           const isDivergent = metrics?.tier === 'divergent';
 
-          let strokeColor = 'rgba(255, 255, 255, 0.2)';
+          let strokeColor = 'var(--color-line-strong)';
           if (isDeep) strokeColor = 'rgba(16, 185, 129, 0.6)'; // emerald
           else if (isDivergent) strokeColor = 'rgba(244, 63, 94, 0.5)'; // rose
 
@@ -116,19 +118,20 @@ export function KnowledgeGraphCanvas({
         onNodeClick={(_, node) => onSelectNode(node.id)}
         fitView
         fitViewOptions={{ padding: 0.35 }}
-        colorMode="dark"
+        colorMode={theme}
+        style={{ background: 'transparent' }}
         nodesDraggable={true}
         nodesConnectable={false}
         edgesReconnectable={false}
       >
-        <Background color="rgba(255,255,255,0.05)" gap={28} size={1} />
+        <Background color="var(--color-line)" gap={28} size={1} />
         <Controls showInteractive={false} className="!border-line !bg-surface-1 !fill-fg" />
         <MiniMap
           position="top-right"
           pannable
           zoomable
           className="!h-20 !w-28 !rounded-[10px] !border !border-line !bg-surface-1/90 backdrop-blur-sm max-[1024px]:!hidden"
-          maskColor="rgb(18 17 15 / 0.7)"
+          maskColor={theme === 'dark' ? 'rgb(18 17 15 / 0.7)' : 'rgb(246 242 234 / 0.7)'}
           nodeColor={(n) => {
             const data = n.data as CircularConceptNodeType['data'];
             if (data?.metrics?.tier === 'deep') return 'var(--color-explored)';
@@ -139,7 +142,7 @@ export function KnowledgeGraphCanvas({
         />
 
         {/* Legend Overlay */}
-        <div className="pointer-events-none absolute bottom-3 left-3 z-10 flex flex-wrap items-center gap-3 rounded-lg border border-line bg-surface-1/80 px-3 py-1.5 backdrop-blur-md text-xs">
+        <div className="pointer-events-none absolute left-3 top-3 z-10 flex max-w-[calc(100%-1.5rem)] flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-line bg-surface-1/80 px-3 py-1.5 backdrop-blur-md text-xs">
           <span className="text-fg/40 font-semibold">Graph Heatmap:</span>
           <span className="flex items-center gap-1.5 text-fg-muted">
             <span className="h-2 w-2 rounded-full border border-line-strong bg-surface-2" />
