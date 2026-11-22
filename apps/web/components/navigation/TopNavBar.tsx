@@ -3,7 +3,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   ChevronDown,
+  LogIn,
+  LogOut,
   Moon,
+  ShieldCheck,
   PlusCircle,
   Sun,
   User,
@@ -21,7 +24,10 @@ export interface TopNavBarProps {
   user?: {
     id: string;
     isAnonymous: boolean;
+    email?: string | null;
   };
+  onOpenAccount?: (mode: 'save' | 'signin') => void;
+  onSignOut?: () => void;
   onStartNewInquiry?: () => void;
   inquiries?: Inquiry[];
   activeInquiryId?: string | null;
@@ -35,6 +41,8 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
   staminaScore = 0,
   streakDays = 0,
   user = { id: 'anonymous', isAnonymous: true },
+  onOpenAccount,
+  onSignOut,
   onStartNewInquiry,
   inquiries = [],
   activeInquiryId,
@@ -245,7 +253,7 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
               onClick={() => setAccountMenuOpen((prev) => !prev)}
               aria-expanded={accountMenuOpen}
               aria-haspopup="menu"
-              title={`Identity: ${user.id} (${user.isAnonymous ? 'Anonymous' : 'Authenticated'})`}
+              title={user.isAnonymous ? 'Anonymous session' : (user.email ?? 'Signed in')}
               className="flex items-center gap-1.5 p-1 rounded-full border border-line-strong bg-surface-2 hover:border-line-strong cursor-pointer transition"
             >
               <div className="w-6 h-6 rounded-full bg-surface-2 text-fg flex items-center justify-center text-xs font-bold font-mono border border-line">
@@ -265,10 +273,10 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
               >
                 <div className="pb-2.5 border-b border-line">
                   <div className="text-xs font-bold text-fg truncate font-mono">
-                    {user.id}
+                    {user.isAnonymous ? 'Anonymous Session' : (user.email ?? 'Verified Learner')}
                   </div>
                   <div className="font-mono text-xs text-fg-muted truncate mt-0.5">
-                    {user.isAnonymous ? 'Anonymous Session' : 'Verified Learner'}
+                    {user.isAnonymous ? 'Progress lives in this browser only' : 'Verified Learner'}
                   </div>
                   <div className="text-xs text-fg-muted truncate mt-0.5 font-mono">
                     System: Active &middot; {staminaScore} Stamina
@@ -276,6 +284,33 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                 </div>
 
                 <div className="space-y-1 text-xs">
+                  {user.isAnonymous && onOpenAccount && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAccountMenuOpen(false);
+                          onOpenAccount('save');
+                        }}
+                        className="w-full flex items-center gap-2 px-2.5 py-1.5 font-semibold text-fg hover:bg-surface-2/5 rounded-lg text-left cursor-pointer"
+                      >
+                        <ShieldCheck className="w-3.5 h-3.5 text-gold" />
+                        <span>Save your progress</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAccountMenuOpen(false);
+                          onOpenAccount('signin');
+                        }}
+                        className="w-full flex items-center gap-2 px-2.5 py-1.5 font-medium text-fg-body hover:text-fg hover:bg-surface-2/5 rounded-lg text-left cursor-pointer"
+                      >
+                        <LogIn className="w-3.5 h-3.5 text-fg-muted" />
+                        <span>Sign in</span>
+                      </button>
+                    </>
+                  )}
+
                   <button
                     type="button"
                     onClick={() => {
@@ -316,6 +351,20 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
                       {theme === 'dark' ? 'Dark Mode' : 'Light Mode'}
                     </span>
                   </button>
+
+                  {!user.isAnonymous && onSignOut && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAccountMenuOpen(false);
+                        onSignOut();
+                      }}
+                      className="w-full flex items-center gap-2 px-2.5 py-1.5 font-medium text-fg-body hover:text-fg hover:bg-surface-2/5 rounded-lg text-left cursor-pointer"
+                    >
+                      <LogOut className="w-3.5 h-3.5 text-fg-muted" />
+                      <span>Sign out</span>
+                    </button>
+                  )}
                 </div>
               </div>
             )}

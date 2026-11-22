@@ -12,6 +12,8 @@ import {
   listInquiries,
 } from '../../lib/api-client';
 import { AuthNotConfiguredError } from '../../lib/auth';
+import { consumeAuthRedirectError, getAccountIdentity, signOut } from '../../lib/account';
+import { AccountModal, type AccountModalMode } from '../auth/AccountModal';
 import { ensureDemoInquiry } from '../../lib/workspace-bootstrap';
 import type { LearningSource, QuestionNode, StaminaState } from '../../lib/workspace-types';
 import type { Inquiry } from '@tattva/contracts';
@@ -34,10 +36,21 @@ export function WorkspaceEntry() {
   const [activeView, setActiveView] = useState<ViewMode>('workspace');
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [activeInquiryId, setActiveInquiryId] = useState<string | null>(null);
-  const [currentUser, setCurrentUser] = useState<{ id: string; isAnonymous: boolean }>({
+  const [currentUser, setCurrentUser] = useState<{ id: string; isAnonymous: boolean; email: string | null }>({
     id: 'anonymous',
     isAnonymous: true,
+    email: null,
   });
+  const [accountModal, setAccountModal] = useState<{ mode: AccountModalMode; notice: string | null } | null>(null);
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      window.location.assign(window.location.origin);
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : 'Could not sign out.');
+    }
+  };
   const [stamina, setStamina] = useState<StaminaState>({
     balance: 0,
     recentTransactions: [],
@@ -412,6 +425,18 @@ Every scalable software architecture and algorithm is governed by fundamental in
         const session = await ensureDemoInquiry();
         if (!active) return;
 
+        const redirectError = consumeAuthRedirectError();
+        if (redirectError) {
+          const alreadyLinked = redirectError.code === 'identity_already_exists';
+          setAccountModal({
+            mode: alreadyLinked ? 'signin' : 'save',
+            notice: alreadyLinked
+              ? 'That Google account already belongs to a Tattva account. Sign in to it instead. Progress from this anonymous session will not be merged.'
+              : redirectError.message,
+          });
+        }
+        const identity = await getAccountIdentity().catch(() => null);
+
         const [meRes, walletRes, listRes] = await Promise.all([
           getMe().catch(() => null),
           getStamina().catch(() => null),
@@ -419,7 +444,10 @@ Every scalable software architecture and algorithm is governed by fundamental in
         ]);
 
         if (meRes?.data?.user) {
-          setCurrentUser(meRes.data.user);
+          setCurrentUser({
+            ...meRes.data.user,
+            email: identity?.email ?? null,
+          });
         }
         if (walletRes?.data) {
           setStamina(walletRes.data);
@@ -543,6 +571,8 @@ Every scalable software architecture and algorithm is governed by fundamental in
         staminaScore={stamina.balance}
         streakDays={stamina.streakDays}
         user={currentUser}
+        onOpenAccount={(mode) => setAccountModal({ mode, notice: null })}
+        onSignOut={handleSignOut}
         onStartNewInquiry={() => {
           setCreatePrefill({});
           setActiveView('create');
@@ -552,6 +582,15 @@ Every scalable software architecture and algorithm is governed by fundamental in
         onSelectInquiry={handleSelectInquiry}
         onOpenInquirySwitcher={() => setIsInquiryModalOpen(true)}
       />
+
+      {accountModal && (
+        <AccountModal
+          key={accountModal.mode}
+          initialMode={accountModal.mode}
+          initialNotice={accountModal.notice}
+          onClose={() => setAccountModal(null)}
+        />
+      )}
 
       {/* Main View Area */}
       <main className="flex-1 min-h-0 overflow-hidden relative">
