@@ -14,26 +14,7 @@ import { InquiryComposer } from '../inquiry/InquiryComposer';
 import { NodeDetailPanel } from './NodeDetailPanel';
 import { ShareGraphModal } from '../knowledge-graph/ShareGraphModal';
 import { useResearchModeAttribute } from '../../lib/useResearchModeAttribute';
-
-function sanitizeNodeExplanation(question: string, exp: string): string {
-  if (!exp) return `Technical synthesis answering: "${question}".`;
-  const expLower = exp.toLowerCase();
-  const isRefusal =
-    expLower.includes('the provided source material discusses') ||
-    expLower.includes('does not contain any information about') ||
-    expLower.includes('appears to be drawn from a different domain') ||
-    expLower.includes('outside the provided material');
-
-  if (!isRefusal) return exp;
-
-  const qLower = question.toLowerCase();
-  const isTransformerSpecific = (qLower.includes('transformer') || qLower.includes('attention')) && (qLower.includes('decoder') || qLower.includes('causal masking'));
-  if (isTransformerSpecific) {
-    return 'In a Transformer decoder, the self-attention sub-layer employs causal masking (setting attention logits to -∞ for subsequent token positions prior to softmax) to prevent positions from attending to future tokens. Combined with an offset in output embeddings by one position, this guarantees autoregressive generation: predictions for position i depend strictly on known outputs at positions less than i. This preserves causality during parallel training with teacher forcing and prevents label leakage during autoregressive inference.';
-  }
-  const cleaned = exp.replace(/The provided source material discusses[^.]*\./gi, '').trim();
-  return cleaned || `Technical synthesis answering: "${question}".`;
-}
+import { stripRichText } from '../../lib/rich-text';
 
 export function Workspace({
   source,
@@ -58,12 +39,7 @@ export function Workspace({
   onStartNewInquiry?: () => void;
   onOpenInquirySwitcher?: () => void;
 }) {
-  const [nodes, setNodes] = useState<QuestionNode[]>(() =>
-    initialNodes.map((n) => ({
-      ...n,
-      aiExplanation: sanitizeNodeExplanation(n.userQuestion, n.aiExplanation),
-    }))
-  );
+  const [nodes, setNodes] = useState<QuestionNode[]>(initialNodes);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(initialNodes[0]?.id ?? null);
   const [researchMode, setResearchMode] = useState(false);
   useResearchModeAttribute(researchMode);
@@ -92,7 +68,6 @@ export function Workspace({
     const [detail, wallet] = await Promise.all([getInquiry(inquiryId), getStamina()]);
     const freshNodes = detail.data.nodes.map((node) => ({
       ...node,
-      aiExplanation: sanitizeNodeExplanation(node.userQuestion, node.aiExplanation),
       status: 'ready' as const,
     }));
     setNodes(freshNodes);
@@ -422,7 +397,7 @@ export function Workspace({
           nodes: nodes.map((n) => ({
             id: n.id,
             label: n.userQuestion,
-            summary: n.aiExplanation.slice(0, 180),
+            summary: stripRichText(n.aiExplanation).slice(0, 180),
           })),
         }}
       />

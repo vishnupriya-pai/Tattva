@@ -1,5 +1,6 @@
 import { Handle, Position, type Node, type NodeProps } from '@xyflow/react';
 import type { QuestionNode } from '../../lib/workspace-types';
+import { stripRichText } from '../../lib/rich-text';
 import { Badge } from '../shared/Badge';
 
 export type QuestionGraphNodeData = { node: QuestionNode; isRoot: boolean };
@@ -29,7 +30,7 @@ export function QuestionGraphNode({ data, selected }: NodeProps<QuestionGraphNod
       </div>
 
       <p className="line-clamp-2 text-[13px] font-medium leading-snug text-fg/90">{node.userQuestion}</p>
-      <p className="mt-1.5 line-clamp-3 text-xs leading-relaxed text-fg/50">{node.aiExplanation}</p>
+      <p className="mt-1.5 line-clamp-3 text-xs leading-relaxed text-fg/50">{stripRichText(node.aiExplanation)}</p>
 
       <Handle type="source" position={Position.Bottom} className="!bg-surface-2/30" />
     </div>

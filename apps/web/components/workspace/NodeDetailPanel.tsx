@@ -1,6 +1,7 @@
 import type { QuestionNode, TrapSubmissionState } from '../../lib/workspace-types';
 import { Badge } from '../shared/Badge';
 import { TrapPanel } from '../trap/TrapPanel';
+import { RichText } from '../shared/RichText';
 
 export function NodeDetailPanel({
   node,
@@ -18,18 +19,18 @@ export function NodeDetailPanel({
   const trapBlocksProgress = node.isTrap && !node.trapResolvedAt;
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-5">
       <div>
-        <p className="mb-1 flex items-center gap-2 text-xs text-fg/40">
+        <p className="mb-1 flex items-center gap-2 text-xs text-fg-muted">
           Question
           {node.researchMode && <Badge tone="accent">research mode</Badge>}
         </p>
-        <p className="text-sm font-medium text-fg/90">{node.userQuestion}</p>
+        <p className="text-base font-semibold leading-snug text-fg">{node.userQuestion}</p>
       </div>
 
       <div>
-        <p className="mb-1 text-xs text-fg/40">Explanation</p>
-        <p className="text-sm leading-relaxed text-fg/75">{node.aiExplanation}</p>
+        <p className="mb-1.5 text-xs text-fg-muted">Answer</p>
+        <RichText text={node.aiExplanation} className="text-[15px] leading-7 text-fg-body" />
       </div>
 
       {node.isTrap && node.trapMetadata && (
@@ -43,26 +44,30 @@ export function NodeDetailPanel({
       )}
 
       <div>
-        <p className="mb-1.5 text-xs text-fg/40">
-          Follow-ups {trapBlocksProgress && '(blocked by trap)'}
+        <p className="mb-2 text-xs text-fg-muted">
+          Go deeper {trapBlocksProgress && '(answer the check above first)'}
         </p>
-        <div className="flex flex-wrap gap-2">
-          {node.followUps.map((followUp) => (
-            <button
-              key={followUp.id}
-              type="button"
-              disabled={trapBlocksProgress}
-              onClick={() => onSelectFollowUp(followUp.id)}
-              className={[
-                'rounded-sm border px-2.5 py-1.5 text-left text-xs leading-snug transition-colors',
-                followUp.isSelected ? 'border-explored/40 bg-explored/10 text-explored' : 'border-line-strong text-fg/70 hover:border-line-strong',
-                trapBlocksProgress ? 'cursor-not-allowed opacity-40' : '',
-              ].join(' ')}
-            >
-              {followUp.questionText}
-            </button>
+        <ol className="space-y-2">
+          {node.followUps.map((followUp, index) => (
+            <li key={followUp.id}>
+              <button
+                type="button"
+                disabled={trapBlocksProgress}
+                onClick={() => onSelectFollowUp(followUp.id)}
+                className={[
+                  'flex w-full items-start gap-3 rounded-md border px-3 py-2.5 text-left text-sm leading-6 transition-colors',
+                  followUp.isSelected
+                    ? 'border-explored/40 bg-explored/10 text-explored'
+                    : 'border-line text-fg-body hover:border-line-strong hover:bg-surface-2 cursor-pointer',
+                  trapBlocksProgress ? 'cursor-not-allowed opacity-40' : '',
+                ].join(' ')}
+              >
+                <span className="mt-px font-mono text-xs text-fg-muted">{index + 1}</span>
+                <RichText inline text={followUp.questionText} />
+              </button>
+            </li>
           ))}
-        </div>
+        </ol>
       </div>
     </div>
   );
