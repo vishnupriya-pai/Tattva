@@ -289,29 +289,8 @@ export function WorkspaceEntry() {
         getStamina(),
       ]);
 
-      const sanitizeNodeExplanation = (question: string, exp: string): string => {
-        if (!exp) return `Technical synthesis answering: "${question}".`;
-        const expLower = exp.toLowerCase();
-        const isRefusal =
-          expLower.includes('the provided source material discusses') ||
-          expLower.includes('does not contain any information about') ||
-          expLower.includes('appears to be drawn from a different domain') ||
-          expLower.includes('outside the provided material');
-
-        if (!isRefusal) return exp;
-
-        const qLower = question.toLowerCase();
-        const isTransformerSpecific = (qLower.includes('transformer') || qLower.includes('attention')) && (qLower.includes('decoder') || qLower.includes('causal masking'));
-        if (isTransformerSpecific) {
-          return `In a Transformer decoder, the self-attention sub-layer employs causal masking (setting attention logits to -∞ for subsequent token positions prior to softmax) to prevent positions from attending to future tokens. Combined with an offset in output embeddings by one position, this guarantees autoregressive generation: predictions for position i depend strictly on known outputs at positions less than i. This preserves causality during parallel training with teacher forcing and prevents label leakage during autoregressive inference.`;
-        }
-        const cleaned = exp.replace(/The provided source material discusses[^.]*\./gi, '').trim();
-        return cleaned || `Technical synthesis answering: "${question}".`;
-      };
-
       const nodes = detail.data.nodes.map((n) => ({
         ...n,
-        aiExplanation: sanitizeNodeExplanation(n.userQuestion, n.aiExplanation),
         status: 'ready' as const,
       }));
       const rootNode = nodes.find((n) => !n.parentNodeId) ?? nodes[0];

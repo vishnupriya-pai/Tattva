@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { RichText } from '../shared/RichText';
 import {
   X,
   Sparkles,
@@ -126,9 +127,7 @@ export function NodeDetailModal({
               <BookOpen className="h-4 w-4 text-fg-muted" />
               <span>Technical Synthesis & Trade-offs</span>
             </div>
-            <p className="text-sm leading-relaxed text-fg/80 whitespace-pre-line">
-              {node.aiExplanation}
-            </p>
+            <RichText text={node.aiExplanation} className="text-sm leading-relaxed text-fg/80" />
           </div>
 
           {/* Adversarial Trap Section if present */}

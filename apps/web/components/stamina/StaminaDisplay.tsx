@@ -3,7 +3,7 @@ import { Badge } from '../shared/Badge';
 
 const EVENT_LABEL: Record<string, string> = {
   inquiry_started: 'Inquiry started',
-  followup_selected: 'Follow-up selected',
+  followup_selected: 'Branch explored',
   trap_survived: 'Trap survived',
   node_completed_research_mode: 'Research mode node',
 };
