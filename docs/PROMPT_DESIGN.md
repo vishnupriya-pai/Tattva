@@ -4,6 +4,18 @@ Status key: **Proposed** (this document's recommendation, not yet implemented), 
 
 Related: [INTELLIGENCE_ARCHITECTURE.md](INTELLIGENCE_ARCHITECTURE.md) · [SARVAM_MODEL_EVALUATION.md](SARVAM_MODEL_EVALUATION.md)
 
+## Current implementation (supersedes the drafts below where they differ)
+
+The live question-node prompts are in `apps/api/src/integrations/sarvam/prompts.ts`:
+
+- **Wire format:** `response_format: json_object` with `reasoning_effort: null`. This returns content reliably in production, unlike the `json_schema` / `low` combinations benchmarked in §4.
+- **Injection posture (§1):** learner input never enters the system prompt. The user message wraps data in `<source>`, `<learning_path>` and `<learner_question>` tags, and any of those tags inside the data are stripped.
+- **Answer format:** 120–250 words (300 hard limit). Direct answer first, then short paragraphs or a list. A limited markdown subset (paragraphs, `- ` / `1. ` lists, bold, inline code) is rendered by `apps/web/lib/rich-text.ts`. `normalizeExplanation()` converts headings and `*` bullets and splits inline section labels and list items onto their own lines.
+- **Research Mode (§3):** a separate system prompt. No final answer; "Questions to work through", "Where to look" (official documentation preferred, no guessed authors or URLs), and "Evidence vs. inference".
+- **Traps:** at most one; only for a misconception in the question or a well-documented misconception about the concept, never on uncertain claims.
+- **Retries:** malformed JSON or a refusal retries once. An answer over 350 words retries once asking for 250, and a valid long answer is accepted rather than failing. No canned substitute text is ever returned.
+- **Evaluation:** `npx tsx scripts/prompt-eval.ts` (from `apps/api`) runs six fixed cases against live Sarvam and checks the format rules.
+
 This document designs prompt structure and content — it does not implement `integrations/sarvam/prompts.ts`. Wording below is a first draft for the benchmark pass, not final copy.
 
 ## 1. Prompt injection posture (restated from ARCHITECTURE.md §6.6)
