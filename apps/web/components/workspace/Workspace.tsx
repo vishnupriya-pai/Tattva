@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Trash2, Share2, GitBranch, ChevronDown, Map, MoreHorizontal, BookOpen, MessagesSquare } from 'lucide-react';
 import { createQuestionNode, getInquiry, getStamina, submitTrapAttempt as sendTrapAttempt } from '../../lib/api-client';
 import type { LearningSource, QuestionNode, StaminaState, TrapSubmissionState } from '../../lib/workspace-types';
@@ -80,6 +80,11 @@ export function Workspace({
   const [trapSubmissions, setTrapSubmissions] = useState<Record<string, TrapSubmissionState>>({});
   const [trapFeedback, setTrapFeedback] = useState<Record<string, string>>({});
   const [retryPayload, setRetryPayload] = useState<{ question: string; parentNodeId: string | null; selectedFollowUpId: string | null } | null>(null);
+
+  const inquiryScrollRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    inquiryScrollRef.current?.scrollTo({ top: 0, behavior: 'instant' });
+  }, [selectedNodeId]);
 
   const selectedNode = useMemo(() => nodes.find((node) => node.id === selectedNodeId) ?? null, [nodes, selectedNodeId]);
 
@@ -320,22 +325,7 @@ export function Workspace({
         </div>
 
         <div className={`min-h-0 flex-col overflow-hidden ${activeMobileScreen === 'inquiry' ? 'flex' : 'hidden'} lg:flex`}>
-          <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-5 py-4">
-            {pendingMessage && (
-              <div className="flex items-center justify-between gap-3 rounded-sm border border-trap/30 bg-trap-wash px-3 py-2 text-xs text-trap">
-                <p>{pendingMessage}</p>
-                {retryPayload && (
-                  <button type="button" onClick={retryLastRequest} className="shrink-0 underline underline-offset-2">
-                    Retry
-                  </button>
-                )}
-              </div>
-            )}
-            {graphStatus === 'loading' && (
-              <p className="font-mono text-xs text-fg-muted" aria-live="polite">
-                Thinking through your question…
-              </p>
-            )}
+          <div ref={inquiryScrollRef} className="min-h-0 flex-1 space-y-3 overflow-y-auto px-5 py-4">
             {selectedNode ? (
               <NodeDetailPanel
                 node={selectedNode}
@@ -355,7 +345,28 @@ export function Workspace({
           </div>
 
           <div className="z-20 shrink-0 border-t border-line bg-surface-1 px-5 py-3.5">
-            {selectedNode && (
+            <div aria-live="polite">
+              {pendingMessage && (
+                <div
+                  role="alert"
+                  className="mb-2 flex items-center justify-between gap-3 rounded-sm border border-trap/30 bg-trap-wash px-3 py-2 text-xs text-trap"
+                >
+                  <p>{pendingMessage}</p>
+                  {retryPayload && (
+                    <button type="button" onClick={retryLastRequest} className="shrink-0 underline underline-offset-2 cursor-pointer">
+                      Retry
+                    </button>
+                  )}
+                </div>
+              )}
+              {graphStatus === 'loading' && (
+                <p className="mb-1.5 flex items-center gap-2 font-mono text-xs text-fg-body">
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-gold" aria-hidden="true" />
+                  Thinking through your question…
+                </p>
+              )}
+            </div>
+            {selectedNode && graphStatus !== 'loading' && (
               <p className="mb-1.5 font-mono text-xs text-fg-muted">
                 {isTrapBlocking ? 'Custom questions (blocked by trap)' : 'Ask your own question or use voice assistant'}
               </p>
