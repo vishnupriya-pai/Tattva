@@ -33,7 +33,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="video-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/75 backdrop-blur-xs"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-bg/75 backdrop-blur-xs"
       onClick={onClose}
     >
       <div
@@ -43,7 +43,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
         {/* Top bar */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-primary)] bg-[var(--bg-muted)]">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#d4af37] text-black">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-surface-2 text-fg-muted">
               <YoutubeIcon className="w-3.5 h-3.5" />
               {video.lectureBadge}
             </span>
@@ -63,7 +63,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
         </div>
 
         {/* Video Embed Frame (16:9) */}
-        <div className="relative w-full aspect-video bg-black shrink-0">
+        <div className="relative w-full aspect-video bg-bg shrink-0">
           <iframe
             src={`https://www.youtube-nocookie.com/embed/${video.youtubeId}?autoplay=1&rel=0`}
             title={video.title}
@@ -87,7 +87,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
                 <span>•</span>
                 <span>{video.uploadDate}</span>
                 <span>•</span>
-                <span className="inline-flex items-center gap-1 font-mono-ledger bg-[var(--bg-muted)] px-2 py-0.5 rounded text-[var(--text-primary)]">
+                <span className="inline-flex items-center gap-1 font-mono bg-[var(--bg-muted)] px-2 py-0.5 rounded text-[var(--text-primary)]">
                   <Clock className="w-3 h-3 text-[var(--accent-primary)]" />
                   {video.duration} (Between 25m - 1hr)
                 </span>
@@ -101,7 +101,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
                 onConvertVideoToInquiry(video);
                 onClose();
               }}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white text-xs sm:text-sm font-semibold shadow-sm shrink-0 cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-fg text-xs sm:text-sm font-semibold shadow-sm shrink-0 cursor-pointer"
             >
               <GitBranch className="w-4 h-4" />
               <span>Explore as Knowledge Graph</span>
@@ -114,7 +114,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
 
           {/* Key Concepts */}
           <div className="pt-2 border-t border-[var(--border-primary)]">
-            <div className="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-2">
+            <div className="text-xs font-semibold text-[var(--text-muted)] mb-2">
               Key Engineering Concepts Covered
             </div>
             <div className="flex flex-wrap gap-1.5">
@@ -133,7 +133,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
           <div className="rounded-xl border border-[var(--border-strong)] bg-[var(--bg-muted)] p-3.5 flex items-start gap-3">
             <Sparkles className="w-5 h-5 text-[var(--accent-primary)] shrink-0 mt-0.5" />
             <div className="min-w-0 flex-1">
-              <div className="text-xs font-bold uppercase tracking-wider text-[var(--accent-primary)]">
+              <div className="text-xs font-bold text-[var(--accent-primary)]">
                 Recommended Graph Question
               </div>
               <p className="text-sm font-medium text-[var(--text-primary)] mt-0.5 italic">

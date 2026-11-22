@@ -34,24 +34,24 @@ export const InquirySwitcherModal: React.FC<InquirySwitcherModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center pt-20 p-4 bg-black/65 backdrop-blur-sm animate-in fade-in duration-150"
+      className="fixed inset-0 z-50 flex items-start justify-center pt-20 p-4 bg-bg/65 backdrop-blur-sm animate-in fade-in duration-150"
       onClick={onClose}
     >
       <div
-        className="relative flex flex-col w-full max-w-xl max-h-[75vh] overflow-hidden rounded-2xl border border-white/15 bg-[#14161a] text-white shadow-2xl animate-in zoom-in-95 duration-150"
+        className="relative flex flex-col w-full max-w-xl max-h-[75vh] overflow-hidden rounded-2xl border border-line-strong bg-surface-1 text-fg shadow-2xl animate-in zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/10 px-5 py-4 bg-white/[0.02]">
+        <div className="flex items-center justify-between border-b border-line px-5 py-4 bg-surface-2/[0.02]">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-[#c59a67]/15 border border-[#c59a67]/30 flex items-center justify-center">
-              <GitBranch className="w-4 h-4 text-[#c59a67]" />
+            <div className="w-7 h-7 rounded-lg bg-surface-2 border border-line-strong flex items-center justify-center">
+              <GitBranch className="w-4 h-4 text-fg-muted" />
             </div>
             <div>
-              <h2 className="text-sm font-semibold text-white tracking-wide">
+              <h2 className="text-sm font-semibold text-fg ">
                 Your Knowledge Inquiries
               </h2>
-              <p className="text-[11px] font-mono text-slate-400">
+              <p className="text-xs font-mono text-fg-muted">
                 {inquiries.length} active knowledge graph{inquiries.length === 1 ? '' : 's'} available
               </p>
             </div>
@@ -64,7 +64,7 @@ export const InquirySwitcherModal: React.FC<InquirySwitcherModalProps> = ({
                 onClose();
                 onStartNewInquiry();
               }}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-[#c59a67]/40 bg-[#c59a67]/10 hover:bg-[#c59a67]/20 px-3 py-1.5 text-xs font-mono font-bold text-[#c59a67] hover:text-white transition cursor-pointer"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-gold hover:bg-gold-hover px-3 py-1.5 text-xs font-mono font-bold text-gold-ink transition cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>New Inquiry</span>
@@ -72,7 +72,7 @@ export const InquirySwitcherModal: React.FC<InquirySwitcherModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg p-1.5 text-white/50 hover:bg-white/10 hover:text-white transition cursor-pointer"
+              className="rounded-lg p-1.5 text-fg/50 hover:bg-surface-2/10 hover:text-fg transition cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -82,9 +82,9 @@ export const InquirySwitcherModal: React.FC<InquirySwitcherModalProps> = ({
         {/* Inquiries List */}
         <div className="flex-1 overflow-y-auto p-4 space-y-2.5">
           {inquiries.length === 0 ? (
-            <div className="p-8 text-center text-slate-400 space-y-2">
+            <div className="p-8 text-center text-fg-muted space-y-2">
               <p className="text-sm">No inquiries initiated yet.</p>
-              <p className="text-xs text-slate-500">Launch your first inquiry to begin growing your Knowledge Graph.</p>
+              <p className="text-xs text-fg-muted">Launch your first inquiry to begin growing your Knowledge Graph.</p>
             </div>
           ) : (
             inquiries.map((inq) => {
@@ -104,34 +104,34 @@ export const InquirySwitcherModal: React.FC<InquirySwitcherModalProps> = ({
                   }}
                   className={`group p-3.5 rounded-xl border transition cursor-pointer flex items-center justify-between gap-3 ${
                     isCurrent
-                      ? 'bg-[#c59a67]/15 border-[#c59a67]/50 text-white shadow-md'
-                      : 'bg-white/[0.02] border-white/10 hover:border-[#c59a67]/50 hover:bg-white/[0.06] text-slate-300 hover:text-white'
+                      ? 'bg-surface-2 border-line-strong text-fg shadow-md'
+                      : 'bg-surface-2/[0.02] border-line hover:border-line-strong hover:bg-surface-2/[0.06] text-fg-body hover:text-fg'
                   }`}
                 >
                   <div className="min-w-0 flex-1 space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium text-sm text-slate-100 truncate block">
+                      <span className="font-medium text-sm text-fg truncate block">
                         {inq.title || 'Curated Technical Source'}
                       </span>
                       {isCurrent && (
-                        <span className="text-[10px] font-mono uppercase tracking-wider text-[#c59a67] bg-[#c59a67]/20 border border-[#c59a67]/30 px-1.5 py-0.2 rounded font-bold shrink-0 flex items-center gap-1">
+                        <span className="text-xs font-mono text-fg bg-surface-3 px-1.5 py-0.2 rounded-[6px] font-bold shrink-0 flex items-center gap-1">
                           <Check className="w-2.5 h-2.5" />
                           Active
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center gap-2 text-[11px] font-mono text-slate-400">
+                    <div className="flex items-center gap-2 text-xs font-mono text-fg-muted">
                       <span>{formattedDate}</span>
                       <span>·</span>
                       <span className="truncate">ID: {inq.id.slice(0, 8)}…</span>
                     </div>
                   </div>
 
-                  <div className="shrink-0 flex items-center text-xs font-mono text-slate-400 group-hover:text-white transition">
+                  <div className="shrink-0 flex items-center text-xs font-mono text-fg-muted group-hover:text-fg transition">
                     {isCurrent ? (
-                      <span className="text-[#c59a67] text-xs">Viewing</span>
+                      <span className="text-fg text-xs">Viewing</span>
                     ) : (
-                      <span className="flex items-center gap-1 text-[#c59a67] opacity-80 group-hover:opacity-100">
+                      <span className="flex items-center gap-1 text-fg-muted group-hover:text-fg">
                         Open <ArrowRight className="w-3.5 h-3.5" />
                       </span>
                     )}

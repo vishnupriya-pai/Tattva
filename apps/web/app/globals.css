@@ -1,12 +1,94 @@
 @import 'tailwindcss';
 
-:root {
-  --color-bg: #0b0b0d;
-  --color-fg: #f5f5f0;
-  --color-accent: #d4a017;
+@theme {
+  /* Surfaces — one warm temperature, stepped by ~3% lightness */
+  --color-bg: #12110f;
+  --color-surface-1: #191714; /* cards, panes */
+  --color-surface-2: #211f1b; /* raised: popovers, active tab, inputs */
+  --color-surface-3: #2a2722; /* hover on surface-2 */
+
+  /* Lines */
+  --color-line: rgb(236 230 218 / 0.07);
+  --color-line-strong: rgb(236 230 218 / 0.13);
+
+  /* Text tiers (contrast vs --color-bg) */
+  --color-fg: #e9e3d7; /* titles, key numbers   ~14:1 */
+  --color-fg-body: #bdb5a8; /* paragraphs            ~9:1  */
+  --color-fg-muted: #8c857a; /* labels, meta          ~5:1  */
+  --color-fg-faint: #5e5850; /* disabled, placeholder ~3:1  */
+
+  /* Gold = earned */
+  --color-gold: #c8a86b; /* oklch ~= 0.75 0.085 80 */
+  --color-gold-hover: #d5b87f;
+  --color-gold-ink: #1a1712; /* text on gold fills */
+  --color-gold-wash: rgb(200 168 107 / 0.1);
+  --color-gold-line: rgb(200 168 107 / 0.35);
+
+  /* Semantic */
+  --color-explored: #8fa58c; /* sage: visited / in progress */
+  --color-trap: #d9604c; /* the ONE loud colour */
+  --color-trap-wash: rgb(217 96 76 / 0.12);
+  --color-live: #8fa58c; /* status dot */
+
+  /* Type */
+  --font-display: var(--font-newsreader-loader), 'Source Serif 4', Georgia, serif;
+  --font-sans: var(--font-inter-loader), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jbmono-loader), ui-monospace, monospace;
+
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-base: 15px;
+  --text-lg: 18px;
+  --text-xl: 24px;
+  --text-2xl: 32px;
+  --text-3xl: 48px;
+}
+
+/* Research Mode — the PRD's "high-contrast shift" */
+[data-mode='research'] {
+  --color-bg: #0a0908;
+  --color-surface-1: #11100e;
+  --color-surface-2: #181613;
+  --color-fg: #f4efe5;
+  --color-fg-body: #d2cabd;
+  --color-gold: #d9b977;
+  --color-line: rgb(236 230 218 / 0.1);
+}
+[data-mode='research'] body {
+  box-shadow: inset 0 0 0 1px var(--color-gold-line);
+}
+
+/* Research Mode in light theme gets its own shift, not the dark one above */
+[data-theme='light'][data-mode='research'] {
+  --color-bg: #efe9dd;
+  --color-fg: #0f0d0a;
+}
+
+/* Light theme — paper & ink */
+[data-theme='light'] {
+  --color-bg: #f6f2ea;
+  --color-surface-1: #fffdf8;
+  --color-surface-2: #efeae0;
+  --color-surface-3: #e6e0d4;
+  --color-line: rgb(30 26 20 / 0.08);
+  --color-line-strong: rgb(30 26 20 / 0.15);
+  --color-fg: #1c1915;
+  --color-fg-body: #423c34;
+  --color-fg-muted: #756e63;
+  --color-fg-faint: #a69f93;
+  --color-gold: #9c7a3c;
+  --color-gold-hover: #87682f;
+  --color-gold-ink: #fffdf8;
 }
 
 body {
-  background-color: var(--color-bg);
-  color: var(--color-fg);
+  background: var(--color-bg);
+  color: var(--color-fg-body);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  transition:
+    background-color 400ms ease,
+    color 400ms ease;
 }

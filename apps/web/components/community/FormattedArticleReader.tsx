@@ -20,7 +20,7 @@ function renderInlineFormatting(text: string): React.ReactNode[] {
       return (
         <code
           key={idx}
-          className="rounded bg-[#12100e] text-[#d4af37] border border-white/10 px-1.5 py-0.5 font-mono text-xs font-semibold"
+          className="rounded bg-surface-1 text-fg border border-line px-1.5 py-0.5 font-mono text-xs font-semibold"
         >
           {part.slice(1, -1)}
         </code>
@@ -32,7 +32,7 @@ function renderInlineFormatting(text: string): React.ReactNode[] {
       return (
         <span
           key={idx}
-          className="rounded bg-[#d4af37]/10 text-[#d4af37] border border-[#d4af37]/30 px-1.5 py-0.5 font-mono text-xs font-medium"
+          className="rounded bg-surface-2 text-fg border border-line-strong px-1.5 py-0.5 font-mono text-xs font-medium"
         >
           {part.slice(1, -1)}
         </span>
@@ -42,7 +42,7 @@ function renderInlineFormatting(text: string): React.ReactNode[] {
     // Bold **...**
     if (part.startsWith('**') && part.endsWith('**')) {
       return (
-        <strong key={idx} className="font-bold text-white">
+        <strong key={idx} className="font-bold text-fg">
           {part.slice(2, -2)}
         </strong>
       );
@@ -51,7 +51,7 @@ function renderInlineFormatting(text: string): React.ReactNode[] {
     // Italic *...*
     if (part.startsWith('*') && part.endsWith('*')) {
       return (
-        <em key={idx} className="italic text-slate-300">
+        <em key={idx} className="italic text-fg-body">
           {part.slice(1, -1)}
         </em>
       );
@@ -88,22 +88,22 @@ function renderTable(lines: string[], key: number): React.ReactNode {
   const rows = lines.slice(2).map(parseRow);
 
   return (
-    <div key={key} className="my-6 overflow-x-auto rounded-xl border border-white/10 shadow-xl">
+    <div key={key} className="my-6 overflow-x-auto rounded-xl border border-line shadow-xl">
       <table className="w-full text-left text-xs sm:text-sm border-collapse">
-        <thead className="bg-[#12100e] border-b border-white/10 text-slate-400">
+        <thead className="bg-surface-1 border-b border-line text-fg-muted">
           <tr>
             {headers.map((h, i) => (
-              <th key={i} className="px-4 py-2.5 font-bold uppercase tracking-wider text-[11px] font-mono">
+              <th key={i} className="px-4 py-2.5 font-bold text-xs font-mono">
                 {renderInlineFormatting(h)}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-white/5 bg-[#181512]">
+        <tbody className="divide-y divide-line bg-surface-2">
           {rows.map((row, rIdx) => (
-            <tr key={rIdx} className="hover:bg-white/5 transition">
+            <tr key={rIdx} className="hover:bg-surface-2/5 transition">
               {row.map((cell, cIdx) => (
-                <td key={cIdx} className="px-4 py-2.5 text-slate-300 font-normal leading-relaxed">
+                <td key={cIdx} className="px-4 py-2.5 text-fg-body font-normal leading-relaxed">
                   {renderInlineFormatting(cell)}
                 </td>
               ))}
@@ -138,12 +138,12 @@ export const FormattedArticleReader: React.FC<FormattedArticleReaderProps> = ({ 
       const codeMatch = block.match(/```(?:[a-zA-Z0-9_-]+)?\n([\s\S]*?)```/);
       const codeText = codeMatch ? (codeMatch[1] ?? '') : block.replace(/^```[a-z]*\n?|```$/g, '');
       renderedElements.push(
-        <div key={idx} className="my-5 rounded-2xl bg-[#12100e] border border-white/10 p-4 shadow-xl overflow-hidden">
-          <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10 text-[10px] text-slate-500 font-mono">
-            <span>TERMINAL / INVARIANT ENGINE</span>
+        <div key={idx} className="my-5 rounded-2xl bg-surface-1 border border-line p-4 shadow-xl overflow-hidden">
+          <div className="flex items-center justify-between pb-2 mb-2 border-b border-line text-xs text-fg-muted font-mono">
+            <span>Terminal / invariant engine</span>
             <span>UTF-8</span>
           </div>
-          <pre className="font-mono text-xs sm:text-[13px] text-[#d4af37] overflow-x-auto leading-relaxed whitespace-pre">
+          <pre className="font-mono text-xs sm:text-[13px] text-fg overflow-x-auto leading-relaxed whitespace-pre">
             {codeText}
           </pre>
         </div>
@@ -158,12 +158,12 @@ export const FormattedArticleReader: React.FC<FormattedArticleReaderProps> = ({ 
       renderedElements.push(
         <div
           key={idx}
-          className="my-5 rounded-2xl bg-[#181512] border border-white/10 px-6 py-4 text-center font-mono text-sm sm:text-base text-white shadow-xl overflow-x-auto"
+          className="my-5 rounded-2xl bg-surface-2 border border-line px-6 py-4 text-center font-mono text-sm sm:text-base text-fg shadow-xl overflow-x-auto"
         >
-          <span className="text-[10px] text-[#d4af37] font-mono uppercase font-bold tracking-wider block mb-1">
+          <span className="text-xs text-fg-muted font-mono font-bold block mb-1">
             Mathematical Invariant
           </span>
-          <code className="text-[#d4af37] font-bold">{mathText}</code>
+          <code className="text-fg font-bold">{mathText}</code>
         </div>
       );
       idx++;
@@ -180,7 +180,7 @@ export const FormattedArticleReader: React.FC<FormattedArticleReaderProps> = ({ 
 
     // 4. Horizontal Rule ---
     if (block === '---' || block === '***') {
-      renderedElements.push(<hr key={idx} className="my-8 border-t border-white/10" />);
+      renderedElements.push(<hr key={idx} className="my-8 border-t border-line" />);
       idx++;
       continue;
     }
@@ -188,7 +188,7 @@ export const FormattedArticleReader: React.FC<FormattedArticleReaderProps> = ({ 
     // 5. Headings (##, ###, #)
     if (block.startsWith('# ')) {
       renderedElements.push(
-        <h1 key={idx} className="font-serif-tattva text-2xl sm:text-3xl font-normal text-white mt-8 mb-3 tracking-tight">
+        <h1 key={idx} className="font-display text-2xl sm:text-3xl font-normal text-fg mt-8 mb-3 tracking-tight">
           {renderInlineFormatting(block.replace(/^#\s+/, ''))}
         </h1>
       );
@@ -200,9 +200,9 @@ export const FormattedArticleReader: React.FC<FormattedArticleReaderProps> = ({ 
       renderedElements.push(
         <h2
           key={idx}
-          className="font-serif-tattva text-xl sm:text-2xl font-normal text-white mt-8 mb-3 pb-2 border-b border-white/10 tracking-tight flex items-center gap-2"
+          className="font-display text-xl sm:text-2xl font-normal text-fg mt-8 mb-3 pb-2 border-b border-line tracking-tight flex items-center gap-2"
         >
-          <span className="w-1.5 h-4 rounded-full bg-[#d4af37] shrink-0" />
+          <span className="w-1.5 h-4 rounded-full bg-line-strong shrink-0" />
           <span>{renderInlineFormatting(block.replace(/^##\s+/, ''))}</span>
         </h2>
       );
@@ -212,7 +212,7 @@ export const FormattedArticleReader: React.FC<FormattedArticleReaderProps> = ({ 
 
     if (block.startsWith('### ')) {
       renderedElements.push(
-        <h3 key={idx} className="font-serif-tattva text-lg sm:text-xl font-normal text-[#d4af37] mt-5 mb-2 tracking-tight">
+        <h3 key={idx} className="font-display text-lg sm:text-xl font-normal text-fg mt-5 mb-2 tracking-tight">
           {renderInlineFormatting(block.replace(/^###\s+/, ''))}
         </h3>
       );
@@ -225,7 +225,7 @@ export const FormattedArticleReader: React.FC<FormattedArticleReaderProps> = ({ 
       renderedElements.push(
         <blockquote
           key={idx}
-          className="my-4 border-l-4 border-[#d4af37] bg-[#d4af37]/10 pl-4 py-2.5 text-xs sm:text-sm text-slate-200 italic rounded-r-xl font-sans"
+          className="my-4 border-l-4 border-line-strong bg-surface-2 pl-4 py-2.5 text-xs sm:text-sm text-fg italic rounded-r-xl font-sans"
         >
           {renderInlineFormatting(block.replace(/^>\s+/, ''))}
         </blockquote>
@@ -242,8 +242,8 @@ export const FormattedArticleReader: React.FC<FormattedArticleReaderProps> = ({ 
           {listItems.map((item, itemIdx) => {
             const cleanText = item.replace(/^[-*]\s+|\d+\.\s+/, '');
             return (
-              <li key={itemIdx} className="flex items-start gap-2.5 text-xs sm:text-sm text-slate-300 leading-relaxed font-sans">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37] mt-2 shrink-0" />
+              <li key={itemIdx} className="flex items-start gap-2.5 text-xs sm:text-sm text-fg-body leading-relaxed font-sans">
+                <span className="w-1.5 h-1.5 rounded-full bg-fg-muted mt-2 shrink-0" />
                 <span className="flex-1">{renderInlineFormatting(cleanText)}</span>
               </li>
             );
@@ -256,7 +256,7 @@ export const FormattedArticleReader: React.FC<FormattedArticleReaderProps> = ({ 
 
     // 8. Standard Paragraph
     renderedElements.push(
-      <p key={idx} className="text-xs sm:text-sm text-slate-300 leading-relaxed my-3 font-normal font-sans">
+      <p key={idx} className="text-xs sm:text-sm text-fg-body leading-relaxed my-3 font-normal font-sans">
         {renderInlineFormatting(block)}
       </p>
     );

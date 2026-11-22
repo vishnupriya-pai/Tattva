@@ -68,26 +68,26 @@ export const EngineeringVideosView: React.FC<EngineeringVideosViewProps> = ({
   }, [selectedCategory, durationFilter, searchQuery]);
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8 text-slate-200">
+    <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8 text-fg">
       {/* Header Banner */}
-      <div className="rounded-2xl border border-white/10 bg-[#181512] p-6 sm:p-8 shadow-2xl">
+      <div className="rounded-2xl border border-line bg-surface-2 p-6 sm:p-8 shadow-2xl">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded font-mono text-[10px] font-bold text-[#d4af37] bg-[#d4af37]/10 border border-[#d4af37]/30 uppercase tracking-wider">
-              <YoutubeIcon className="w-3.5 h-3.5 text-red-500" />
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded font-mono text-xs font-bold text-fg-muted bg-surface-2 ">
+              <YoutubeIcon className="w-3.5 h-3.5 text-trap" />
               <span>TATTVA Masterclass Archive · 25m to 1hr Lectures</span>
             </div>
-            <h1 className="font-serif-tattva text-2xl sm:text-4xl font-normal text-white tracking-tight">
-              Watch. Master. <span className="text-[#d4af37]">Inquire.</span>
+            <h1 className="font-display text-2xl sm:text-4xl font-normal text-fg tracking-tight">
+              Watch. Master. Inquire.
             </h1>
-            <p className="text-xs sm:text-sm text-slate-400 max-w-2xl leading-relaxed font-sans">
+            <p className="text-xs sm:text-sm text-fg-muted max-w-2xl leading-relaxed font-sans">
               Explore authentic, deep-dive university &amp; industry engineering lectures across AIML,
               Cybersecurity, AIDS, and Computer Science. Launch directly into a dedicated TATTVA Work Studio.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2 font-mono">
-            <span className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-[#12100e] text-[#d4af37] border border-white/10">
+            <span className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-surface-1 text-fg border border-line">
               {filteredVideos.length} Masterclasses
             </span>
           </div>
@@ -106,8 +106,8 @@ export const EngineeringVideosView: React.FC<EngineeringVideosViewProps> = ({
                 onClick={() => setSelectedCategory(cat.id)}
                 className={`rounded-full px-3.5 py-1 text-xs font-semibold transition cursor-pointer ${
                   isSelected
-                    ? 'bg-[#d4af37] text-[#12100e] font-bold shadow-xs'
-                    : 'border border-white/10 bg-[#181512] text-slate-400 hover:text-white hover:border-white/25'
+                    ? 'bg-surface-3 text-fg font-bold shadow-xs'
+                    : 'border border-line bg-surface-2 text-fg-muted hover:text-fg hover:border-line-strong'
                 }`}
               >
                 {cat.label}
@@ -119,8 +119,8 @@ export const EngineeringVideosView: React.FC<EngineeringVideosViewProps> = ({
 
       {/* Video Grid */}
       {filteredVideos.length === 0 ? (
-        <div className="text-center py-12 bg-[#181512] border border-white/10 rounded-2xl space-y-3 font-mono">
-          <p className="text-slate-400 text-sm">No lectures found matching your criteria.</p>
+        <div className="text-center py-12 bg-surface-2 border border-line rounded-2xl space-y-3 font-mono">
+          <p className="text-fg-muted text-sm">No lectures found matching your criteria.</p>
           <button
             type="button"
             onClick={() => {
@@ -128,7 +128,7 @@ export const EngineeringVideosView: React.FC<EngineeringVideosViewProps> = ({
               setSearchQuery('');
               setDurationFilter('all');
             }}
-            className="px-4 py-2 rounded-xl bg-[#d4af37] text-[#12100e] text-xs font-bold cursor-pointer"
+            className="px-4 py-2 rounded-xl bg-surface-2 border border-line-strong text-fg text-xs font-bold cursor-pointer"
           >
             Reset Filters
           </button>
@@ -138,12 +138,12 @@ export const EngineeringVideosView: React.FC<EngineeringVideosViewProps> = ({
           {filteredVideos.map((video) => (
             <div
               key={video.id}
-              className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-white/10 bg-[#181512] shadow-xl hover:border-[#d4af37]/60 transition duration-200"
+              className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-line bg-surface-2 shadow-xl hover:border-line-strong transition duration-200"
             >
               <div>
                 {/* 16:9 Thumbnail Frame with Video Click */}
                 <div
-                  className="relative aspect-video w-full overflow-hidden bg-black cursor-pointer"
+                  className="relative aspect-video w-full overflow-hidden bg-bg cursor-pointer"
                   onClick={() => onSelectVideo(video)}
                   title={`Watch ${video.title}`}
                 >
@@ -155,39 +155,39 @@ export const EngineeringVideosView: React.FC<EngineeringVideosViewProps> = ({
                   />
 
                   {/* Play overlay hover indicator */}
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <div className="w-12 h-12 rounded-full bg-[#d4af37] text-[#12100e] flex items-center justify-center shadow-lg transform scale-95 group-hover:scale-105 transition-transform">
+                  <div className="absolute inset-0 bg-bg/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-full bg-surface-2 text-fg flex items-center justify-center shadow-lg transform scale-95 group-hover:scale-105 transition-transform">
                       <Play className="w-5 h-5 fill-current ml-0.5" />
                     </div>
                   </div>
 
                   {/* Duration Badge */}
-                  <span className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-black/85 text-white backdrop-blur-xs flex items-center gap-1 border border-white/10">
-                    <Clock className="w-3 h-3 text-[#d4af37]" />
+                  <span className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded text-xs font-mono font-bold bg-bg/85 text-fg backdrop-blur-xs flex items-center gap-1 border border-line">
+                    <Clock className="w-3 h-3 text-fg-muted" />
                     {video.duration}
                   </span>
 
                   {/* Category Pill in Top Right */}
-                  <span className="absolute top-2 right-2 px-2 py-0.5 rounded font-mono text-[9px] font-bold bg-black/80 text-[#d4af37] border border-[#d4af37]/30">
+                  <span className="absolute top-2 right-2 px-2 py-0.5 rounded font-mono text-xs font-bold bg-bg/80 text-fg-muted border border-line-strong">
                     {video.category}
                   </span>
                 </div>
 
                 {/* Video Info */}
                 <div className="p-4 space-y-2">
-                  <div className="flex items-start justify-between gap-2 font-mono text-[10px] text-slate-400">
-                    <span className="text-[#d4af37]">{video.channelName}</span>
+                  <div className="flex items-start justify-between gap-2 font-mono text-xs text-fg-muted">
+                    <span className="text-fg-muted">{video.channelName}</span>
                     <span>{video.views}</span>
                   </div>
 
                   <h3
                     onClick={() => onSelectVideo(video)}
-                    className="font-serif-tattva text-base font-normal text-white line-clamp-2 cursor-pointer group-hover:text-[#d4af37] transition leading-snug"
+                    className="font-display text-base font-normal text-fg line-clamp-2 cursor-pointer transition leading-snug"
                   >
                     {video.title}
                   </h3>
 
-                  <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed font-sans">
+                  <p className="text-xs text-fg-muted line-clamp-2 leading-relaxed font-sans">
                     {video.description}
                   </p>
 
@@ -196,7 +196,7 @@ export const EngineeringVideosView: React.FC<EngineeringVideosViewProps> = ({
                     {video.keyConcepts.slice(0, 3).map((tag, idx) => (
                       <span
                         key={idx}
-                        className="text-[9px] px-2 py-0.5 rounded bg-white/5 text-slate-400 border border-white/10"
+                        className="text-xs px-2 py-0.5 rounded bg-surface-2/5 text-fg-muted border border-line"
                       >
                         #{tag}
                       </span>
@@ -206,13 +206,13 @@ export const EngineeringVideosView: React.FC<EngineeringVideosViewProps> = ({
               </div>
 
               {/* Card Footer Actions */}
-              <div className="px-4 py-3 border-t border-white/10 bg-[#12100e] flex items-center justify-between gap-2">
+              <div className="px-4 py-3 border-t border-line bg-surface-1 flex items-center justify-between gap-2">
                 <button
                   type="button"
                   onClick={() => onSelectVideo(video)}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-300 hover:text-white cursor-pointer"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-fg-body hover:text-fg cursor-pointer"
                 >
-                  <Play className="w-3.5 h-3.5 fill-current text-[#d4af37]" />
+                  <Play className="w-3.5 h-3.5 fill-current text-fg-muted" />
                   <span>Watch Lecture</span>
                 </button>
 
@@ -238,7 +238,7 @@ export const EngineeringVideosView: React.FC<EngineeringVideosViewProps> = ({
                       onOpenSourceInStudio(matchedSourceId);
                     }
                   }}
-                  className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-bold bg-[#d4af37] text-[#12100e] hover:bg-[#e5c158] shadow-sm cursor-pointer transition"
+                  className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-bold bg-surface-2 border border-line-strong text-fg hover:bg-surface-3 shadow-sm cursor-pointer transition"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
                   <span>Work Studio</span>

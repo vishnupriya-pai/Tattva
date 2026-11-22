@@ -15,6 +15,7 @@ import { Panel } from '../shared/Panel';
 import { NodeDetailPanel } from './NodeDetailPanel';
 import { NodeDetailModal } from './NodeDetailModal';
 import { ShareGraphModal } from '../knowledge-graph/ShareGraphModal';
+import { useResearchModeAttribute } from '../../lib/useResearchModeAttribute';
 
 function sanitizeNodeExplanation(question: string, exp: string): string {
   if (!exp) return `Technical synthesis answering: "${question}".`;
@@ -68,6 +69,7 @@ export function Workspace({
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(initialNodes[0]?.id ?? null);
   const [modalNodeId, setModalNodeId] = useState<string | null>(null);
   const [researchMode, setResearchMode] = useState(false);
+  useResearchModeAttribute(researchMode);
   const [stamina, setStamina] = useState<StaminaState>(initialStamina);
   const [graphStatus, setGraphStatus] = useState<GraphStatus>('ready');
   const [pendingMessage, setPendingMessage] = useState<string | null>(null);
@@ -148,8 +150,8 @@ export function Workspace({
   }
 
   return (
-    <div data-research-mode={researchMode} className={`grid h-full w-full min-h-0 grid-cols-1 grid-rows-2 text-white transition-colors lg:grid-cols-2 lg:grid-rows-1 ${researchMode ? 'bg-[#11100b]' : 'bg-[#0b0b0d]'}`}>
-      <div className="min-h-0 border-b border-white/10 lg:border-b-0">
+    <div data-research-mode={researchMode} className={`grid h-full w-full min-h-0 grid-cols-1 grid-rows-2 text-fg transition-colors lg:grid-cols-2 lg:grid-rows-1 ${researchMode ? 'bg-surface-1' : 'bg-bg'}`}>
+      <div className="min-h-0 border-b border-line lg:border-b-0">
         <SourceViewer source={source} body={sourceBody} activeNode={selectedNode} />
       </div>
 
@@ -162,17 +164,17 @@ export function Workspace({
                 <button
                   type="button"
                   onClick={onOpenInquirySwitcher}
-                  className="flex items-center gap-1.5 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 px-2.5 py-1 text-xs text-slate-200 hover:border-[#c59a67]/70 hover:text-white transition cursor-pointer shadow-sm"
+                  className="flex items-center gap-1.5 rounded-lg border border-line-strong bg-surface-2/5 hover:bg-surface-2/10 px-2.5 py-1 text-xs text-fg hover:border-line-strong hover:text-fg transition cursor-pointer shadow-sm"
                   title="Switch active knowledge inquiry"
                 >
-                  <GitBranch className="w-3.5 h-3.5 text-[#c59a67]" />
-                  <span className="max-w-[150px] truncate font-medium text-slate-100">
+                  <GitBranch className="w-3.5 h-3.5 text-fg-muted" />
+                  <span className="max-w-[150px] truncate font-medium text-fg">
                     {inquiries.find((i) => i.id === inquiryId)?.title || source.title || 'Inquiry'}
                   </span>
-                  <span className="rounded bg-[#c59a67]/20 border border-[#c59a67]/30 px-1.5 py-0.2 text-[10px] font-mono text-[#c59a67] font-bold">
+                  <span className="rounded bg-surface-3 px-1.5 py-0.2 text-xs font-mono text-fg-muted font-bold">
                     {inquiries.length}
                   </span>
-                  <ChevronDown className="w-3 h-3 text-slate-400" />
+                  <ChevronDown className="w-3 h-3 text-fg-muted" />
                 </button>
               )}
               <StaminaDisplay stamina={stamina} researchMode={researchMode} />
@@ -181,29 +183,29 @@ export function Workspace({
                 type="button"
                 onClick={() => setIsShareModalOpen(true)}
                 title="Share this Knowledge Graph"
-                className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 font-mono text-[11px] text-slate-300 hover:border-[#d4af37]/60 hover:text-white transition cursor-pointer"
+                className="flex items-center gap-1.5 rounded-lg border border-line bg-surface-2/5 px-2.5 py-1 font-mono text-xs text-fg-body hover:border-line-strong hover:text-fg transition cursor-pointer"
               >
-                <Share2 className="w-3.5 h-3.5 text-[#d4af37]" />
+                <Share2 className="w-3.5 h-3.5 text-fg-muted" />
                 <span>Share</span>
               </button>
               {onDeleteInquiry && (
                 confirmDelete ? (
-                  <div className="flex items-center gap-1.5 rounded-lg border border-rose-500/30 bg-rose-950/70 px-2 py-1 text-xs">
-                    <span className="text-rose-200 text-[10px] font-mono">Delete?</span>
+                  <div className="flex items-center gap-1.5 rounded-lg border border-trap/30 bg-trap-wash px-2 py-1 text-xs">
+                    <span className="text-trap text-xs font-mono">Delete?</span>
                     <button
                       type="button"
                       onClick={() => {
                         setConfirmDelete(false);
                         onDeleteInquiry();
                       }}
-                      className="rounded bg-rose-600 px-1.5 py-0.5 text-[10px] font-bold text-white hover:bg-rose-500 cursor-pointer"
+                      className="rounded bg-trap px-1.5 py-0.5 text-xs font-bold text-fg hover:bg-trap/80 cursor-pointer"
                     >
                       Yes
                     </button>
                     <button
                       type="button"
                       onClick={() => setConfirmDelete(false)}
-                      className="rounded px-1.5 py-0.5 text-[10px] text-slate-400 hover:text-white cursor-pointer"
+                      className="rounded px-1.5 py-0.5 text-xs text-fg-muted hover:text-fg cursor-pointer"
                     >
                       Cancel
                     </button>
@@ -213,7 +215,7 @@ export function Workspace({
                     type="button"
                     title="Delete this inquiry"
                     onClick={() => setConfirmDelete(true)}
-                    className="rounded-lg p-1 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition cursor-pointer"
+                    className="rounded-lg p-1 text-fg-muted hover:text-trap hover:bg-trap-wash transition cursor-pointer"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
@@ -246,9 +248,9 @@ export function Workspace({
 
         {/* Selected Node Details & Follow-ups (Scrollable Area) */}
         {selectedNode && (
-          <div className="max-h-[28vh] shrink-0 space-y-3 overflow-y-auto border-t border-white/10 bg-[#0e1014]/60 px-5 py-3">
+          <div className="max-h-[28vh] shrink-0 space-y-3 overflow-y-auto border-t border-line bg-surface-1/60 px-5 py-3">
             {pendingMessage && (
-              <div className="flex items-center justify-between gap-3 rounded-sm border border-amber-400/25 bg-amber-400/5 px-3 py-2 text-xs text-amber-200">
+              <div className="flex items-center justify-between gap-3 rounded-sm border border-trap/30 bg-trap-wash px-3 py-2 text-xs text-trap">
                 <p>{pendingMessage}</p>
                 {retryPayload && (
                   <button
@@ -272,9 +274,9 @@ export function Workspace({
         )}
 
         {/* Dedicated Elevated Composer & Voice Assistant Bar (Always Visible at Bottom) */}
-        <div className="shrink-0 border-t border-white/10 bg-[#101216] px-5 py-3.5 shadow-2xl z-20">
+        <div className="shrink-0 border-t border-line bg-surface-1 px-5 py-3.5 shadow-2xl z-20">
           {selectedNode && (
-            <p className="mb-1.5 text-[10px] uppercase tracking-wider font-mono text-slate-400">
+            <p className="mb-1.5 text-xs font-mono text-fg-muted">
               {selectedNode.isTrap && !selectedNode.trapResolvedAt
                 ? 'Custom questions (blocked by trap)'
                 : 'Ask your own question or use voice assistant'}

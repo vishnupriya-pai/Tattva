@@ -2,7 +2,7 @@
 
 This is the persistent project guide for Claude Code. It contains the rules and stable decisions that should apply across tasks. The product PRD defines **what Tattva should do**; this file defines **how we should build it**. Keep this file concise. Put detailed, changing specifications in `docs/` and link them here rather than duplicating them.
 
-**Architecture documentation:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) (system design, security model, Golden Path), [docs/DATABASE.md](docs/DATABASE.md) (schema, RLS, ledger strategy), [docs/API_CONTRACTS.md](docs/API_CONTRACTS.md) (endpoint surface), [docs/decisions/](docs/decisions/) (ADR-001 system architecture, ADR-002 authentication, ADR-003 database model). The original architecture task brief is preserved at `docs/architecture-brief.md`.
+**Architecture documentation:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) (system design, security model, Golden Path), [docs/DATABASE.md](docs/DATABASE.md) (schema, RLS, ledger strategy), [docs/API_CONTRACTS.md](docs/API_CONTRACTS.md) (endpoint surface), [docs/decisions/](docs/decisions/) (ADR-001 system architecture, ADR-002 authentication, ADR-003 database model, ADR-004 permanent accounts). The original architecture task brief is preserved at `docs/architecture-brief.md`.
 
 **Setup documentation:** [docs/development-setup.md](docs/development-setup.md) (install, env, running dev, Supabase CLI workflow, troubleshooting), [docs/environment-variables.md](docs/environment-variables.md) (full env var reference).
 
@@ -104,7 +104,7 @@ Use `/api/v1` for product API routes. A basic health check may be `/health`.
 - Award eligibility, points, multipliers, and ledger writes are trusted backend operations.
 - Apply least privilege and RLS wherever browser-accessible Supabase resources exist.
 - **Do not expose a Supabase secret/service-role key to the browser.**
-- Authentication and demo-user strategy: **[ADR-002](docs/decisions/ADR-002-authentication.md) is implemented** — Supabase anonymous sign-in (canonical identity = Supabase Auth user UUID, backend-verified token on every request, documented upgrade path and limitations).
+- Authentication and demo-user strategy: **[ADR-002](docs/decisions/ADR-002-authentication.md) is implemented** — Supabase anonymous sign-in (canonical identity = Supabase Auth user UUID, backend-verified token on every request, documented upgrade path and limitations). [ADR-004](docs/decisions/ADR-004-permanent-accounts.md) adds Google/email accounts linked onto the same anonymous user ID.
 
 ### Sarvam integration
 

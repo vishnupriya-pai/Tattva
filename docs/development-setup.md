@@ -58,7 +58,7 @@ Open `http://localhost:3000` — the landing page shows a live connectivity indi
 
 ## 4. Supabase (local database)
 
-The product schema (`docs/DATABASE.md`, ADR-003) is migrated under `supabase/migrations/`. Anonymous sign-in (ADR-002) is enabled in `supabase/config.toml` for local dev.
+The product schema (`docs/DATABASE.md`, ADR-003) is migrated under `supabase/migrations/`. Anonymous sign-in (ADR-002) is enabled in `supabase/config.toml` for local dev. Google/email account linking (ADR-004) needs manual linking enabled (already set locally) and, for hosted projects, the dashboard steps in [ADR-004](decisions/ADR-004-permanent-accounts.md#required-supabase-project-configuration-manual-per-environment).
 
 **Start the local Supabase stack** (requires Docker Desktop running):
 ```bash

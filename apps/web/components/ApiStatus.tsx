@@ -32,10 +32,10 @@ export function ApiStatus() {
   }, []);
 
   const dotColor =
-    status.kind === 'ok' ? 'bg-emerald-500' : status.kind === 'error' ? 'bg-red-500' : 'bg-amber-500';
+    status.kind === 'ok' ? 'bg-explored' : status.kind === 'error' ? 'bg-trap' : 'bg-fg-muted';
 
   return (
-    <div className="flex items-center gap-2 rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm">
+    <div className="flex items-center gap-2 rounded-md border border-line bg-surface-2/5 px-3 py-2 text-sm">
       <span className={`h-2 w-2 rounded-full ${dotColor}`} aria-hidden />
       {status.kind === 'loading' && <span>Checking API connection…</span>}
       {status.kind === 'ok' && <span>Connected to {status.service}</span>}
