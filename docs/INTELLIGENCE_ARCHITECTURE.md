@@ -62,6 +62,8 @@ The generation lifecycle matches the directive's diagram exactly: root question 
 
 This bounds total context growth to **O(1) per additional depth level** past 2 (a fixed-size rolling summary plus two fully-verbatim recent nodes), rather than O(depth). The exact truncation character cap and whether the rolling summary is itself persisted or recomputed on demand are **Pending** — small, reversible tuning decisions to make once real token costs are measured against `sarvam-105b`'s 128K window (comfortably sufficient either way, per [SARVAM_MODEL_EVALUATION.md](SARVAM_MODEL_EVALUATION.md) §2).
 
+**Implemented (feat/graph-context):** [`apps/api/src/services/graphContext.ts`](../apps/api/src/services/graphContext.ts) builds this context as a pure function over the inquiry's nodes that `createQuestionNodeForUser` already loads, so it adds no DB reads and no Sarvam calls. Decisions taken: verbatim cap **1,500 chars** for the parent and grandparent; the older-ancestry digest is **recomputed** each time, deterministic and not LLM-generated, capped at 1,000 chars (200 chars per question and per answer); no new column. Cyclic or foreign ancestry fails with `409 invalid_graph_ancestry`. The block goes into the Sarvam user message under `LEARNING PATH`.
+
 ```
 Context sent to Sarvam for node N (depth ≥ 3):
 

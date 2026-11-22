@@ -10,6 +10,7 @@ import {
 } from '../repositories/inquiryRepository';
 import { createNodeAtomically, listNodesForInquiry, readStamina, resolveTrapForUser } from '../repositories/questionNodeRepository';
 import { generateQuestionNode, evaluateTrap } from '../integrations/sarvam/client';
+import { buildGraphContext, formatGraphContext, GraphContextError } from './graphContext';
 
 /**
  * Inquiry service (docs/ARCHITECTURE.md §3). Owns ownership checks and
@@ -111,7 +112,18 @@ All follow-up questions must be strictly, uniquely focused on ${topicHeading}.`;
   }
 
   if (!isSupabaseAdminConfigured()) throw new ApiError(503, 'admin_database_not_configured', 'Set SUPABASE_SERVICE_ROLE_KEY in apps/api/.env.local to enable graph writes.');
+
+  let learningPath: string;
+  try {
+    const selectedFollowUpText = input.selectedFollowUpId ? input.question : null;
+    learningPath = formatGraphContext(buildGraphContext(existingNodes, input.parentNodeId), selectedFollowUpText);
+  } catch (error) {
+    if (error instanceof GraphContextError) throw new ApiError(409, 'invalid_graph_ancestry', 'This branch has inconsistent ancestry and cannot be extended.');
+    throw error;
+  }
+
   const generated = await generateQuestionNode({
+    learningPath,
     question: input.question,
     sourceTitle: effectiveTitle,
     sourceDescription: effectiveDescription,

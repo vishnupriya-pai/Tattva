@@ -13,7 +13,7 @@ export const createQuestionNodeRequestSchema = z.object({
 export type CreateQuestionNodeRequest = z.infer<typeof createQuestionNodeRequestSchema>;
 
 export const generatedQuestionNodeSchema = z.object({
-  explanation: z.string().trim().min(1),
+  explanation: z.string().trim().min(1).max(4000),
   followUps: z.array(z.string().trim().min(1)).length(3),
   isTrap: z.boolean(),
   trapMetadata: z.object({
