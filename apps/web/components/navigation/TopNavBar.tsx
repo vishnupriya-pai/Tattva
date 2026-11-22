@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ChevronDown,
   LogIn,
   LogOut,
+  Menu,
   Moon,
   ShieldCheck,
   PlusCircle,
@@ -13,8 +14,10 @@ import {
 } from 'lucide-react';
 import type { Inquiry } from '@tattva/contracts';
 import { useTheme } from '../../context/ThemeContext';
+import { NAV_ITEMS, type TopNavView } from './navItems';
+import { MOBILE_NAV_DRAWER_ID, MobileNavDrawer } from './MobileNavDrawer';
 
-export type TopNavView = 'home' | 'workspace' | 'workspaces' | 'masterclass' | 'community' | 'create' | 'profile';
+export type { TopNavView };
 
 export interface TopNavBarProps {
   activeView?: TopNavView;
@@ -52,6 +55,21 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const accountMenuRef = useRef<HTMLDivElement | null>(null);
   const { theme, toggleTheme } = useTheme();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const hamburgerRef = useRef<HTMLButtonElement | null>(null);
+
+  const closeDrawer = useCallback(() => {
+    setDrawerOpen(false);
+    hamburgerRef.current?.focus();
+  }, []);
+
+  const selectView = (view: TopNavView) => {
+    if (view === 'workspace' && activeView === 'workspace' && onOpenInquirySwitcher) {
+      onOpenInquirySwitcher();
+    } else {
+      onChangeView(view);
+    }
+  };
 
   useEffect(() => {
     if (!accountMenuOpen) return;
@@ -90,7 +108,18 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
     <header className="shrink-0 border-b border-line bg-bg z-40 text-fg">
       <div className="h-16 px-4 sm:px-6 flex items-center justify-between gap-4">
         {/* Left: TATTVA Brand with Sacred Geometry Wireframe Icon */}
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            ref={hamburgerRef}
+            type="button"
+            onClick={() => setDrawerOpen(true)}
+            aria-label="Open navigation"
+            aria-expanded={drawerOpen}
+            aria-controls={MOBILE_NAV_DRAWER_ID}
+            className="-ml-2 flex h-11 w-11 items-center justify-center rounded-lg text-fg-body hover:text-fg hover:bg-surface-2 transition cursor-pointer lg:hidden"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
           <button
             type="button"
             onClick={() => onChangeView('home')}
@@ -121,91 +150,43 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
           </button>
         </div>
 
-        {/* Center: Navigation Tabs */}
-        <nav className="flex items-center gap-5 sm:gap-6 text-xs font-medium">
-          <button
-            type="button"
-            onClick={() => onChangeView('home')}
-            className={`py-1 transition relative cursor-pointer ${
-              activeView === 'home'
-                ? 'text-fg font-semibold after:absolute after:bottom-[-20px] after:left-0 after:right-0 after:h-[2px] after:bg-gold'
-                : 'text-fg-muted hover:text-fg'
-            }`}
-          >
-            Overview
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              if (activeView === 'workspace' && onOpenInquirySwitcher) {
-                onOpenInquirySwitcher();
-              } else {
-                onChangeView('workspace');
-              }
-            }}
-            className={`py-1 transition relative cursor-pointer flex items-center gap-1.5 ${
-              activeView === 'workspace'
-                ? 'text-fg font-semibold after:absolute after:bottom-[-20px] after:left-0 after:right-0 after:h-[2px] after:bg-gold'
-                : 'text-fg-muted hover:text-fg'
-            }`}
-          >
-            <span>Knowledge Graph</span>
-            {inquiries.length > 0 && (
-              <span
-                onClick={(e) => {
-                  if (onOpenInquirySwitcher) {
-                    e.stopPropagation();
-                    onOpenInquirySwitcher();
-                  }
-                }}
-                title="Switch inquiry"
-                className="rounded-full bg-surface-2 border border-line-strong px-1.5 py-0.2 text-xs font-mono text-fg-muted font-semibold hover:bg-surface-3 transition"
+        <nav className="hidden lg:flex items-center gap-6 text-xs font-medium">
+          {NAV_ITEMS.map(({ view, label }) => {
+            const active = activeView === view;
+            return (
+              <button
+                key={view}
+                type="button"
+                aria-current={active ? 'page' : undefined}
+                onClick={() => selectView(view)}
+                className={`py-1 transition relative cursor-pointer flex items-center gap-1.5 ${
+                  active
+                    ? 'text-fg font-semibold after:absolute after:bottom-[-20px] after:left-0 after:right-0 after:h-[2px] after:bg-gold'
+                    : 'text-fg-muted hover:text-fg'
+                }`}
               >
-                {inquiries.length}
-              </span>
-            )}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onChangeView('workspaces')}
-            className={`py-1 transition relative cursor-pointer ${
-              activeView === 'workspaces'
-                ? 'text-fg font-semibold after:absolute after:bottom-[-20px] after:left-0 after:right-0 after:h-[2px] after:bg-gold'
-                : 'text-fg-muted hover:text-fg'
-            }`}
-          >
-            Workspaces
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onChangeView('masterclass')}
-            className={`py-1 transition relative cursor-pointer ${
-              activeView === 'masterclass'
-                ? 'text-fg font-semibold after:absolute after:bottom-[-20px] after:left-0 after:right-0 after:h-[2px] after:bg-gold'
-                : 'text-fg-muted hover:text-fg'
-            }`}
-          >
-            Masterclass
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onChangeView('community')}
-            className={`py-1 transition relative cursor-pointer ${
-              activeView === 'community'
-                ? 'text-fg font-semibold after:absolute after:bottom-[-20px] after:left-0 after:right-0 after:h-[2px] after:bg-gold'
-                : 'text-fg-muted hover:text-fg'
-            }`}
-          >
-            Community
-          </button>
+                <span>{label}</span>
+                {view === 'workspace' && inquiries.length > 0 && (
+                  <span
+                    onClick={(e) => {
+                      if (onOpenInquirySwitcher) {
+                        e.stopPropagation();
+                        onOpenInquirySwitcher();
+                      }
+                    }}
+                    title="Switch inquiry"
+                    className="rounded-full bg-surface-2 border border-line-strong px-1.5 py-0.2 text-xs font-mono text-fg-muted font-semibold hover:bg-surface-3 transition"
+                  >
+                    {inquiries.length}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </nav>
 
         {/* Right: Cognitive Stamina, Theme Toggle & User Capsule */}
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           {/* Cognitive Stamina Badge */}
           <div
             title="Cognitive Stamina: Verified intellectual activity"
@@ -219,7 +200,7 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
               Stamina
             </span>
             {streakDays > 1 && (
-              <span className="text-xs font-mono text-fg-muted border-l border-line pl-2 ml-0.5">
+              <span className="hidden sm:inline text-xs font-mono text-fg-muted border-l border-line pl-2 ml-0.5">
                 {streakDays}-day streak
               </span>
             )}
@@ -231,7 +212,7 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
             onClick={toggleTheme}
             aria-label={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
             title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-line bg-surface-1 hover:border-line-strong transition cursor-pointer text-fg-body hover:text-fg"
+            className="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-line bg-surface-1 hover:border-line-strong transition cursor-pointer text-fg-body hover:text-fg"
           >
             {theme === 'dark' ? (
               <>
@@ -371,6 +352,26 @@ export const TopNavBar: React.FC<TopNavBarProps> = ({
           </div>
         </div>
       </div>
+      <MobileNavDrawer
+        open={drawerOpen}
+        onClose={closeDrawer}
+        activeView={activeView}
+        onSelectView={(view) => {
+          setDrawerOpen(false);
+          selectView(view);
+        }}
+        inquiryCount={inquiries.length}
+        theme={theme}
+        onToggleTheme={toggleTheme}
+        onSaveProgress={
+          user.isAnonymous && onOpenAccount
+            ? () => {
+                setDrawerOpen(false);
+                onOpenAccount('save');
+              }
+            : undefined
+        }
+      />
     </header>
   );
 };
