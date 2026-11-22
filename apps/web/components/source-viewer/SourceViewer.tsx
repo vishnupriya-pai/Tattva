@@ -1,137 +1,25 @@
-'use client';
-
-import React, { useState } from 'react';
-import type { LearningSource, QuestionNode } from '../../lib/workspace-types';
+import type { LearningSource } from '../../lib/workspace-types';
 import { Panel } from '../shared/Panel';
 import { Badge } from '../shared/Badge';
 import { SourceMetadata } from './SourceMetadata';
-import { BookOpen, Network, HelpCircle, Sparkles } from 'lucide-react';
 
-export function SourceViewer({
-  source,
-  body,
-  activeNode,
-}: {
-  source: LearningSource;
-  body: string;
-  activeNode?: QuestionNode | null;
-}) {
-  const [activeTab, setActiveTab] = useState<'source' | 'node'>('source');
-
+export function SourceViewer({ source, body }: { source: LearningSource; body: string }) {
   return (
-    <Panel
-      title="Source material"
-      className="h-full border-r border-line"
-      actions={
-        activeNode ? (
-          <div className="inline-flex rounded-lg border border-line bg-surface-1 p-0.5 font-mono text-xs">
-            <button
-              type="button"
-              onClick={() => setActiveTab('source')}
-              className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 transition cursor-pointer ${
-                activeTab === 'source'
-                  ? 'bg-surface-2 font-semibold text-fg shadow'
-                  : 'text-fg-muted hover:text-fg'
-              }`}
-            >
-              <BookOpen className="w-3 h-3" />
-              <span>Source Material</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('node')}
-              className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 transition cursor-pointer ${
-                activeTab === 'node'
-                  ? 'bg-surface-2 font-semibold text-fg shadow'
-                  : 'text-fg-muted hover:text-fg'
-              }`}
-            >
-              <Network className="w-3 h-3" />
-              <span>Graph Node</span>
-            </button>
-          </div>
-        ) : undefined
-      }
-    >
+    <Panel title="Source material" className="h-full lg:border-r lg:border-line">
       <div className="flex h-full flex-col overflow-y-auto">
-        {activeTab === 'source' || !activeNode ? (
-          <>
-            <div className="shrink-0 space-y-3 border-b border-line px-6 py-5">
-              <div className="flex items-center gap-2">
-                <Badge tone="accent">{source.sourceType}</Badge>
-                <span className="font-mono text-xs text-fg-muted ">
-                  Verified Curated Ingestion
-                </span>
-              </div>
-              <h1 className="text-xl font-semibold leading-snug text-fg font-display">{source.title}</h1>
-              <p className="text-sm leading-relaxed text-fg/60 font-sans">{source.description}</p>
-              <SourceMetadata source={source} />
-            </div>
-
-            <article className="flex-1 whitespace-pre-line px-6 py-6 text-[15px] leading-7 text-fg/80 font-sans">
-              {body}
-            </article>
-          </>
-        ) : (
-          <div className="flex-1 space-y-6 px-6 py-5">
-            <div className="space-y-3 border-b border-line pb-5">
-              <div className="flex items-center gap-2">
-                <span className="font-mono text-xs font-bold text-fg-muted bg-surface-2 px-2.5 py-0.5 rounded-[6px]">
-                  {activeNode.parentNodeId ? 'Branching Node' : 'Root Question'}
-                </span>
-                {activeNode.researchMode && (
-                  <span className="font-mono text-xs text-gold bg-gold/10 px-2 py-0.5 rounded border border-gold/30">
-                    Research Mode Active
-                  </span>
-                )}
-                {activeNode.isTrap && (
-                  <span className="font-mono text-xs text-trap bg-trap-wash px-2 py-0.5 rounded border border-trap/30">
-                    {activeNode.trapResolvedAt ? 'Trap Resolved' : 'Adversarial Trap'}
-                  </span>
-                )}
-              </div>
-
-              <div className="space-y-1">
-                <span className="font-mono text-xs text-fg-muted">
-                  Inquiry Formulation
-                </span>
-                <h2 className="text-lg font-semibold text-fg leading-relaxed">
-                  {activeNode.userQuestion}
-                </h2>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 font-mono text-xs text-fg-muted">
-                <Sparkles className="w-3.5 h-3.5 text-fg-muted" />
-                <span>Sarvam AI Socratic Synthesis</span>
-              </div>
-              <div className="rounded-xl border border-line bg-surface-1 p-4 text-sm leading-relaxed text-fg-body">
-                {activeNode.aiExplanation}
-              </div>
-            </div>
-
-            {activeNode.followUps && activeNode.followUps.length > 0 && (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 font-mono text-xs text-fg-muted">
-                  <HelpCircle className="w-3.5 h-3.5 text-fg-muted" />
-                  <span>Probing Concept Follow-ups</span>
-                </div>
-                <div className="space-y-2">
-                  {activeNode.followUps.map((fu, idx) => (
-                    <div
-                      key={fu.id}
-                      className="rounded-lg border border-line bg-surface-1/60 px-3.5 py-2.5 text-xs text-fg-body flex items-start gap-2.5"
-                    >
-                      <span className="font-mono text-fg-muted font-bold shrink-0">{idx + 1}.</span>
-                      <span className="leading-relaxed">{fu.questionText}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+        <div className="shrink-0 space-y-3 border-b border-line px-6 py-5">
+          <div className="flex items-center gap-2">
+            <Badge tone="accent">{source.sourceType}</Badge>
+            <span className="font-mono text-xs text-fg-muted ">Verified Curated Ingestion</span>
           </div>
-        )}
+          <h1 className="text-xl font-semibold leading-snug text-fg font-display">{source.title}</h1>
+          <p className="text-sm leading-relaxed text-fg/60 font-sans">{source.description}</p>
+          <SourceMetadata source={source} />
+        </div>
+
+        <article className="flex-1 whitespace-pre-line px-6 py-6 text-[15px] leading-7 text-fg/80 font-sans">
+          {body}
+        </article>
       </div>
     </Panel>
   );
