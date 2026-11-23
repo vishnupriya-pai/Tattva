@@ -118,7 +118,7 @@ Every Sarvam-calling route (`POST /inquiries/:id/nodes`, `POST /question-nodes/:
 
 1. **Per-IP burst** (`middleware/rateLimit.ts`, before auth): 30 requests/minute per client IP across these routes. `trust proxy` is set to one hop so `req.ip` is the real client.
 2. **Per-user burst** (after auth): questions 5/min anonymous, 8/min signed in; trap answers 8/12; voice 3/5. In-memory, per API instance.
-3. **Daily quotas** (`middleware/aiQuota.ts`, Postgres `consume_ai_quota`, migration `20261123120000_ai_usage_quota.sql`): one unit is consumed before the AI call and refunded if the request ends in an error. Days reset at midnight India time.
+3. **Daily quotas** (`middleware/aiQuota.ts`, Postgres `consume_ai_quota`, migration `20261123130000_ai_usage_quota.sql`): one unit is consumed before the AI call and refunded if the request ends in an error. Days reset at midnight India time.
 
 | Kind | Anonymous / day | Signed in / day |
 |---|---|---|
