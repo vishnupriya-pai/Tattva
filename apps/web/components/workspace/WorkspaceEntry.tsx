@@ -16,7 +16,7 @@ import { consumeAuthRedirectError, getAccountIdentity, signOut } from '../../lib
 import { AccountModal, type AccountModalMode } from '../auth/AccountModal';
 import { ensureDemoInquiry } from '../../lib/workspace-bootstrap';
 import type { LearningSource, QuestionNode, StaminaState } from '../../lib/workspace-types';
-import type { Inquiry } from '@tattva/contracts';
+import type { ConceptGraph, Inquiry } from '@tattva/contracts';
 import { TopNavBar, type TopNavView } from '../navigation/TopNavBar';
 import { ProfileView } from '../profile/ProfileView';
 import { HomeDashboardView } from '../dashboard/HomeDashboardView';
@@ -62,6 +62,7 @@ export function WorkspaceEntry() {
     source: LearningSource;
     content: string;
     nodes: QuestionNode[];
+    conceptGraph: ConceptGraph;
   } | null>(null);
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -378,6 +379,7 @@ Every scalable software architecture and algorithm is governed by fundamental in
         },
         content: sourceBody,
         nodes,
+        conceptGraph: detail.data.conceptGraph,
       });
       setStamina(wallet.data);
       setActiveInquiryId(inquiryId);
@@ -647,6 +649,7 @@ Every scalable software architecture and algorithm is governed by fundamental in
             source={workspaceData.source}
             sourceBody={workspaceData.content}
             initialNodes={workspaceData.nodes}
+            initialConceptGraph={workspaceData.conceptGraph}
             initialStamina={stamina}
             inquiryId={activeInquiryId}
             onDeleteInquiry={() => void handleDeleteInquiry(activeInquiryId)}

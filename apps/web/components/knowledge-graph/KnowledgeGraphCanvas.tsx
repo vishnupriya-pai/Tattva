@@ -9,6 +9,8 @@ import {
   type Edge,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import type { ConceptGraph } from '@tattva/contracts';
+import { analyzeKnowledgeGraph } from '@tattva/graph-analytics';
 import type { QuestionNode } from '../../lib/workspace-types';
 import { computeConceptGraphLayout } from '../../lib/concept-graph-layout';
 import { computeNodeMetrics } from '../../lib/graph-metrics';
@@ -25,8 +27,11 @@ const nodeTypes = {
 
 export type GraphStatus = 'ready' | 'loading' | 'error';
 
+const EMPTY_CONCEPT_GRAPH: ConceptGraph = { concepts: [], nodeConcepts: [], conceptEdges: [] };
+
 export function KnowledgeGraphCanvas({
   nodes,
+  conceptGraph = EMPTY_CONCEPT_GRAPH,
   selectedNodeId,
   onSelectNode,
   status,
@@ -34,6 +39,8 @@ export function KnowledgeGraphCanvas({
   onRetry,
 }: {
   nodes: QuestionNode[];
+  /** Concept layer from the API; analytics degrade gracefully when it is empty. */
+  conceptGraph?: ConceptGraph;
   selectedNodeId: string | null;
   onSelectNode: (nodeId: string) => void;
   status: GraphStatus;
@@ -41,11 +48,9 @@ export function KnowledgeGraphCanvas({
   onRetry?: () => void;
 }) {
   const { theme } = useTheme();
-  const { positions } = useMemo(
-    () => computeConceptGraphLayout(nodes),
-    [nodes]
-  );
-  const metricsMap = useMemo(() => computeNodeMetrics(nodes), [nodes]);
+  const analysis = useMemo(() => analyzeKnowledgeGraph(nodes, conceptGraph), [nodes, conceptGraph]);
+  const metricsMap = useMemo(() => computeNodeMetrics(nodes, analysis), [nodes, analysis]);
+  const { positions } = useMemo(() => computeConceptGraphLayout(nodes, metricsMap), [nodes, metricsMap]);
 
   const flowNodes: CircularConceptNodeType[] = useMemo(
     () =>
@@ -60,7 +65,7 @@ export function KnowledgeGraphCanvas({
             depth: 0,
             childCount: 0,
             exploredFollowUpsCount: 0,
-            relevanceScore: 1,
+            mastery: null,
             conceptTag: 'Concept',
           },
         },
@@ -77,11 +82,11 @@ export function KnowledgeGraphCanvas({
         .map((node) => {
           const metrics = metricsMap.get(node.id);
           const isDeep = metrics?.tier === 'deep';
-          const isDivergent = metrics?.tier === 'divergent';
+          const isUnresolvedTrap = node.isTrap && !node.trapResolvedAt;
 
           let strokeColor = 'var(--color-line-strong)';
-          if (isDeep) strokeColor = 'rgba(16, 185, 129, 0.6)'; // emerald
-          else if (isDivergent) strokeColor = 'rgba(244, 63, 94, 0.5)'; // rose
+          if (isUnresolvedTrap) strokeColor = 'rgba(244, 63, 94, 0.5)'; // rose: misconception only
+          else if (isDeep) strokeColor = 'rgba(16, 185, 129, 0.6)'; // emerald
 
           return {
             id: `${node.parentNodeId}-${node.id}`,
@@ -134,8 +139,8 @@ export function KnowledgeGraphCanvas({
           maskColor={theme === 'dark' ? 'rgb(18 17 15 / 0.7)' : 'rgb(246 242 234 / 0.7)'}
           nodeColor={(n) => {
             const data = n.data as CircularConceptNodeType['data'];
+            if (data?.node.isTrap && !data.node.trapResolvedAt) return 'var(--color-trap)';
             if (data?.metrics?.tier === 'deep') return 'var(--color-explored)';
-            if (data?.metrics?.tier === 'divergent') return 'var(--color-trap)';
             if (data?.metrics?.tier === 'moderate') return 'var(--color-fg-muted)';
             return 'var(--color-line-strong)';
           }}
@@ -154,11 +159,11 @@ export function KnowledgeGraphCanvas({
           </span>
           <span className="flex items-center gap-1.5 text-explored">
             <span className="h-2 w-2 rounded-full bg-explored" />
-            Green (Deep Dive)
+            Green (High Mastery)
           </span>
           <span className="flex items-center gap-1.5 text-trap">
             <span className="h-2 w-2 rounded-full bg-trap" />
-            Red (Divergent / Trap)
+            Red (Unresolved Trap)
           </span>
         </div>
       </ReactFlow>

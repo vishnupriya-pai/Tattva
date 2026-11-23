@@ -1,5 +1,5 @@
 import type { QuestionNode } from './workspace-types';
-import { computeNodeMetrics } from './graph-metrics';
+import type { NodeMetrics } from './graph-metrics';
 
 const HORIZONTAL_GAP = 220;
 const VERTICAL_GAP = 160;
@@ -23,7 +23,10 @@ export interface GraphLayoutResult {
  * Computes an organized, collision-free cluster & tree layout for circular nodes.
  * Groups branches into conceptual subgraphs and bounds their visual hull.
  */
-export function computeConceptGraphLayout(nodes: QuestionNode[]): GraphLayoutResult {
+export function computeConceptGraphLayout(
+  nodes: QuestionNode[],
+  metrics: ReadonlyMap<string, NodeMetrics> = new Map(),
+): GraphLayoutResult {
   if (nodes.length === 0) {
     return { positions: {}, clusters: [] };
   }
@@ -90,7 +93,6 @@ export function computeConceptGraphLayout(nodes: QuestionNode[]): GraphLayoutRes
   }
 
   // Compute conceptual cluster bounding hulls
-  const metrics = computeNodeMetrics(nodes);
   const clusters: ClusterHull[] = [];
 
   // Group subgraphs by primary branch (each immediate child of root represents a branch cluster)

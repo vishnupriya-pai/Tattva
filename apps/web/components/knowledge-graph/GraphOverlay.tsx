@@ -2,12 +2,14 @@
 
 import { useEffect } from 'react';
 import { X } from 'lucide-react';
+import type { ConceptGraph } from '@tattva/contracts';
 import type { QuestionNode } from '../../lib/workspace-types';
 import { KnowledgeGraphCanvas, type GraphStatus } from './KnowledgeGraphCanvas';
 
 export function GraphOverlay({
   onClose,
   nodes,
+  conceptGraph,
   selectedNodeId,
   onSelectNode,
   status,
@@ -16,6 +18,7 @@ export function GraphOverlay({
 }: {
   onClose: () => void;
   nodes: QuestionNode[];
+  conceptGraph?: ConceptGraph;
   selectedNodeId: string | null;
   onSelectNode: (nodeId: string) => void;
   status: GraphStatus;
@@ -51,6 +54,7 @@ export function GraphOverlay({
       <div className="min-h-0 flex-1">
         <KnowledgeGraphCanvas
           nodes={nodes}
+          conceptGraph={conceptGraph}
           selectedNodeId={selectedNodeId}
           onSelectNode={(nodeId) => {
             onSelectNode(nodeId);

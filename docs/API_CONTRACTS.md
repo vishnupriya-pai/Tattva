@@ -116,14 +116,35 @@ Related: [ARCHITECTURE.md](ARCHITECTURE.md) · [DATABASE.md](DATABASE.md) · [im
           ],
           "createdAt": "iso8601"
         }
-      ]
+      ],
+      "conceptGraph": {
+        "concepts": [{ "id": "uuid", "name": "Bump Pointer", "slug": "bump-pointer", "aliases": [], "createdAt": "iso8601" }],
+        "nodeConcepts": [{ "questionNodeId": "uuid", "conceptId": "uuid", "role": "defines", "weight": 0.9 }],
+        "conceptEdges": [
+          {
+            "id": "uuid", "sourceConceptId": "uuid", "targetConceptId": "uuid", "relationType": "TRADES_OFF_WITH",
+            "justification": "string", "origin": "model", "confidence": 0.6, "sourceNodeId": "uuid | null", "createdAt": "iso8601"
+          }
+        ]
+      }
     }
   }
   ```
+  `conceptGraph` (schema: `packages/contracts/src/concept-graph.ts`, tables: [DATABASE.md §3.6–3.8](DATABASE.md)) is always present. It holds empty arrays until the concept migration is applied or nodes are backfilled.
 - **Validation:** `inquiryId` must be a valid UUID.
 - **Expected errors:** `400` (malformed UUID), `404` (inquiry doesn't exist **or** doesn't belong to the caller — identical response to avoid leaking existence), `401`.
 - **Database interactions:** `SELECT` on `inquiries` (ownership check), `question_nodes`, `follow_up_questions`, `learning_sources`, scoped by the request-scoped (RLS-protected) client.
 - **Authorization:** `inquiries.user_id` must equal the caller's verified user ID.
+
+## 3b. `POST /api/v1/inquiries/:inquiryId/connections/discover`
+
+**Purpose:** Finds verified "hidden connections" in the inquiry's concept graph. Adamic–Adar link prediction (`@tattva/graph-analytics`) proposes up to 5 unlinked concept pairs that share neighbours. One Sarvam call verifies them. Accepted pairs are stored as `concept_edges` with `origin: "predicted"`. Rejected pairs are remembered and never proposed again.
+
+- **Auth:** required. **Request:** `inquiryId` path param, no body.
+- **Response `200`:** `{ "data": { "added": ConceptEdge[], "rejectedCount": 0, "consideredCount": 0 } }`. Schema: `discoverConnectionsResponseSchema`. `consideredCount: 0` means the graph had no new candidates, and Sarvam was not called.
+- **Expected errors:** `404` (not the caller's inquiry), `503` (`admin_database_not_configured`, or `concept_graph_not_migrated` before the migration), `502`/`429` (Sarvam).
+- **Database interactions:** reads `concepts`, `node_concepts`, `concept_edges` and `concept_link_rejections`. Writes go through `add_predicted_concept_edges` (service role).
+- **Cost:** at most one Sarvam call per request. A malformed verifier response counts as rejecting every pair, so it can never add edges.
 
 ## 4. `POST /api/v1/inquiries/:inquiryId/nodes`
 

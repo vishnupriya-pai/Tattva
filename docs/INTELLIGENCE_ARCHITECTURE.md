@@ -218,3 +218,34 @@ Concrete mechanisms (expanded from §1's one-call-per-node baseline):
 3. Implement the Sarvam adapter modules (§8) behind the existing `apps/api/src/integrations/sarvam/` placeholder, bottom-up: `client.ts` → `prompts.ts` → `validateResponse.ts`.
 4. Implement `POST /api/v1/inquiries/:inquiryId/nodes` (already specified in [API_CONTRACTS.md §4](API_CONTRACTS.md#4-post-apiv1inquiriesinquiryidnodes), currently "Pending implementation") wired to the new orchestration service.
 5. Only then: trap-attempts endpoint, Stamina wiring for the new event types, frontend integration — each as its own reviewed milestone, per `CLAUDE.md` §8's "work only on the requested scope."
+
+## 12. Concept extraction for the Knowledge Map (Implemented, Phase 1)
+
+The node-generation call also returns `concepts` and `relations`, so there is still **one Sarvam call per node** (§9). There is also no embeddings dependency (§4): entity resolution happens at generation time by giving the model the inquiry's existing names.
+
+- **Inputs added to the user message:** `<known_concepts>` is up to 40 canonical names, most connected first, which the model reuses instead of inventing synonyms. `<other_branches>` is up to 8 questions outside the new node's ancestry, newest first, each with its top concepts, capped at 1,200 chars (`buildCrossBranchDigest` in `services/graphContext.ts`). §3 deliberately sends only the ancestry for the *answer*. This digest exists so the model can propose *relations* to other branches, which is where unexpected cross-branch edges come from. The system prompt tells the model not to answer these questions.
+- **Output handling:** `parseConceptExtraction` (`services/conceptExtraction.ts`) validates each item on its own. It keeps at most 6 concepts and 6 relations, accepts only known relation types, drops relations whose endpoints are neither in this node nor already in the inquiry, and drops self-loops. A malformed or missing block yields an empty extraction. It never triggers a retry or fails the node.
+- **Entity resolution:** slug normalisation (case, punctuation, plural last word) plus the alias table (`resolveAgainstKnown`). The database upserts by `(inquiry_id, slug)`.
+- **Token budget:** `max_tokens` is raised from 1,600 to 2,000 for node generation to fit the concept block.
+- **Backfill:** `npx tsx scripts/backfill-concepts.ts <inquiryId> [--dry-run]` (from `apps/api`) runs an extraction-only prompt, one call per node that has no concepts yet.
+- **Not yet done:** linking concepts to source sections. This waits on the source-chunking decision in §10.
+
+## 13. Knowledge Map analytics (Implemented, Phase 2)
+
+`packages/graph-analytics` is pure, deterministic and dependency-free, and is shared by web and API. Its entry point is `analyzeKnowledgeGraph(nodes, conceptGraph)`. It builds a weighted concept network: co-mention weight is the smaller of the two mention weights, and typed edges add their confidence. On that network it computes:
+
+| Signal | Algorithm | Used for |
+|---|---|---|
+| Related questions across branches | Bipartite projection with IDF-weighted shared concepts; ancestor pairs excluded | Cross-branch "related" edges |
+| Hidden connections | Adamic–Adar link prediction, then the Sarvam verifier (§API 3b) | Verified `predicted` edges |
+| Topic clusters | Louvain modularity (deterministic visiting order) | Cluster hulls and labels (label = highest-PageRank member) |
+| Keystone concepts | Brandes betweenness, top 3 | Concepts that bridge clusters |
+| Importance | PageRank personalized on the root question's concepts | Node size and ordering |
+| Fragile links | Tarjan bridges and articulation points | Understanding that hangs on one link |
+| Learning order and gaps | Kahn topological order on PREREQUISITE_OF, plus cycle guard | "Studied X but never Y" |
+| Mastery | Trap evidence first (unresolved trap → misconception, survived → mastered). Otherwise capped exposure, with decaying credit passed to prerequisites | Replaces the child-count "Deep Dive" |
+| Frontier and coverage | Unselected follow-ups, with trap-locked ones flagged | Open threads |
+
+`apps/web/lib/graph-metrics.ts` no longer contains topic keywords or regex tags. The node tag is the node's heaviest concept, "deep" means mastery ≥ 0.6 or a survived trap, and red is reserved for unresolved traps. The Phase 3 UI consumes the rest of the analysis.
+
+**Deferred:** semantic distance to the source (G10) needs source-section anchors (§10). Cluster names still come from member concepts, not an extra LLM call.

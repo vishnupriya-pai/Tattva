@@ -11,8 +11,10 @@ import {
   type CreateQuestionNodeResponse,
   trapAttemptRequestSchema,
   type TrapAttemptResponse,
+  type DiscoverConnectionsResponse,
 } from '@tattva/contracts';
 import { ApiError } from '../types/api';
+import { discoverConnectionsForUser } from '../services/connectionDiscoveryService';
 import {
   createInquiryForUser,
   createQuestionNodeForUser,
@@ -69,6 +71,13 @@ export async function postQuestionNode(req: Request, res: Response<CreateQuestio
   const body = createQuestionNodeRequestSchema.parse(req.body);
   const node = await createQuestionNodeForUser(req.auth.accessToken, req.auth.userId, inquiryId, body);
   res.status(201).json({ data: { node, staminaAwarded: null } });
+}
+
+export async function postDiscoverConnections(req: Request, res: Response<DiscoverConnectionsResponse>): Promise<void> {
+  if (!req.auth) throw new ApiError(401, 'missing_token', 'Authentication required');
+  const { inquiryId } = inquiryIdParamsSchema.parse(req.params);
+  const result = await discoverConnectionsForUser(req.auth.accessToken, req.auth.userId, inquiryId);
+  res.status(200).json({ data: result });
 }
 
 export async function postTrapAttempt(req: Request, res: Response<TrapAttemptResponse>): Promise<void> {

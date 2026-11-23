@@ -124,6 +124,26 @@ The append-only Cognitive Stamina ledger (PRD §10). Server-authored only; immut
 **Check constraints:** `final_points = base_points * multiplier` (Proposed — enforceable as a `CHECK`, or computed and trusted at the application layer if rounding semantics make the DB check brittle; recommend the DB check for a hard guarantee), `base_points >= 0`, `multiplier > 0`.
 **No `UPDATE`/`DELETE` grants** for the application's database role on this table beyond `INSERT`/`SELECT` — see §11.
 
+### 3.6–3.8 Concept layer (`concepts`, `node_concepts`, `concept_edges`)
+
+Migration: `supabase/migrations/20261123140000_concept_graph.sql`. `question_nodes` stays the learning-path tree. The concept layer sits on top of it, so the Knowledge Map is a real graph: two questions on different branches that mention the same concept are connected.
+
+| Table | Key columns | Notes |
+|---|---|---|
+| `concepts` | `id`, `inquiry_id → inquiries` (cascade), `name`, `slug`, `aliases text[]`, `community_id` (reserved for Phase 2) | `UNIQUE (inquiry_id, slug)`. The slug is the merge key (`slugifyConcept` in `apps/api/src/services/conceptExtraction.ts`). Differing surface names are kept as aliases. |
+| `node_concepts` | PK `(question_node_id, concept_id)`, `role ∈ {defines, uses, contrasts, misconceives}`, `weight 0–1` | Bipartite question→concept MENTIONS edge. |
+| `concept_edges` | `source_concept_id`, `target_concept_id`, `relation_type ∈ {PREREQUISITE_OF, CAUSES, TRADES_OFF_WITH, CONTRASTS_WITH, GENERALIZES, INSTANCE_OF}`, `justification`, `origin ∈ {model, predicted, learner}`, `confidence`, `source_node_id` | `UNIQUE (inquiry_id, source, target, type)`, no self-loops. Starts at confidence 0.6. Each re-assertion from a *different* node adds 0.1, capped at 1. |
+
+**RLS:** owner-only `SELECT` via `inquiries.user_id = auth.uid()`. There are no browser write policies. All writes go through `attach_node_concepts(p_user_id, p_node_id, p_concepts, p_relations)`, which is `security definer` and executable only by `service_role`. It verifies node ownership, upserts concepts by slug, links them to the node, and stores relations only when both endpoints exist in the same inquiry.
+
+**Failure posture:** concepts are attached *after* `create_question_node` commits, on a best-effort basis. If that fails, the node is left without concepts, and `apps/api/scripts/backfill-concepts.ts` can repair it. A learner's answer is never lost. If the tables are missing, reads return an empty concept graph.
+
+### 3.9 `concept_link_rejections` (Phase 2)
+
+Same migration. Primary key `(inquiry_id, concept_a, concept_b)` with `concept_a < concept_b`, cascading from inquiries and concepts. It remembers concept pairs the link verifier rejected, so link prediction skips them next time. Owner-only `SELECT`. Writes happen only through `add_predicted_concept_edges(p_user_id, p_inquiry_id, p_edges, p_rejected)`, which is `security definer` and limited to `service_role`. That function checks that every concept belongs to the inquiry, stores accepted edges with `origin = 'predicted'` and confidence capped at 0.7 (below model-asserted edges that have been corroborated), and records rejections.
+
+**PREREQUISITE_OF stays acyclic.** Both write paths drop a prerequisite edge that would close a cycle before calling the RPCs (`dropCyclicPrerequisites`, `planPredictedEdges` → `acceptAcyclic`).
+
 ## 4. `trap_metadata` shape (Proposed, pending UX finalization)
 
 ```json

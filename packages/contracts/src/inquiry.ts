@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { learningSourceSummarySchema } from './learning-source';
 import { questionNodeSchema } from './question-node';
+import { conceptGraphSchema } from './concept-graph';
 
 /**
  * Contracts for the inquiry endpoints (docs/API_CONTRACTS.md §2, §3, and the
@@ -41,6 +42,8 @@ export const inquiryDetailSchema = z.object({
   id: z.string().uuid(),
   learningSource: learningSourceSummarySchema,
   nodes: z.array(questionNodeSchema),
+  /** Concept layer; empty until the concept-graph migration is applied or nodes are backfilled. */
+  conceptGraph: conceptGraphSchema.default({ concepts: [], nodeConcepts: [], conceptEdges: [] }),
 });
 
 export type InquiryDetail = z.infer<typeof inquiryDetailSchema>;
