@@ -51,6 +51,7 @@ export function Workspace({
   const [stamina, setStamina] = useState<StaminaState>(initialStamina);
   const [graphStatus, setGraphStatus] = useState<GraphStatus>('ready');
   const [pendingMessage, setPendingMessage] = useState<string | null>(null);
+  const [questionsLeft, setQuestionsLeft] = useState<number | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isGraphOpen, setIsGraphOpen] = useState(false);
@@ -89,6 +90,7 @@ export function Workspace({
     try {
       const result = await createQuestionNode(inquiryId, { question, parentNodeId, selectedFollowUpId, researchMode });
       setRetryPayload(null);
+      if (result.data.quota) setQuestionsLeft(result.data.quota.remaining);
       await refreshWorkspace();
       const createdId = result.data.node.id;
       setSelectedNodeId(createdId);
@@ -350,6 +352,12 @@ export function Workspace({
             {selectedNode && graphStatus !== 'loading' && (
               <p className="mb-1.5 font-mono text-xs text-fg-muted">
                 {isTrapBlocking ? 'Custom questions (blocked by trap)' : 'Ask your own question or use voice assistant'}
+                {questionsLeft !== null && questionsLeft <= 5 && (
+                  <span className="text-gold">
+                    {' · '}
+                    {questionsLeft === 0 ? 'No questions left today' : `${questionsLeft} question${questionsLeft === 1 ? '' : 's'} left today`}
+                  </span>
+                )}
               </p>
             )}
             <InquiryComposer

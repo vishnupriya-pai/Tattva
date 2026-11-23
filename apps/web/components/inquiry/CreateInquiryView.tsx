@@ -236,7 +236,7 @@ export const CreateInquiryView: React.FC<CreateInquiryViewProps> = ({
               }
             }}
             disabled={isSubmitting}
-            maxLength={6000}
+            maxLength={3000}
             placeholder="Paste your technical passage or formulate the foundational mechanism / trade-off you want to explore..."
             className="w-full rounded-xl border border-line-strong bg-surface-1 px-4 py-3 text-sm text-fg placeholder-fg-faint focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold disabled:opacity-50 font-sans leading-relaxed"
           />

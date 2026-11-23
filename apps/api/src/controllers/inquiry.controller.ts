@@ -15,6 +15,7 @@ import {
 } from '@tattva/contracts';
 import { ApiError } from '../types/api';
 import { discoverConnectionsForUser } from '../services/connectionDiscoveryService';
+import type { AiQuotaState } from '../middleware/aiQuota';
 import {
   createInquiryForUser,
   createQuestionNodeForUser,
@@ -70,7 +71,8 @@ export async function postQuestionNode(req: Request, res: Response<CreateQuestio
   const { inquiryId } = inquiryIdParamsSchema.parse(req.params);
   const body = createQuestionNodeRequestSchema.parse(req.body);
   const node = await createQuestionNodeForUser(req.auth.accessToken, req.auth.userId, inquiryId, body);
-  res.status(201).json({ data: { node, staminaAwarded: null } });
+  const quota = res.locals.aiQuota as AiQuotaState | undefined;
+  res.status(201).json({ data: { node, staminaAwarded: null, ...(quota ? { quota } : {}) } });
 }
 
 export async function postDiscoverConnections(req: Request, res: Response<DiscoverConnectionsResponse>): Promise<void> {

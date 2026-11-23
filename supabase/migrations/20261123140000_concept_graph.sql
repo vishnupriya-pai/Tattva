@@ -242,3 +242,9 @@ $$;
 
 revoke all on function public.add_predicted_concept_edges(uuid, uuid, jsonb, jsonb) from public, anon, authenticated;
 grant execute on function public.add_predicted_concept_edges(uuid, uuid, jsonb, jsonb) to service_role;
+
+-- Connection discovery calls Sarvam, so it gets its own daily quota kind
+-- (ai_usage comes from 20261123130000_ai_usage_quota.sql).
+alter table public.ai_usage drop constraint if exists ai_usage_kind_check;
+alter table public.ai_usage add constraint ai_usage_kind_check
+  check (kind in ('question', 'trap', 'voice', 'discover'));
