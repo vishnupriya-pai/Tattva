@@ -25,6 +25,9 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().default(4000),
   CORS_ORIGIN: z.string().default('http://localhost:3000'),
+  // Hard ceiling on Sarvam-calling requests per India-time day, across all users
+  // (docs/ARCHITECTURE.md §6.8). Lower it to cap spend.
+  AI_DAILY_GLOBAL_LIMIT: z.coerce.number().int().positive().default(5000),
 
   // Optional integrations (Pending real values — do not fabricate credentials).
   SARVAM_API_KEY: z.string().min(1).optional(),

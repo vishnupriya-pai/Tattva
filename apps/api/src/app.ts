@@ -8,6 +8,8 @@ import { rootRouter } from './routes';
 
 export function createApp(): Express {
   const app = express();
+  // One proxy hop (the hosting platform's load balancer) so req.ip is the real client IP for rate limiting.
+  app.set('trust proxy', 1);
 
   const allowedOrigins = env.CORS_ORIGIN.split(',').map((o) => o.trim());
 
@@ -29,7 +31,9 @@ export function createApp(): Express {
       credentials: true,
     }),
   );
-  app.use(express.json({ limit: '15mb' }));
+  // Only voice uploads carry audio; everything else is small JSON.
+  app.use('/api/v1/voice', express.json({ limit: '15mb' }));
+  app.use(express.json({ limit: '100kb' }));
 
   app.use(rootRouter);
 
