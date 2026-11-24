@@ -67,6 +67,7 @@ describe('question-node prompts', () => {
     for (const prompt of [buildQuestionNodeSystemPrompt(false), buildQuestionNodeSystemPrompt(true), buildConceptExtractionSystemPrompt()]) {
       expect(prompt).toContain('"concepts"');
       expect(prompt).toContain('PREREQUISITE_OF');
+      expect(prompt).toMatch(/Prerequisites matter most/);
     }
   });
 

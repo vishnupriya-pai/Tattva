@@ -225,7 +225,8 @@ The node-generation call also returns `concepts` and `relations`, so there is st
 
 - **Inputs added to the user message:** `<known_concepts>` is up to 40 canonical names, most connected first, which the model reuses instead of inventing synonyms. `<other_branches>` is up to 8 questions outside the new node's ancestry, newest first, each with its top concepts, capped at 1,200 chars (`buildCrossBranchDigest` in `services/graphContext.ts`). §3 deliberately sends only the ancestry for the *answer*. This digest exists so the model can propose *relations* to other branches, which is where unexpected cross-branch edges come from. The system prompt tells the model not to answer these questions.
 - **Output handling:** `parseConceptExtraction` (`services/conceptExtraction.ts`) validates each item on its own. It keeps at most 6 concepts and 6 relations, accepts only known relation types, drops relations whose endpoints are neither in this node nor already in the inquiry, and drops self-loops. A malformed or missing block yields an empty extraction. It never triggers a retry or fails the node.
-- **Entity resolution:** slug normalisation (case, punctuation, plural last word) plus the alias table (`resolveAgainstKnown`). The database upserts by `(inquiry_id, slug)`.
+- **Entity resolution** (`resolveAgainstKnown`), tried in order: slug normalisation (case, punctuation, plural last word) and the alias table; acronyms in either direction, also inside phrases ("TLB" ↔ "Translation Lookaside Buffer", "TLB Miss" ↔ "Translation Lookaside Buffer Miss"), accepted only when the expansion equals an existing slug exactly; near-identical word sets (Jaccard ≥ 0.8 after stop-words and singularising, so "Correlation of Object Lifetimes" ↔ "Object Lifetime Correlation"). A merged variant keeps its own wording as `name`, so the upsert by `(inquiry_id, slug)` records it as an alias. `scripts/merge-duplicate-concepts.ts <inquiryId> [--apply]` (dry run by default) applies the same rules to concepts stored before this existed.
+- **Prerequisites:** the prompt asks for a `PREREQUISITE_OF` relation whenever one concept must be understood before another (from = the foundation). Before this rule, a 16-question test inquiry produced 0 prerequisite edges out of 29, which left learning order, gaps and mastery propagation (§13) with nothing to work on. `scripts/prompt-eval.ts` has a case that checks for one.
 - **Token budget:** `max_tokens` is raised from 1,600 to 2,000 for node generation to fit the concept block.
 - **Backfill:** `npx tsx scripts/backfill-concepts.ts <inquiryId> [--dry-run]` (from `apps/api`) runs an extraction-only prompt, one call per node that has no concepts yet.
 - **Not yet done:** linking concepts to source sections. This waits on the source-chunking decision in §10.
@@ -247,5 +248,15 @@ The node-generation call also returns `concepts` and `relations`, so there is st
 | Frontier and coverage | Unselected follow-ups, with trap-locked ones flagged | Open threads |
 
 `apps/web/lib/graph-metrics.ts` no longer contains topic keywords or regex tags. The node tag is the node's heaviest concept, "deep" means mastery ≥ 0.6 or a survived trap, and red is reserved for unresolved traps. The Phase 3 UI consumes the rest of the analysis.
+
+## 14. Concept Map view (Implemented, Phase 3)
+
+The Knowledge Map overlay (`components/knowledge-graph/GraphOverlay.tsx`) opens on **Concepts**; **History** is the original question tree. The workspace itself is unchanged.
+
+- **Vertices** are concepts. Size grows with the number of questions mentioning the concept, fill shows mastery status, the ring colour is the Louvain cluster, and a star marks keystones. **Edges** are typed `concept_edges`, drawn border to border (`FloatingRelationEdge`). Symmetric relations (trade-offs, contrasts) have no arrow, `predicted` edges are dashed, and edges below confidence 0.5 are hidden. Above 40 concepts, concepts mentioned only once and with no relations are hidden.
+- **Layout** (`apps/web/lib/concept-map.ts`): deterministic Fruchterman–Reingold over the same co-mention + relation network the analytics use, seeded by cluster on a wide ellipse, then an overlap-removal pass. No new dependency. 28 concepts lay out in about 25 ms in the browser.
+- **Concept panel**: mastery, relations with their justifications, and the questions that explain the concept. Clicking a question opens it in the workspace.
+- **What next** strip: prerequisite gaps, open follow-ups, and **Find connections** (the existing verified link-prediction endpoint, API §3b).
+- React Flow note: custom handles must stay in their stock positions and sizes. Moving them to the bubble centre with zero min-size froze React Flow 12.
 
 **Deferred:** semantic distance to the source (G10) needs source-section anchors (§10). Cluster names still come from member concepts, not an extra LLM call.

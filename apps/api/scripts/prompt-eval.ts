@@ -13,7 +13,14 @@ const SOURCE = {
     'Arena allocation trades flexibility for throughput. Instead of tracking individual block metadata the way a general-purpose allocator does, an arena allocator reserves one contiguous region up front and satisfies allocations by advancing a single bump pointer. Freeing is batched: the whole arena is reset or released at once, never per-object. This works well when object lifetimes are correlated: a request handler, a single frame of a game loop, a parser pass over one file. It works badly when lifetimes are independent, because there is no way to reclaim an individual object without invalidating every allocation made after it. A free-list allocator reintroduces per-object reclamation by threading freed blocks into a list, at the cost of metadata and fragmentation.',
 };
 
-const CASES: Array<{ name: string; question: string; researchMode?: boolean; learningPath?: string; expectTrap?: boolean }> = [
+const CASES: Array<{
+  name: string;
+  question: string;
+  researchMode?: boolean;
+  learningPath?: string;
+  expectTrap?: boolean;
+  expectPrerequisite?: boolean;
+}> = [
   { name: 'root, on source', question: 'Why does arena allocation batch frees instead of freeing per object?' },
   { name: '"where exactly"', question: 'where exactly are these arena allocators used in the kernel under the hood..' },
   { name: 'off-source', question: 'How does TCP slow start work?' },
@@ -29,6 +36,11 @@ const CASES: Array<{ name: string; question: string; researchMode?: boolean; lea
       'PARENT QUESTION: Why are arenas a good fit for request handlers?\nPARENT ANSWER (summary): Every allocation made while handling one request dies when the request ends, so the whole arena can be reset at once.',
   },
   { name: 'research mode', question: 'Why does arena allocation batch frees instead of freeing per object?', researchMode: true },
+  {
+    name: 'prerequisite relation',
+    question: 'Why does the Linux slab allocator sit on top of the buddy allocator instead of replacing it?',
+    expectPrerequisite: true,
+  },
 ];
 
 function check(label: string, ok: boolean, detail = ''): string {
@@ -50,6 +62,15 @@ async function main() {
         check('follow-ups under 25 words', out.followUps.every((f) => countWords(f) <= 25), out.followUps.map(countWords).join('/')),
         check('follow-ups plain text', out.followUps.every((f) => !/[*`]/.test(f))),
         c.expectTrap === undefined ? check('trap only when warranted (info)', true, `isTrap=${out.isTrap}`) : check('raises a trap', out.isTrap === c.expectTrap),
+        ...(c.expectPrerequisite
+          ? [
+              check(
+                'emits a PREREQUISITE_OF relation',
+                out.conceptExtraction.relations.some((r) => r.type === 'PREREQUISITE_OF'),
+                out.conceptExtraction.relations.map((r) => `${r.fromSlug} ${r.type} ${r.toSlug}`).join('; '),
+              ),
+            ]
+          : []),
         ...(c.researchMode
           ? [
               check('has "Questions to work through"', out.explanation.includes('Questions to work through')),

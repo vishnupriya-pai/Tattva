@@ -117,6 +117,8 @@ export function KnowledgeGraphCanvas({
   return (
     <div className="relative h-full w-full">
       <ReactFlow
+        // Remount when questions are added so fitView re-centres the map.
+        key={nodes.length}
         nodes={flowNodes}
         edges={flowEdges}
         nodeTypes={nodeTypes}
