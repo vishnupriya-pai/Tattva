@@ -9,6 +9,7 @@ Full reference for every environment variable used by Tattva. See `docs/developm
 | `NODE_ENV` | Required (defaults to `development`) | Server-only | `development` \| `test` \| `production` |
 | `PORT` | Required (defaults to `4000`) | Server-only | Port the Express server listens on |
 | `CORS_ORIGIN` | Required (defaults to `http://localhost:3000`) | Server-only | The exact frontend origin allowed to call the API. Never widened to `*` (`CLAUDE.md` §5) |
+| `AI_DAILY_GLOBAL_LIMIT` | Optional (defaults to `5000`) | Server-only | Max Sarvam-calling requests per India-time day across all users; the hard daily cost cap ([ARCHITECTURE.md §6.8](ARCHITECTURE.md)) |
 | `SARVAM_API_KEY` | Optional for basic API; required for AI generation and trap evaluation | **Secret** | Sarvam AI credential. Read only by the backend adapter. Never exposed to the browser |
 | `SUPABASE_URL` | Optional for `/health`; required for any `/api/v1/*` route to work | Server-only | Supabase project URL, same value as the frontend's `NEXT_PUBLIC_SUPABASE_URL` |
 | `SUPABASE_ANON_KEY` | Optional for `/health`; required for any `/api/v1/*` route to work | Server-only (mirrors a public value) | Used to construct the request-scoped, RLS-protected Supabase client and to verify caller access tokens (auth middleware) |

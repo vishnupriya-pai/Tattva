@@ -14,7 +14,7 @@ import { useAudioRecorder } from '../../lib/useAudioRecorder';
 import { sendVoiceQuery } from '../../lib/api-client';
 import { VoiceAssistantModal, type VoiceExchange } from '../voice/VoiceAssistantModal';
 
-const MAX_LENGTH = 6000;
+const MAX_LENGTH = 1000;
 
 export function InquiryComposer({
   disabled,
@@ -218,6 +218,7 @@ export function InquiryComposer({
             type="text"
             value={value}
             onChange={(e) => setValue(e.target.value)}
+            maxLength={MAX_LENGTH}
             disabled={disabled || loading}
             placeholder={placeholder ?? 'Ask ChatGPT or speak in any language…'}
             className="flex-1 bg-transparent px-3 py-1 text-sm text-fg placeholder:text-fg-faint outline-none min-w-0"

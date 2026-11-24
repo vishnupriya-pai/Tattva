@@ -19,6 +19,8 @@ const { processVoiceQueryForUser } = vi.hoisted(() => ({
 
 vi.mock('../integrations/supabase/client', () => ({
   isSupabaseConfigured,
+  // Quota checks are skipped outside production when the admin client is absent.
+  isSupabaseAdminConfigured: vi.fn().mockReturnValue(false),
   createAnonVerificationClient,
   createRequestScopedClient: vi.fn(),
 }));

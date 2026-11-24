@@ -1,7 +1,9 @@
 import { z } from 'zod';
 
 export const createQuestionNodeRequestSchema = z.object({
-  question: z.string().trim().min(1).max(6000),
+  // The new-inquiry form accepts a pasted passage (3000); the in-workspace
+  // composer caps follow-up questions at 1000 in the UI.
+  question: z.string().trim().min(1).max(3000),
   parentNodeId: z.string().uuid().nullable().optional(),
   selectedFollowUpId: z.string().uuid().nullable().optional(),
   researchMode: z.boolean().default(false),
@@ -79,7 +81,12 @@ export const questionNodeSchema = z.object({
 });
 
 export const createQuestionNodeResponseSchema = z.object({
-  data: z.object({ node: questionNodeSchema, staminaAwarded: z.null() }),
+  data: z.object({
+    node: questionNodeSchema,
+    staminaAwarded: z.null(),
+    /** Today's remaining question quota for this user, when quotas are active. */
+    quota: z.object({ remaining: z.number().int().min(0), limit: z.number().int().positive() }).optional(),
+  }),
 });
 
 export type TrapMetadata = z.infer<typeof trapMetadataSchema>;
