@@ -9,8 +9,22 @@ import {
   listInquiriesForUser,
 } from '../repositories/inquiryRepository';
 import { createNodeAtomically, listNodesForInquiry, readStamina, resolveTrapForUser } from '../repositories/questionNodeRepository';
+import { attachNodeConcepts, listConceptGraphForInquiry } from '../repositories/conceptGraphRepository';
 import { generateQuestionNode, evaluateTrap } from '../integrations/sarvam/client';
-import { buildGraphContext, formatGraphContext, GraphContextError } from './graphContext';
+import { buildConceptPromptContext, buildGraphContext, formatGraphContext, GraphContextError } from './graphContext';
+import { dropCyclicPrerequisites, resolveAgainstKnown } from './conceptExtraction';
+import { logger } from '../utils/logger';
+import type { ConceptGraph } from '@tattva/contracts';
+
+/** The concept layer is enrichment: failing to read it must not block a learner's question. */
+async function loadConceptGraphSafely(client: Parameters<typeof listConceptGraphForInquiry>[0], inquiryId: string): Promise<ConceptGraph> {
+  try {
+    return await listConceptGraphForInquiry(client, inquiryId);
+  } catch (error) {
+    logger.warn({ err: error, inquiryId }, 'Concept graph unavailable; continuing without it');
+    return { concepts: [], nodeConcepts: [], conceptEdges: [] };
+  }
+}
 
 /**
  * Inquiry service (docs/ARCHITECTURE.md §3). Owns ownership checks and
@@ -122,21 +136,40 @@ All follow-up questions must be strictly, uniquely focused on ${topicHeading}.`;
     throw error;
   }
 
+  const conceptGraph = await loadConceptGraphSafely(client, inquiryId);
+  const conceptContext = buildConceptPromptContext(existingNodes, input.parentNodeId, conceptGraph);
+
   const generated = await generateQuestionNode({
     learningPath,
+    otherBranches: conceptContext.otherBranches,
+    knownConcepts: conceptContext.knownConcepts,
+    knownConceptSlugs: conceptContext.knownConceptSlugs,
     question: input.question,
     sourceTitle: effectiveTitle,
     sourceDescription: effectiveDescription,
     sourceContent: effectiveContent,
     researchMode: input.researchMode,
   });
-  const id = await createNodeAtomically(getAdminClient(), {
+  const admin = getAdminClient();
+  const id = await createNodeAtomically(admin, {
     userId, inquiryId, parentNodeId: input.parentNodeId ?? null,
     selectedFollowUpId: input.selectedFollowUpId ?? null, question: input.question,
     explanation: generated.explanation, researchMode: input.researchMode,
     isTrap: generated.isTrap, trapMetadata: generated.trapMetadata,
     followUps: generated.followUps,
   });
+
+  // Best effort, after the node commits: a concept-write failure leaves a node
+  // without concepts (recoverable via scripts/backfill-concepts.ts), never a lost answer.
+  try {
+    const extraction = dropCyclicPrerequisites(
+      resolveAgainstKnown(generated.conceptExtraction, conceptContext.known),
+      conceptGraph,
+    );
+    await attachNodeConcepts(admin, { userId, nodeId: id, extraction });
+  } catch (error) {
+    logger.warn({ err: error, nodeId: id }, 'Failed to attach concepts to node');
+  }
   const created = (await listNodesForInquiry(client, inquiryId)).find((node) => node.id === id);
   if (!created) throw new Error('Created node could not be reloaded');
   return created;
@@ -188,14 +221,17 @@ export async function getInquiryDetail(
     throw new ApiError(404, 'learning_source_not_found', 'The inquiry references a missing learning source');
   }
 
-  const nodes = await listNodesForInquiry(client, inquiry.id);
+  const [nodes, conceptGraph] = await Promise.all([
+    listNodesForInquiry(client, inquiry.id),
+    loadConceptGraphSafely(client, inquiry.id),
+  ]);
 
   const tailoredSource = {
     ...source,
     title: inquiry.title || source.title,
   };
 
-  return { id: inquiry.id, learningSource: tailoredSource, nodes };
+  return { id: inquiry.id, learningSource: tailoredSource, nodes, conceptGraph };
 }
 
 export async function deleteInquiryForUser(

@@ -10,6 +10,10 @@ const { listNodesForInquiry, createNodeAtomically } = vi.hoisted(() => ({
   listNodesForInquiry: vi.fn(),
   createNodeAtomically: vi.fn(),
 }));
+const { listConceptGraphForInquiry, attachNodeConcepts } = vi.hoisted(() => ({
+  listConceptGraphForInquiry: vi.fn(),
+  attachNodeConcepts: vi.fn(),
+}));
 const { createRequestScopedClient } = vi.hoisted(() => ({ createRequestScopedClient: vi.fn() }));
 const { generateQuestionNode } = vi.hoisted(() => ({ generateQuestionNode: vi.fn() }));
 
@@ -20,6 +24,7 @@ vi.mock('../repositories/inquiryRepository', () => ({
   listInquiriesForUser,
 }));
 vi.mock('../repositories/questionNodeRepository', () => ({ listNodesForInquiry, createNodeAtomically }));
+vi.mock('../repositories/conceptGraphRepository', () => ({ listConceptGraphForInquiry, attachNodeConcepts }));
 vi.mock('../integrations/supabase/client', () => ({
   createRequestScopedClient,
   getAdminClient: () => ({}),
@@ -37,9 +42,14 @@ const SOURCE = {
   durationMinutes: 38,
 };
 
+const EMPTY_GRAPH = { concepts: [], nodeConcepts: [], conceptEdges: [] };
+const NO_CONCEPTS = { concepts: [], relations: [] };
+
 beforeEach(() => {
   vi.clearAllMocks();
   createRequestScopedClient.mockReturnValue({});
+  listConceptGraphForInquiry.mockResolvedValue(EMPTY_GRAPH);
+  attachNodeConcepts.mockResolvedValue(0);
 });
 
 describe('createInquiryForUser', () => {
@@ -122,7 +132,7 @@ describe('getInquiryDetail', () => {
 
     const detail = await getInquiryDetail('token', 'user-1', 'inq-1');
 
-    expect(detail).toEqual({ id: 'inq-1', learningSource: SOURCE, nodes: [] });
+    expect(detail).toEqual({ id: 'inq-1', learningSource: SOURCE, nodes: [], conceptGraph: EMPTY_GRAPH });
   });
 });
 
@@ -142,7 +152,7 @@ describe('createQuestionNodeForUser learning-path context', () => {
   beforeEach(() => {
     findInquiryByIdForUser.mockResolvedValue({ id: 'inq-1', userId: 'user-1', learningSourceId: SOURCE.id, title: 'Allocators', createdAt: 'now', updatedAt: 'now' });
     findLearningSourceById.mockResolvedValue({ ...SOURCE, description: 'desc', content: 'content' });
-    generateQuestionNode.mockResolvedValue({ explanation: 'e', followUps: ['a', 'b', 'c'], isTrap: false, trapMetadata: null });
+    generateQuestionNode.mockResolvedValue({ explanation: 'e', followUps: ['a', 'b', 'c'], isTrap: false, trapMetadata: null, conceptExtraction: NO_CONCEPTS });
     createNodeAtomically.mockResolvedValue(NEW_ID);
   });
 
@@ -167,5 +177,41 @@ describe('createQuestionNodeForUser learning-path context', () => {
     expect(learningPath).toContain('GRANDPARENT QUESTION: question 1');
     expect(learningPath).toContain('PARENT QUESTION: question 2\nPARENT EXPLANATION: explanation 2');
     expect(learningPath).toContain('SELECTED THIS FOLLOW-UP: Why does it fragment?');
+  });
+
+  it('sends other branches and known concepts, then attaches resolved concepts to the new node', async () => {
+    const C1 = '00000000-0000-4000-8000-0000000000c1';
+    const nodes = [storedNode(ROOT_ID, null), storedNode(CHILD_ID, ROOT_ID)];
+    listNodesForInquiry.mockResolvedValueOnce(nodes).mockResolvedValueOnce([...nodes, storedNode(NEW_ID, ROOT_ID)]);
+    listConceptGraphForInquiry.mockResolvedValue({
+      concepts: [{ id: C1, name: 'Bump Pointer', slug: 'bump-pointer', aliases: ['Bump Allocation'], createdAt: 'now' }],
+      nodeConcepts: [{ questionNodeId: CHILD_ID, conceptId: C1, role: 'defines', weight: 0.9 }],
+      conceptEdges: [],
+    });
+    generateQuestionNode.mockResolvedValue({
+      explanation: 'e', followUps: ['a', 'b', 'c'], isTrap: false, trapMetadata: null,
+      conceptExtraction: { concepts: [{ name: 'Bump Allocation', slug: 'bump-allocation', role: 'uses', weight: 0.5 }], relations: [] },
+    });
+
+    await createQuestionNodeForUser('token', 'user-1', 'inq-1', { question: 'Custom?', parentNodeId: ROOT_ID, researchMode: false });
+
+    const call = generateQuestionNode.mock.calls[0][0] as { otherBranches: string; knownConcepts: string; knownConceptSlugs: string[] };
+    expect(call.otherBranches).toBe('- Q: question 2 [concepts: Bump Pointer]');
+    expect(call.knownConcepts).toBe('Bump Pointer');
+    expect(call.knownConceptSlugs).toContain('bump-allocation');
+    expect(attachNodeConcepts).toHaveBeenCalledWith({}, expect.objectContaining({
+      userId: 'user-1', nodeId: NEW_ID,
+      extraction: { concepts: [expect.objectContaining({ slug: 'bump-pointer' })], relations: [] },
+    }));
+  });
+
+  it('still returns the node when the concept layer fails to read or write', async () => {
+    listNodesForInquiry.mockResolvedValueOnce([]).mockResolvedValueOnce([storedNode(NEW_ID, null)]);
+    listConceptGraphForInquiry.mockRejectedValue(new Error('db down'));
+    attachNodeConcepts.mockRejectedValue(new Error('db down'));
+
+    const created = await createQuestionNodeForUser('token', 'user-1', 'inq-1', { question: 'Root?', researchMode: false });
+
+    expect(created.id).toBe(NEW_ID);
   });
 });

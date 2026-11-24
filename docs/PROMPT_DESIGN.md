@@ -14,6 +14,7 @@ The live question-node prompts are in `apps/api/src/integrations/sarvam/prompts.
 - **Research Mode (§3):** a separate system prompt. No final answer; "Questions to work through", "Where to look" (official documentation preferred, no guessed authors or URLs), and "Evidence vs. inference".
 - **Traps:** at most one; only for a misconception in the question or a well-documented misconception about the concept, never on uncertain claims.
 - **Retries:** malformed JSON or a refusal retries once. An answer over 350 words retries once asking for 250, and a valid long answer is accepted rather than failing. No canned substitute text is ever returned.
+- **Concepts (Knowledge Map):** both modes also return `concepts` (2–5 Title Case noun phrases with role and weight) and `relations` (0–4 typed links with a one-sentence `why`). The user message adds `<other_branches>` and `<known_concepts>` data blocks, and their tags are stripped from data like the others. The learner never sees this output. See [INTELLIGENCE_ARCHITECTURE.md §12](INTELLIGENCE_ARCHITECTURE.md).
 - **Evaluation:** `npx tsx scripts/prompt-eval.ts` (from `apps/api`) runs six fixed cases against live Sarvam and checks the format rules.
 
 This document designs prompt structure and content — it does not implement `integrations/sarvam/prompts.ts`. Wording below is a first draft for the benchmark pass, not final copy.

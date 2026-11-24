@@ -114,10 +114,10 @@ The learner's raw question text is interpolated into the prompt sent to Sarvam. 
 Covered in §4. No Sarvam output reaches the database or the frontend without passing the dedicated Sarvam-response Zod schema (shape, follow-up count, boolean fields). A validation failure is a handled error path (§7), not a silent pass-through with defaults invented by the backend.
 
 ### 6.8 Rate limiting
-Every Sarvam-calling route (`POST /inquiries/:id/nodes`, `POST /question-nodes/:id/trap-attempts`, `POST /voice/ask`) passes three layers, in this order:
+Every Sarvam-calling route (`POST /inquiries/:id/nodes`, `POST /question-nodes/:id/trap-attempts`, `POST /voice/ask`, `POST /inquiries/:id/connections/discover`) passes three layers, in this order:
 
 1. **Per-IP burst** (`middleware/rateLimit.ts`, before auth): 30 requests/minute per client IP across these routes. `trust proxy` is set to one hop so `req.ip` is the real client.
-2. **Per-user burst** (after auth): questions 5/min anonymous, 8/min signed in; trap answers 8/12; voice 3/5. In-memory, per API instance.
+2. **Per-user burst** (after auth): questions 5/min anonymous, 8/min signed in; trap answers 8/12; voice 3/5; connection searches 2/4. In-memory, per API instance.
 3. **Daily quotas** (`middleware/aiQuota.ts`, Postgres `consume_ai_quota`, migration `20261123130000_ai_usage_quota.sql`): one unit is consumed before the AI call and refunded if the request ends in an error. Days reset at midnight India time.
 
 | Kind | Anonymous / day | Signed in / day |
@@ -125,6 +125,7 @@ Every Sarvam-calling route (`POST /inquiries/:id/nodes`, `POST /question-nodes/:
 | Questions | 25 | 75 |
 | Trap answers | 50 | 100 |
 | Voice questions | 10 | 40 |
+| Connection searches (`POST /inquiries/:id/connections/discover`) | 10 | 30 |
 
 A global ceiling, `AI_DAILY_GLOBAL_LIMIT` (default 5000 requests/day, all kinds), blocks everyone once reached; it is the hard cost cap. Responses: `429 rate_limited` (with `Retry-After`), `429 daily_quota_exceeded`, `429 service_at_capacity`. If the quota check itself fails, production returns `503 quota_unavailable` (fail closed); development skips it with a warning. Request bodies are capped at 100 KB except `/voice/ask` (15 MB audio); questions are capped at 3000 characters (1000 in the in-workspace composer).
 

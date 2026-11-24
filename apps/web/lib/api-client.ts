@@ -2,6 +2,8 @@ import {
   createInquiryResponseSchema,
   deleteInquiryResponseSchema,
   getInquiryResponseSchema,
+  discoverConnectionsResponseSchema,
+  type DiscoverConnectionsResponse,
   healthResponseSchema,
   listInquiriesResponseSchema,
   meResponseSchema,
@@ -127,6 +129,13 @@ export function listInquiries(): Promise<ListInquiriesResponse> {
 
 export function getInquiry(inquiryId: string): Promise<GetInquiryResponse> {
   return authedRequest(`/api/v1/inquiries/${inquiryId}`, getInquiryResponseSchema);
+}
+
+/** Verified "hidden connections": one Sarvam call; the Knowledge Map UI wires this in Phase 3. */
+export function discoverConnections(inquiryId: string): Promise<DiscoverConnectionsResponse> {
+  return authedRequest(`/api/v1/inquiries/${inquiryId}/connections/discover`, discoverConnectionsResponseSchema, {
+    method: 'POST',
+  });
 }
 
 export function deleteInquiry(inquiryId: string): Promise<DeleteInquiryResponse> {

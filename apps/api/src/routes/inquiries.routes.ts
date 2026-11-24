@@ -6,6 +6,7 @@ import {
   deleteInquiry,
   getInquiries,
   getInquiry,
+  postDiscoverConnections,
   postInquiry,
   postQuestionNode,
 } from '../controllers/inquiry.controller';
@@ -23,4 +24,12 @@ inquiriesRouter.post(
   limitAiBurst('question', { anonymous: 5, signedIn: 8 }),
   requireAiQuota('question'),
   postQuestionNode,
+);
+inquiriesRouter.post(
+  '/:inquiryId/connections/discover',
+  limitAiRequestsByIp,
+  requireAuth,
+  limitAiBurst('discover', { anonymous: 2, signedIn: 4 }),
+  requireAiQuota('discover'),
+  postDiscoverConnections,
 );

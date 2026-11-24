@@ -49,11 +49,6 @@ export function CircularConceptNode({ data, selected }: NodeProps<CircularConcep
     glowStyles = 'ring-3 ring-fg-muted/20';
     iconColor = 'text-fg-muted';
     tagColor = 'text-fg-muted border-fg-muted/20 bg-surface-2/60';
-  } else if (tier === 'divergent') {
-    circleStyles = 'border-trap/80 bg-trap/60 text-trap';
-    glowStyles = 'ring-3 ring-trap/20';
-    iconColor = 'text-trap';
-    tagColor = 'text-trap border-trap/30 bg-trap/40';
   } else {
     circleStyles = 'border-line-strong/60 bg-surface-1/90 text-fg-muted';
     glowStyles = 'hover:border-line-strong';

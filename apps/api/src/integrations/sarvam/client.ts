@@ -4,17 +4,28 @@ import { ApiError } from '../../types/api';
 import {
   EXPLANATION_RETRY_WORDS,
   EXPLANATION_TARGET_WORDS,
+  buildConceptExtractionSystemPrompt,
+  buildConceptExtractionUserMessage,
+  buildLinkVerificationSystemPrompt,
+  buildLinkVerificationUserMessage,
   buildQuestionNodeSystemPrompt,
   buildQuestionNodeUserMessage,
   countWords,
   isRefusal,
   normalizeExplanation,
 } from './prompts';
+import { EMPTY_EXTRACTION, parseConceptExtraction, type ConceptExtraction } from '../../services/conceptExtraction';
 
 const endpoint = 'https://api.sarvam.ai/v1/chat/completions';
 const model = 'sarvam-105b';
+/** Headroom for the explanation plus the concepts/relations block (~250 tokens). */
+const QUESTION_NODE_MAX_TOKENS = 2000;
 
-async function completion(system: string, user: string): Promise<string> {
+export type GeneratedQuestionNode = ReturnType<typeof generatedQuestionNodeSchema.parse> & {
+  conceptExtraction: ConceptExtraction;
+};
+
+async function completion(system: string, user: string, maxTokens = 1600): Promise<string> {
   if (!env.SARVAM_API_KEY) {
     throw new ApiError(503, 'sarvam_not_configured', 'Set SARVAM_API_KEY in apps/api/.env.local to enable AI features');
   }
@@ -28,7 +39,7 @@ async function completion(system: string, user: string): Promise<string> {
         model,
         reasoning_effort: null,
         temperature: 0.3,
-        max_tokens: 1600,
+        max_tokens: maxTokens,
         response_format: { type: 'json_object' },
         messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
       }),
@@ -58,10 +69,17 @@ export async function generateQuestionNode(input: {
   researchMode: boolean;
   /** Bounded ancestry block from services/graphContext.ts; '' for a root question. */
   learningPath?: string;
-}): Promise<ReturnType<typeof generatedQuestionNodeSchema.parse>> {
+  /** Bounded digest of the inquiry's other branches; '' when there are none. */
+  otherBranches?: string;
+  /** Canonical concept names already in this inquiry, for name reuse. */
+  knownConcepts?: string;
+  /** Slugs (and alias slugs) of existing concepts that relations may point at. */
+  knownConceptSlugs?: Iterable<string>;
+}): Promise<GeneratedQuestionNode> {
   const system = buildQuestionNodeSystemPrompt(input.researchMode);
+  const knownSlugs = [...(input.knownConceptSlugs ?? [])];
   let shortenTo: number | undefined;
-  let lastValid: ReturnType<typeof generatedQuestionNodeSchema.parse> | null = null;
+  let lastValid: GeneratedQuestionNode | null = null;
 
   for (let attempt = 0; attempt < 2; attempt += 1) {
     const content = await completion(
@@ -70,9 +88,12 @@ export async function generateQuestionNode(input: {
         sourceTitle: input.sourceTitle,
         sourceContent: input.sourceContent,
         learningPath: input.learningPath,
+        otherBranches: input.otherBranches,
+        knownConcepts: input.knownConcepts,
         question: input.question,
         shortenTo,
       }),
+      QUESTION_NODE_MAX_TOKENS,
     );
     let decoded: unknown;
     try {
@@ -87,14 +108,51 @@ export async function generateQuestionNode(input: {
     const parsed = generatedQuestionNodeSchema.safeParse(decoded);
     if (!parsed.success || isRefusal(parsed.data.explanation)) continue;
 
-    lastValid = parsed.data;
-    if (countWords(parsed.data.explanation) <= EXPLANATION_RETRY_WORDS) return parsed.data;
+    // Concepts are enrichment: a malformed block yields an empty extraction, never a retry.
+    lastValid = { ...parsed.data, conceptExtraction: parseConceptExtraction(decoded, knownSlugs) };
+    if (countWords(parsed.data.explanation) <= EXPLANATION_RETRY_WORDS) return lastValid;
     shortenTo = EXPLANATION_TARGET_WORDS;
   }
 
   // An over-length but otherwise valid answer is still better than failing the learner.
   if (lastValid) return lastValid;
   throw new ApiError(422, 'sarvam_invalid_output', 'The generated answer did not meet Tattva’s response requirements. Please retry.');
+}
+
+/**
+ * Extraction-only call for nodes generated before the concept layer existed.
+ * Returns an empty extraction on malformed output rather than throwing.
+ */
+export async function extractConcepts(input: {
+  question: string;
+  answer: string;
+  otherBranches?: string;
+  knownConcepts?: string;
+  knownConceptSlugs?: Iterable<string>;
+}): Promise<ConceptExtraction> {
+  const content = await completion(buildConceptExtractionSystemPrompt(), buildConceptExtractionUserMessage(input), 800);
+  try {
+    return parseConceptExtraction(JSON.parse(content), input.knownConceptSlugs ?? []);
+  } catch {
+    return EMPTY_EXTRACTION;
+  }
+}
+
+/**
+ * One verifier call for up to a handful of predicted concept pairs. Returns the
+ * decoded JSON payload (validated by services/connectionVerification.ts), or
+ * null when the model output isn't JSON.
+ */
+export async function verifyConceptLinks(input: {
+  topic: string;
+  pairs: ReadonlyArray<{ a: string; b: string; via: readonly string[] }>;
+}): Promise<unknown> {
+  const content = await completion(buildLinkVerificationSystemPrompt(), buildLinkVerificationUserMessage(input), 900);
+  try {
+    return JSON.parse(content) as unknown;
+  } catch {
+    return null;
+  }
 }
 
 export async function evaluateTrap(response: string, scenario: string): Promise<{ survived: boolean; feedback: string }> {

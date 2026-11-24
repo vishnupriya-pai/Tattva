@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Trash2, Share2, GitBranch, ChevronDown, Map, MoreHorizontal, BookOpen, MessagesSquare } from 'lucide-react';
 import { createQuestionNode, getInquiry, getStamina, submitTrapAttempt as sendTrapAttempt } from '../../lib/api-client';
 import type { LearningSource, QuestionNode, StaminaState, TrapSubmissionState } from '../../lib/workspace-types';
-import type { Inquiry } from '@tattva/contracts';
+import type { ConceptGraph, Inquiry } from '@tattva/contracts';
 import { SourceViewer } from '../source-viewer/SourceViewer';
 import type { GraphStatus } from '../knowledge-graph/KnowledgeGraphCanvas';
 import { GraphOverlay } from '../knowledge-graph/GraphOverlay';
@@ -20,6 +20,7 @@ export function Workspace({
   source,
   sourceBody,
   initialNodes,
+  initialConceptGraph,
   initialStamina,
   inquiryId,
   onDeleteInquiry,
@@ -31,6 +32,7 @@ export function Workspace({
   source: LearningSource;
   sourceBody: string;
   initialNodes: QuestionNode[];
+  initialConceptGraph?: ConceptGraph;
   initialStamina: StaminaState;
   inquiryId: string;
   onDeleteInquiry?: () => void;
@@ -40,6 +42,9 @@ export function Workspace({
   onOpenInquirySwitcher?: () => void;
 }) {
   const [nodes, setNodes] = useState<QuestionNode[]>(initialNodes);
+  const [conceptGraph, setConceptGraph] = useState<ConceptGraph>(
+    initialConceptGraph ?? { concepts: [], nodeConcepts: [], conceptEdges: [] },
+  );
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(initialNodes[0]?.id ?? null);
   const [researchMode, setResearchMode] = useState(false);
   useResearchModeAttribute(researchMode);
@@ -72,6 +77,7 @@ export function Workspace({
       status: 'ready' as const,
     }));
     setNodes(freshNodes);
+    setConceptGraph(detail.data.conceptGraph);
     setStamina(wallet.data);
     return freshNodes;
   }
@@ -377,6 +383,7 @@ export function Workspace({
         <GraphOverlay
           onClose={() => setIsGraphOpen(false)}
           nodes={nodes}
+          conceptGraph={conceptGraph}
           selectedNodeId={selectedNodeId}
           onSelectNode={(nodeId) => {
             setSelectedNodeId(nodeId);

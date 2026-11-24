@@ -11,8 +11,10 @@ import {
   type CreateQuestionNodeResponse,
   trapAttemptRequestSchema,
   type TrapAttemptResponse,
+  type DiscoverConnectionsResponse,
 } from '@tattva/contracts';
 import { ApiError } from '../types/api';
+import { discoverConnectionsForUser } from '../services/connectionDiscoveryService';
 import type { AiQuotaState } from '../middleware/aiQuota';
 import {
   createInquiryForUser,
@@ -71,6 +73,13 @@ export async function postQuestionNode(req: Request, res: Response<CreateQuestio
   const node = await createQuestionNodeForUser(req.auth.accessToken, req.auth.userId, inquiryId, body);
   const quota = res.locals.aiQuota as AiQuotaState | undefined;
   res.status(201).json({ data: { node, staminaAwarded: null, ...(quota ? { quota } : {}) } });
+}
+
+export async function postDiscoverConnections(req: Request, res: Response<DiscoverConnectionsResponse>): Promise<void> {
+  if (!req.auth) throw new ApiError(401, 'missing_token', 'Authentication required');
+  const { inquiryId } = inquiryIdParamsSchema.parse(req.params);
+  const result = await discoverConnectionsForUser(req.auth.accessToken, req.auth.userId, inquiryId);
+  res.status(200).json({ data: result });
 }
 
 export async function postTrapAttempt(req: Request, res: Response<TrapAttemptResponse>): Promise<void> {

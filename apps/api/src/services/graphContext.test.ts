@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildConceptPromptContext,
+  buildCrossBranchDigest,
   buildGraphContext,
+  CROSS_BRANCH_CHAR_CAP,
+  CROSS_BRANCH_MAX_ENTRIES,
   formatGraphContext,
   GraphContextError,
   OLDER_ANCESTRY_SUMMARY_CHAR_CAP,
@@ -83,5 +87,67 @@ describe('formatGraphContext', () => {
     const positions = order.map((label) => text.indexOf(label));
     expect(positions.every((p) => p >= 0)).toBe(true);
     expect([...positions].sort((a, b) => a - b)).toEqual(positions);
+  });
+});
+
+describe('buildCrossBranchDigest', () => {
+  // r ─┬─ a ── a2
+  //    └─ b ── b2
+  const tree = [
+    { ...node('r', null), createdAt: '1' },
+    { ...node('a', 'r'), createdAt: '2' },
+    { ...node('b', 'r'), createdAt: '3' },
+    { ...node('a2', 'a'), createdAt: '4' },
+    { ...node('b2', 'b'), createdAt: '5' },
+  ];
+
+  it('lists only nodes outside the new node’s ancestry, newest first, with concepts', () => {
+    const digest = buildCrossBranchDigest(tree, 'a2', new Map([['b', ['Free List', 'Fragmentation']]]));
+    expect(digest.split('\n')).toEqual(['- Q: Q-b2', '- Q: Q-b [concepts: Free List, Fragmentation]']);
+  });
+
+  it('includes every node for a root question and nothing for an empty inquiry', () => {
+    expect(buildCrossBranchDigest(tree, null).split('\n')).toHaveLength(5);
+    expect(buildCrossBranchDigest([], null)).toBe('');
+  });
+
+  it('stays within the entry and character caps', () => {
+    const wide = Array.from({ length: 40 }, (_, i) => ({ ...node(`w${i}`, null), userQuestion: 'q'.repeat(300), createdAt: String(i) }));
+    const digest = buildCrossBranchDigest(wide, null);
+    expect(digest.split('\n').length).toBeLessThanOrEqual(CROSS_BRANCH_MAX_ENTRIES);
+    expect(digest.length).toBeLessThanOrEqual(CROSS_BRANCH_CHAR_CAP);
+  });
+
+  it('terminates on cyclic ancestry', () => {
+    expect(buildCrossBranchDigest([node('x', 'y'), node('y', 'x'), node('z', null)], 'x')).toBe('- Q: Q-z');
+  });
+});
+
+describe('buildConceptPromptContext', () => {
+  const C1 = '00000000-0000-4000-8000-0000000000c1';
+  const C2 = '00000000-0000-4000-8000-0000000000c2';
+  const graph = {
+    concepts: [
+      { id: C1, name: 'Bump Pointer', slug: 'bump-pointer', aliases: ['Bump Allocation'], createdAt: '1' },
+      { id: C2, name: 'Free List', slug: 'free-list', aliases: [], createdAt: '2' },
+    ],
+    nodeConcepts: [
+      { questionNodeId: 'b', conceptId: C2, role: 'defines' as const, weight: 0.9 },
+      { questionNodeId: 'r', conceptId: C2, role: 'uses' as const, weight: 0.3 },
+      { questionNodeId: 'b', conceptId: C1, role: 'uses' as const, weight: 0.4 },
+    ],
+    conceptEdges: [],
+  };
+
+  it('ranks known concepts by degree and exposes alias slugs for relation resolution', () => {
+    const ctx = buildConceptPromptContext([node('r', null), node('a', 'r'), node('b', 'r')], 'a', graph);
+    expect(ctx.knownConcepts).toBe('Free List; Bump Pointer');
+    expect(ctx.knownConceptSlugs.sort()).toEqual(['bump-allocation', 'bump-pointer', 'free-list']);
+    expect(ctx.otherBranches).toBe('- Q: Q-b [concepts: Free List, Bump Pointer]');
+  });
+
+  it('is empty for an inquiry with no concepts yet', () => {
+    const ctx = buildConceptPromptContext([], null, { concepts: [], nodeConcepts: [], conceptEdges: [] });
+    expect(ctx).toEqual({ otherBranches: '', knownConcepts: '', knownConceptSlugs: [], known: [] });
   });
 });

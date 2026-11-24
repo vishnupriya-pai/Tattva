@@ -1,6 +1,6 @@
 import { getAdminClient } from '../integrations/supabase/client';
 
-export type AiUsageKind = 'question' | 'trap' | 'voice';
+export type AiUsageKind = 'question' | 'trap' | 'voice' | 'discover';
 
 export interface QuotaDecision {
   allowed: boolean;

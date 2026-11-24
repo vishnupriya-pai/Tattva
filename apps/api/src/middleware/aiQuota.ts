@@ -17,9 +17,10 @@ export const DAILY_AI_LIMITS: Record<AiUsageKind, { anonymous: number; signedIn:
   question: { anonymous: 25, signedIn: 75 },
   trap: { anonymous: 50, signedIn: 100 },
   voice: { anonymous: 10, signedIn: 40 },
+  discover: { anonymous: 10, signedIn: 30 },
 };
 
-const NOUN: Record<AiUsageKind, string> = { question: 'questions', trap: 'trap answers', voice: 'voice questions' };
+const NOUN: Record<AiUsageKind, string> = { question: 'questions', trap: 'trap answers', voice: 'voice questions', discover: 'connection searches' };
 
 export interface AiQuotaState {
   remaining: number;
