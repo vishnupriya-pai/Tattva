@@ -131,7 +131,7 @@ export function getInquiry(inquiryId: string): Promise<GetInquiryResponse> {
   return authedRequest(`/api/v1/inquiries/${inquiryId}`, getInquiryResponseSchema);
 }
 
-/** Verified "hidden connections": one Sarvam call; the Knowledge Map UI wires this in Phase 3. */
+/** Verified "hidden connections": one Sarvam call; used by "Find connections" in the Knowledge Map. */
 export function discoverConnections(inquiryId: string): Promise<DiscoverConnectionsResponse> {
   return authedRequest(`/api/v1/inquiries/${inquiryId}/connections/discover`, discoverConnectionsResponseSchema, {
     method: 'POST',

@@ -166,10 +166,87 @@ export interface KnownConcept {
   aliases: readonly string[];
 }
 
+const STOP_WORDS = new Set(['a', 'an', 'the', 'of', 'in', 'on', 'for', 'and', 'to', 'with', 'vs', 'versus', 'by']);
+/** Token-set similarity at which two names are the same concept ("Lifetime of Objects" ≈ "Object Lifetime"). */
+export const TOKEN_MATCH_THRESHOLD = 0.8;
+const ACRONYM_TOKEN = /^[a-z]{2,6}$/;
+
+function contentTokens(slug: string): Set<string> {
+  return new Set(
+    slug
+      .split('-')
+      .filter((w) => !STOP_WORDS.has(w))
+      .map(singularize),
+  );
+}
+
+function jaccard(a: ReadonlySet<string>, b: ReadonlySet<string>): number {
+  if (a.size === 0 || b.size === 0) return 0;
+  let shared = 0;
+  for (const t of a) if (b.has(t)) shared += 1;
+  return shared / (a.size + b.size - shared);
+}
+
+/** Acronym → expansion for every contiguous run of 2+ words in a slug ("translation-lookaside-buffer" → tlb, tl, lb). */
+function acronymsOf(slug: string): Map<string, string[]> {
+  const words = slug.split('-').filter((w) => !STOP_WORDS.has(w));
+  const out = new Map<string, string[]>();
+  for (let i = 0; i < words.length; i += 1) {
+    for (let j = i + 2; j <= words.length; j += 1) {
+      const run = words.slice(i, j);
+      out.set(run.map((w) => w[0]).join(''), run);
+    }
+  }
+  return out;
+}
+
+/** Every slug obtained by expanding one acronym token of `slug` with `dictionary`. */
+function expansions(slug: string, dictionary: ReadonlyMap<string, string[]>): string[] {
+  const words = slug.split('-');
+  const out: string[] = [];
+  words.forEach((word, i) => {
+    const singular = singularize(word);
+    const expansion = ACRONYM_TOKEN.test(singular) ? dictionary.get(singular) : undefined;
+    if (expansion) out.push(slugifyConcept([...words.slice(0, i), ...expansion, ...words.slice(i + 1)].join(' ')));
+  });
+  return out;
+}
+
 /**
- * Entity resolution against the inquiry's existing concepts. A new name whose
- * slug matches an existing concept's alias is rewritten to that concept's
- * canonical slug, so the database upsert (keyed on slug) merges them.
+ * Finds the known concept a new slug names, or null. In order:
+ * exact slug or alias → acronym (TLB ↔ Translation Lookaside Buffer, also
+ * inside phrases: "TLB Miss" ↔ "Translation Lookaside Buffer Miss") →
+ * near-identical word sets.
+ */
+function matchKnown(slug: string, known: readonly KnownConcept[], canonical: ReadonlyMap<string, string>): string | null {
+  const exact = canonical.get(slug);
+  if (exact) return exact;
+
+  const knownAcronyms = new Map<string, string[]>();
+  for (const k of [...canonical.keys()].sort())
+    for (const [acronym, run] of acronymsOf(k)) if (!knownAcronyms.has(acronym)) knownAcronyms.set(acronym, run);
+  for (const expanded of expansions(slug, knownAcronyms)) {
+    const hit = canonical.get(expanded);
+    if (hit) return hit;
+  }
+  const ownAcronyms = acronymsOf(slug);
+  for (const k of [...canonical.keys()].sort())
+    if (expansions(k, ownAcronyms).includes(slug)) return canonical.get(k)!;
+
+  const tokens = contentTokens(slug);
+  let best: { slug: string; score: number } | null = null;
+  for (const k of known) {
+    const score = jaccard(tokens, contentTokens(k.slug));
+    if (score >= TOKEN_MATCH_THRESHOLD && (!best || score > best.score)) best = { slug: k.slug, score };
+  }
+  return best?.slug ?? null;
+}
+
+/**
+ * Entity resolution against the inquiry's existing concepts. A new name that
+ * names an existing concept (see matchKnown) is rewritten to that concept's
+ * canonical slug, so the database upsert (keyed on slug) merges them and
+ * records the new wording as an alias.
  */
 export function resolveAgainstKnown(
   extraction: ConceptExtraction,
@@ -183,7 +260,11 @@ export function resolveAgainstKnown(
       if (aliasSlug && !canonical.has(aliasSlug)) canonical.set(aliasSlug, concept.slug);
     }
   }
-  const resolve = (slug: string) => canonical.get(slug) ?? slug;
+  const cache = new Map<string, string>();
+  const resolve = (slug: string) => {
+    if (!cache.has(slug)) cache.set(slug, matchKnown(slug, known, canonical) ?? slug);
+    return cache.get(slug)!;
+  };
 
   const merged = new Map<string, ExtractedConcept>();
   for (const concept of extraction.concepts) {
@@ -204,6 +285,31 @@ export function resolveAgainstKnown(
   }
 
   return { concepts: [...merged.values()], relations };
+}
+
+/**
+ * Duplicates among existing concepts, oldest first: each later concept that
+ * names an earlier one (by the same rules as resolveAgainstKnown) maps to it.
+ * Used by scripts/merge-duplicate-concepts.ts to clean up graphs built before
+ * acronym and word-set matching existed.
+ */
+export function findDuplicateConcepts(concepts: readonly KnownConcept[]): Array<{ duplicate: string; canonical: string }> {
+  const kept: KnownConcept[] = [];
+  const out: Array<{ duplicate: string; canonical: string }> = [];
+  for (const concept of concepts) {
+    const canonical = new Map<string, string>();
+    for (const k of kept) {
+      canonical.set(k.slug, k.slug);
+      for (const alias of k.aliases) {
+        const aliasSlug = slugifyConcept(alias);
+        if (aliasSlug && !canonical.has(aliasSlug)) canonical.set(aliasSlug, k.slug);
+      }
+    }
+    const match = matchKnown(concept.slug, kept, canonical);
+    if (match && match !== concept.slug) out.push({ duplicate: concept.slug, canonical: match });
+    else kept.push(concept);
+  }
+  return out;
 }
 
 /**

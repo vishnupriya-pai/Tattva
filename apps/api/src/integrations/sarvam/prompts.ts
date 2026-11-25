@@ -11,7 +11,8 @@ const CONCEPT_RULES = `CONCEPTS (the learner never sees these; they build the kn
 - If a concept in <known_concepts> means the same thing, reuse its exact name instead of inventing a synonym.
 - role: "defines" (this answer explains it), "uses" (relied on), "contrasts" (compared against), "misconceives" (the learner's misconception concerns it).
 - weight: 0.1-1.0, how central the concept is to this answer.
-- "relations": 0-4 directed links between concepts named in "concepts" or <known_concepts>. type is one of PREREQUISITE_OF, CAUSES, TRADES_OFF_WITH, CONTRASTS_WITH, GENERALIZES, INSTANCE_OF. "why" is one plain sentence. Include a relation only when it is technically true; an empty list is fine. Prefer relations that connect this answer to concepts from <other_branches>.`;
+- "relations": 0-5 directed links between concepts named in "concepts" or <known_concepts>. type is one of PREREQUISITE_OF, CAUSES, TRADES_OFF_WITH, CONTRASTS_WITH, GENERALIZES, INSTANCE_OF. "why" is one plain sentence. Include a relation only when it is technically true; an empty list is fine. Prefer relations that connect this answer to concepts from <other_branches>.
+- Prerequisites matter most: whenever one concept here must be understood before another (e.g. "Paging" before "Translation Lookaside Buffer"), include a PREREQUISITE_OF relation with "from" = the foundation and "to" = the concept that builds on it.`;
 
 const CONCEPT_OUTPUT_SHAPE = `"concepts": [{"name": string, "role": "defines" | "uses" | "contrasts" | "misconceives", "weight": number}], "relations": [{"from": string, "type": string, "to": string, "why": string}]`;
 

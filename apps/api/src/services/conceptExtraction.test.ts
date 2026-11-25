@@ -3,6 +3,7 @@ import {
   dropCyclicPrerequisites,
   MAX_CONCEPTS_PER_NODE,
   parseConceptExtraction,
+  findDuplicateConcepts,
   resolveAgainstKnown,
   slugifyConcept,
 } from './conceptExtraction';
@@ -149,6 +150,61 @@ describe('resolveAgainstKnown', () => {
     expect(result.relations).toEqual([
       { fromSlug: 'bump-pointer', toSlug: 'arena-reset', type: 'CAUSES', justification: 'a' },
     ]);
+  });
+
+  const KNOWN = [
+    { name: 'Translation Lookaside Buffer', slug: 'translation-lookaside-buffer', aliases: [] },
+    { name: 'TLB Miss', slug: 'tlb-miss', aliases: [] },
+    { name: 'Object Lifetime Correlation', slug: 'object-lifetime-correlation', aliases: [] },
+    { name: 'Page Frame', slug: 'page-frame', aliases: [] },
+    { name: 'Internal Fragmentation', slug: 'internal-fragmentation', aliases: [] },
+  ];
+  const resolveOne = (name: string) =>
+    resolveAgainstKnown(
+      { concepts: [{ name, slug: slugifyConcept(name), role: 'uses', weight: 0.5 }], relations: [] },
+      KNOWN,
+    ).concepts[0]!;
+
+  it('matches acronyms both ways, also inside longer phrases, and keeps the new wording as the name', () => {
+    expect(resolveOne('TLB')).toEqual({ name: 'TLB', slug: 'translation-lookaside-buffer', role: 'uses', weight: 0.5 });
+    expect(resolveOne('TLBs').slug).toBe('translation-lookaside-buffer');
+    expect(resolveOne('Translation Lookaside Buffer Miss').slug).toBe('tlb-miss');
+  });
+
+  it('matches reordered and pluralised wordings', () => {
+    expect(resolveOne('Correlation of Object Lifetimes').slug).toBe('object-lifetime-correlation');
+  });
+
+  it('does not merge different concepts that share words or initials', () => {
+    expect(resolveOne('Page Table').slug).toBe('page-table');
+    expect(resolveOne('External Fragmentation').slug).toBe('external-fragmentation');
+    expect(resolveOne('Page Fault').slug).toBe('page-fault');
+    expect(resolveOne('Thrashing').slug).toBe('thrashing');
+  });
+
+  it('finds duplicates among existing concepts, mapping later ones to the oldest', () => {
+    expect(
+      findDuplicateConcepts([
+        ...KNOWN,
+        { name: 'TLB', slug: 'tlb', aliases: [] },
+        { name: 'Page Table', slug: 'page-table', aliases: [] },
+        { name: 'Correlation of Object Lifetimes', slug: 'correlation-of-object-lifetime', aliases: [] },
+      ]),
+    ).toEqual([
+      { duplicate: 'tlb', canonical: 'translation-lookaside-buffer' },
+      { duplicate: 'correlation-of-object-lifetime', canonical: 'object-lifetime-correlation' },
+    ]);
+  });
+
+  it('applies the same resolution to relation endpoints', () => {
+    const result = resolveAgainstKnown(
+      {
+        concepts: [{ name: 'TLB', slug: 'tlb', role: 'defines', weight: 0.9 }],
+        relations: [{ fromSlug: 'tlb', toSlug: 'internal-fragmentation', type: 'CAUSES', justification: '' }],
+      },
+      KNOWN,
+    );
+    expect(result.relations[0]).toMatchObject({ fromSlug: 'translation-lookaside-buffer' });
   });
 });
 

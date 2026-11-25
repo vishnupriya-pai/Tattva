@@ -2,7 +2,13 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Trash2, Share2, GitBranch, ChevronDown, Map, MoreHorizontal, BookOpen, MessagesSquare } from 'lucide-react';
-import { createQuestionNode, getInquiry, getStamina, submitTrapAttempt as sendTrapAttempt } from '../../lib/api-client';
+import {
+  createQuestionNode,
+  discoverConnections,
+  getInquiry,
+  getStamina,
+  submitTrapAttempt as sendTrapAttempt,
+} from '../../lib/api-client';
 import type { LearningSource, QuestionNode, StaminaState, TrapSubmissionState } from '../../lib/workspace-types';
 import type { ConceptGraph, Inquiry } from '@tattva/contracts';
 import { SourceViewer } from '../source-viewer/SourceViewer';
@@ -390,6 +396,11 @@ export function Workspace({
             setActiveMobileScreen('inquiry');
             setGraphStatus('ready');
             setPendingMessage(null);
+          }}
+          onDiscoverConnections={async () => {
+            const result = await discoverConnections(inquiryId);
+            await refreshWorkspace();
+            return { added: result.data.added.length, considered: result.data.consideredCount };
           }}
           status={graphStatus}
           errorMessage={pendingMessage ?? undefined}
