@@ -250,3 +250,6 @@ __marimo__/
 .streamlit/secrets.toml
 
 bnavalyal-tattva/
+
+# Vercel CLI link and build output
+.vercel

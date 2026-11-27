@@ -1,0 +1,12 @@
+# Never upload local secrets, build output or large local files to Vercel.
+**/.env
+**/.env.*
+!**/.env.example
+**/node_modules
+**/.next
+**/dist
+**/.vercel
+*.log
+*.pdf
+bnavalyal-tattva
+supabase/.temp

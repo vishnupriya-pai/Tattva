@@ -10,7 +10,8 @@
     "start": "tsx src/server.ts",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "build:vercel": "node scripts/build-vercel.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.48.1",
